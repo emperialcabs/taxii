@@ -38,7 +38,7 @@ const INITIAL_VEHICLES = [
   {
     id: 'CAR-101',
     name: 'Cabsy Reguler',
-    passengers: '1 - 4 Passenger',
+    passengers: '4 Persons',
     rate: '15.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
@@ -47,7 +47,7 @@ const INITIAL_VEHICLES = [
   {
     id: 'CAR-102',
     name: 'Cabsy XL',
-    passengers: '1 - 6 Passenger',
+    passengers: '6 Persons',
     rate: '22.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
@@ -56,7 +56,7 @@ const INITIAL_VEHICLES = [
   {
     id: 'CAR-103',
     name: 'Cabsy Luxury',
-    passengers: '1 - 4 Passenger',
+    passengers: '4 Persons',
     rate: '35.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
@@ -65,7 +65,7 @@ const INITIAL_VEHICLES = [
   {
     id: 'CAR-104',
     name: 'Cabsy Electric',
-    passengers: '1 - 4 Passenger',
+    passengers: '4 Persons',
     rate: '18.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
@@ -192,7 +192,7 @@ export default function AdminPortal() {
   const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
   const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
   const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
-  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '15.00', status: 'Active', image: '', description: '' });
+  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '4 Persons', rate: '15.00', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
   const handleImageFileUpload = (e, isEdit = false) => {
@@ -1798,10 +1798,10 @@ export default function AdminPortal() {
 
               <div className="form-grid-2 mt-2">
                 <div className="input-group">
-                  <label>Passenger Capacity</label>
+                  <label>Max Capacity (Persons)</label>
                   <input 
                     type="text" 
-                    placeholder="e.g. 1 - 4 Passenger"
+                    placeholder="e.g. 4 Persons"
                     value={newVehicleForm.passengers} 
                     onChange={e => setNewVehicleForm({ ...newVehicleForm, passengers: e.target.value })}
                     required
@@ -1891,7 +1891,7 @@ export default function AdminPortal() {
 
               <div className="form-grid-2 mt-2">
                 <div className="input-group">
-                  <label>Passenger Limit</label>
+                  <label>Max Capacity (Persons)</label>
                   <input 
                     type="text" 
                     value={editVehicleModal.vehicle.passengers} 
