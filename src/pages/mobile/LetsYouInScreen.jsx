@@ -26,13 +26,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
               placeholder="Enter Mobile Number"
             />
           </div>
-          <div className="or-divider"><span>or continue with</span></div>
-          <div className="let-you-social-icons">
-            <div className="social-icon-btn"><img src="/assets/images/let-you-screen/google-icon.svg" alt="Google" /></div>
-            <div className="social-icon-btn"><img src="/assets/images/let-you-screen/fb-icon.svg" alt="Facebook" /></div>
-            <div className="social-icon-btn"><img src="/assets/images/let-you-screen/apple-icon.svg" alt="Apple" /></div>
-          </div>
-          <button className="let-you-signin-btn" onClick={onNext}>Sign In with OTP</button>
+          <button className="let-you-signin-btn" onClick={onNext} style={{ marginTop: '20px' }}>Sign In with OTP</button>
         </div>
         <p className="let-you-footer-txt">Don’t have an account? <span onClick={onNext}>Sign up</span></p>
       </div>
