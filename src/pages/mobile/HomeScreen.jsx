@@ -7,31 +7,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   // Initial coords state set to Bhavnagar, Gujarat
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 }); // Bhavnagar Center
 
-  const [taxiOffsets, setTaxiOffsets] = useState([
-    { dLat: 0.002, dLng: 0.003, label: 'Standard Taxi' },
-    { dLat: -0.002, dLng: 0.004, label: 'Comfort Sedan' },
-    { dLat: 0.004, dLng: -0.002, label: 'Executive SUV' },
-    { dLat: -0.003, dLng: -0.003, label: 'EV Taxi' },
-  ]);
-
-  // Stream live moving taxis around the GPS position continuously
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const time = Date.now() / 1200;
-      setTaxiOffsets(prev => prev.map((t, idx) => ({
-        ...t,
-        dLat: t.dLat + (Math.sin(time + idx) * 0.00015),
-        dLng: t.dLng + (Math.cos(time + idx) * 0.00015),
-      })));
-    }, 800);
-    return () => clearInterval(interval);
-  }, []);
-
-  const nearbyTaxis = taxiOffsets.map(t => ({
-    lat: userCoords.lat + t.dLat,
-    lng: userCoords.lng + t.dLng,
-    label: t.label
-  }));
+  const nearbyTaxis = [];
 
   const hasRealGpsRef = React.useRef(false);
 
@@ -235,7 +211,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               style={{ width: '100%', marginTop: '8px', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
               onClick={onStartBooking}
             >
-              <span>🚕</span> Request Ride Now
+              <span>🚘</span> Request Ride Now
             </button>
           </div>
         </div>
