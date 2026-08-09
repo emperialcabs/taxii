@@ -18,16 +18,11 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    return {
-      name: user.displayName || 'Google User',
-      email: user.email,
-      photoURL: user.photoURL
-    };
-  } catch (error) {
-    console.warn("Firebase Google Auth popup fallback:", error);
-    return null;
-  }
+  const result = await signInWithPopup(auth, googleProvider);
+  const user = result.user;
+  return {
+    name: user.displayName || 'Google User',
+    email: user.email,
+    photoURL: user.photoURL
+  };
 };
