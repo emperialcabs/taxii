@@ -3,6 +3,24 @@ import InteractiveMap from '../../components/InteractiveMap';
 import { Geolocation } from '@capacitor/geolocation';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
+  // Load saved Google profile from localStorage
+  const userProfile = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  }, []);
+
+  const userName = userProfile?.name?.split(' ')[0] || 'Rider';
+  const userPhoto = userProfile?.photoURL || null;
+
+  // Time-based greeting
+  const greeting = React.useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good Morning ☀️';
+    if (h < 17) return 'Good Afternoon 🌤️';
+    return 'Good Evening 🌙';
+  }, []);
   const [customerAddress, setCustomerAddress] = useState('Bhavnagar, Gujarat');
   // Initial coords state set to Bhavnagar, Gujarat
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 }); // Bhavnagar Center
@@ -169,15 +187,19 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontFamily: 'League Spartan', fontSize: '13px', fontWeight: '700', color: '#212B46', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#22C55E' }}>●</span> GPS Active
             </div>
-            <img className="floating-user-avatar" src="/assets/images/map/profile.png" alt="User" />
+            {userPhoto ? (
+              <img className="floating-user-avatar" src={userPhoto} alt="User" style={{ borderRadius: '50%', border: '2px solid #FFAA01' }} />
+            ) : (
+              <div className="floating-user-avatar" style={{ background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#FFAA01', borderRadius: '50%', border: '2px solid #FFAA01' }}>👤</div>
+            )}
           </div>
 
           {/* Bottom Expandable Trip Card */}
           <div className="homescreen-bottom-card">
             <div className="drag-handle-bar" />
             <div style={{ marginBottom: '12px' }}>
-              <p className="home-greeting-txt" style={{ margin: 0 }}>Good Morning 👋</p>
-              <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#67696B', margin: '2px 0 0 0' }}>Welcome, Taxigo Owner</p>
+              <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
+              <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#67696B', margin: '2px 0 0 0' }}>Welcome back, <strong style={{ color: '#212B46' }}>{userName}</strong> 🚀</p>
             </div>
 
             {/* Pickup / Dropoff Box with Customer Address */}
