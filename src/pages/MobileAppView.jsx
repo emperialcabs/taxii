@@ -159,6 +159,14 @@ export default function MobileAppView() {
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoogleSignIn={(acc) => {
             setSelectedGoogleAccount(acc);
+            // If profile already saved, skip setup and go home
+            try {
+              const saved = localStorage.getItem('cabsy_user_profile');
+              if (saved) {
+                completeOnboarding();
+                return;
+              }
+            } catch(e) {}
             setAppStage('ACCOUNT_DETAILS');
           }}
           onBack={() => setAppStage('ONBOARDING')}
@@ -170,7 +178,17 @@ export default function MobileAppView() {
         <AccountDetailScreen 
           googleAccount={selectedGoogleAccount}
           onCompleteProfile={() => completeOnboarding()}
-          onBack={() => setAppStage('LETS_YOU_IN')}
+          onBack={() => {
+            // If already onboarded (editing from profile tab), go back to home
+            try {
+              const isOnboarded = localStorage.getItem('taxigo_onboarded');
+              if (isOnboarded === 'true') {
+                setAppStage('APP_HOME');
+                return;
+              }
+            } catch(e) {}
+            setAppStage('LETS_YOU_IN');
+          }}
         />
       );
 
