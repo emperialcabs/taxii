@@ -39,7 +39,7 @@ const INITIAL_VEHICLES = [
     id: 'CAR-101',
     name: 'Cabsy Reguler',
     passengers: '1 - 4 Passenger',
-    rate: '2.20',
+    rate: '15.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
     description: 'Comfortable executive sedan for daily commute and airport transfers.'
@@ -48,7 +48,7 @@ const INITIAL_VEHICLES = [
     id: 'CAR-102',
     name: 'Cabsy XL',
     passengers: '1 - 6 Passenger',
-    rate: '3.50',
+    rate: '22.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
     description: 'Spacious 6-seater SUV for family trips and heavy luggage.'
@@ -57,7 +57,7 @@ const INITIAL_VEHICLES = [
     id: 'CAR-103',
     name: 'Cabsy Luxury',
     passengers: '1 - 4 Passenger',
-    rate: '4.80',
+    rate: '35.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
     description: 'Premium BMW & Mercedes luxury class for VIP mobility.'
@@ -66,7 +66,7 @@ const INITIAL_VEHICLES = [
     id: 'CAR-104',
     name: 'Cabsy Electric',
     passengers: '1 - 4 Passenger',
-    rate: '3.00',
+    rate: '18.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     description: 'Zero-emission eco-friendly electric ride experience.'
@@ -960,7 +960,7 @@ export default function AdminPortal() {
                   <div className="vehicle-card-body mt-3">
                     <div className="flex justify-between align-center">
                       <h3 className="vehicle-title m-0">{car.name}</h3>
-                      <span className="vehicle-rate-tag">${car.rate} / km</span>
+                      <span className="vehicle-rate-tag">₹{car.rate} / km</span>
                     </div>
 
                     <span className="vehicle-capacity-badge mt-2">{car.passengers}</span>

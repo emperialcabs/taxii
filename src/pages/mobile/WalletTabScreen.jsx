@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 
 export default function WalletTabScreen({ activeTab, setActiveTab }) {
-  const [balance, setBalance] = useState(240.50);
+  const [balance, setBalance] = useState(500.00);
   const [transactions, setTransactions] = useState([
-    { id: "TXN-8812", title: "Trip Fare Paid", date: "Today, 3:30 PM", amount: "-$25.00", type: "debit" },
-    { id: "TXN-7734", title: "Added Money via GPay", date: "07 Nov, 10:00 AM", amount: "+$100.00", type: "credit" },
-    { id: "TXN-6612", title: "Trip Fare Paid", date: "05 Nov, 5:15 PM", amount: "-$18.50", type: "debit" },
-    { id: "TXN-5501", title: "Promo Reward Added", date: "01 Nov, 12:00 PM", amount: "+$10.00", type: "credit" }
+    { id: "TXN-8812", title: "Trip Fare Paid", date: "Today, 3:30 PM", amount: "-₹250.00", type: "debit" },
+    { id: "TXN-7734", title: "Added Money via GPay", date: "07 Nov, 10:00 AM", amount: "+₹1000.00", type: "credit" },
+    { id: "TXN-6612", title: "Trip Fare Paid", date: "05 Nov, 5:15 PM", amount: "-₹180.50", type: "debit" },
+    { id: "TXN-5501", title: "Promo Reward Added", date: "01 Nov, 12:00 PM", amount: "+₹100.00", type: "credit" }
   ]);
 
   const handleAddFunds = () => {
-    setBalance(prev => prev + 50.00);
+    setBalance(prev => prev + 500.00);
     setTransactions(prev => [
-      { id: "TXN-" + Math.floor(1000 + Math.random() * 9000), title: "Top-up Added", date: "Just now", amount: "+$50.00", type: "credit" },
+      { id: "TXN-" + Math.floor(1000 + Math.random() * 9000), title: "Top-up Added", date: "Just now", amount: "+₹500.00", type: "credit" },
       ...prev
     ]);
   };
@@ -41,7 +41,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab }) {
           <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '100px', opacity: 0.1, pointerEvents: 'none' }}>👛</div>
           <div style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'League Spartan', fontWeight: '700', letterSpacing: '1px' }}>TOTAL BALANCE</div>
           <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '6px 0 16px 0', color: '#FFAA01' }}>
-            ${balance.toFixed(2)}
+            ₹{balance.toFixed(2)}
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button 
@@ -59,7 +59,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab }) {
               }}
               onClick={handleAddFunds}
             >
-              + Add $50 Money
+              + Add ₹500 Money
             </button>
             <button 
               style={{

@@ -16,7 +16,7 @@ export default function SelectCarScreen({ userCoords, selectedSeat = 3, selected
             img: v.image || `/assets/images/map/car${(idx % 4) + 1}.png`,
             dist: "18.5 KM",
             time: "25 Min",
-            price: `$${Math.round(Number(v.rate || 2.5) * 18)}`
+            price: `₹${Math.round(Number(v.rate || 15) * 18)}`
           }));
         }
       }

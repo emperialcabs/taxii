@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import db from '../services/dbService';
 import { 
   MapPin, 
   Car, 
@@ -172,11 +173,7 @@ export default function BookRide() {
       date: `${pickupDate} ${pickupTime}`
     };
 
-    const existing = localStorage.getItem('cabsy_inquiries');
-    const inquiriesList = existing ? JSON.parse(existing) : [];
-    const updatedInquiries = [newInquiry, ...inquiriesList];
-    localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
-
+    db.saveInquiry(newInquiry);
     setBookingSuccess(newInquiry);
   };
 

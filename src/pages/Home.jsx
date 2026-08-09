@@ -56,7 +56,7 @@ export default function Home({ onOpenBooking }) {
                       <small>DISTANCE</small>
                       <strong>5.25 km</strong>
                     </div>
-                    <div className="fare-price-tag">$46.00</div>
+                    <div className="fare-price-tag">₹350.00</div>
                   </div>
                 </div>
               </div>
@@ -72,6 +72,7 @@ export default function Home({ onOpenBooking }) {
             {/* Reguler */}
             <div className="card fleet-card">
               <h3>Cabsy Reguler</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹15 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
@@ -82,6 +83,7 @@ export default function Home({ onOpenBooking }) {
             {/* XL */}
             <div className="card fleet-card">
               <h3>Cabsy XL</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹22 / km</div>
               <p className="fleet-cap">1 - 6 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
@@ -92,6 +94,7 @@ export default function Home({ onOpenBooking }) {
             {/* Luxury */}
             <div className="card fleet-card">
               <h3>Cabsy Luxury</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹35 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
@@ -102,6 +105,7 @@ export default function Home({ onOpenBooking }) {
             {/* Electric */}
             <div className="card fleet-card">
               <h3>Cabsy Electric</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹18 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">

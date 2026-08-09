@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import db from '../services/dbService';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
 import './BookingModal.css';
 
@@ -12,19 +13,30 @@ export default function BookingModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const vehicles = [
-    { id: 'Reguler', name: 'Cabsy Reguler', capacity: '1-4 Passenger', ratePerKm: 2.2, icon: '🚕' },
-    { id: 'XL', name: 'Cabsy XL', capacity: '1-6 Passenger', ratePerKm: 3.5, icon: '🚙' },
-    { id: 'Luxury', name: 'Cabsy Luxury', capacity: '1-4 Passenger', ratePerKm: 4.8, icon: '🚘' },
-    { id: 'Electric', name: 'Cabsy Electric', capacity: '1-4 Passenger', ratePerKm: 2.5, icon: '⚡' },
+    { id: 'Reguler', name: 'Cabsy Reguler', capacity: '1-4 Passenger', ratePerKm: 15.0, icon: '🚕' },
+    { id: 'XL', name: 'Cabsy XL', capacity: '1-6 Passenger', ratePerKm: 22.0, icon: '🚙' },
+    { id: 'Luxury', name: 'Cabsy Luxury', capacity: '1-4 Passenger', ratePerKm: 35.0, icon: '🚘' },
+    { id: 'Electric', name: 'Cabsy Electric', capacity: '1-4 Passenger', ratePerKm: 18.0, icon: '⚡' },
   ];
 
   const selectedVeh = vehicles.find(v => v.id === vehicle) || vehicles[0];
   const estimatedDist = pickup && dropoff ? 12.5 : 8.0; // km
-  const estimatedFare = (estimatedDist * selectedVeh.ratePerKm + 5.0).toFixed(2);
+  const estimatedFare = (estimatedDist * selectedVeh.ratePerKm + 50.0).toFixed(2);
   const estimatedTime = Math.round(estimatedDist * 2.2);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    db.saveInquiry({
+      customerName: 'Web Passenger',
+      customerPhone: '+91 98765 00000',
+      pickup: pickup || 'Downtown Terminal',
+      dropoff: dropoff || 'Airport T3',
+      vehicle: selectedVeh.name,
+      fare: parseFloat(estimatedFare),
+      status: 'Pending',
+      driver: 'Unassigned',
+      date: new Date().toLocaleString('en-IN')
+    });
     setSubmitted(true);
   };
 
@@ -104,7 +116,7 @@ export default function BookingModal({ isOpen, onClose }) {
                 </div>
                 <div className="fare-detail total">
                   <span className="fare-label">Estimated Fare</span>
-                  <span className="fare-price">${estimatedFare}</span>
+                  <span className="fare-price">₹{estimatedFare}</span>
                 </div>
               </div>
 
@@ -126,7 +138,7 @@ export default function BookingModal({ isOpen, onClose }) {
                 <span>Vehicle:</span> <strong>{selectedVeh.name}</strong>
               </div>
               <div className="summary-row">
-                <span>Est. Fare:</span> <strong>${estimatedFare}</strong>
+                <span>Est. Fare:</span> <strong>₹{estimatedFare}</strong>
               </div>
               <div className="summary-row">
                 <span>ETA:</span> <strong>{estimatedTime} mins</strong>
