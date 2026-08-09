@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Firebase Credentials for Project: taxi-c2ef8
 export const firebaseConfig = {
-  apiKey: "AIzaSyC0cdfnIx4EzVPLZQPLdpwEbr_DkDKgvl4",
-  authDomain: "taxi-c2ef8.firebaseapp.com",
-  projectId: "taxi-c2ef8",
-  storageBucket: "taxi-c2ef8.firebasestorage.app",
-  messagingSenderId: "256291841083",
-  appId: "1:256291841083:web:c518df88b67dd86172a81e",
-  measurementId: "G-9LR4KLNPNY"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC8cdfnIx4EzVPLZQPLdpwEbr_DkDKgvl4",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "taxi-c2ef8.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "taxi-c2ef8",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "taxi-c2ef8.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "256291841083",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:256291841083:web:c518df88b67dd86172a81e",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-9LR4KLNPNY"
 };
 
 // Initialize Firebase App & Auth Services
