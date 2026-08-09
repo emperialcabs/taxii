@@ -79,12 +79,21 @@ export default function SelectCarScreen({ userCoords, selectedSeat = 3, selected
               SELECT VEHICLE ({isBiggerCarNeeded ? '6-7 SEATER' : '4 SEATER'})
             </p>
             
-            {/* Top View Vehicle Choice Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(activeCars.length, 4)}, 1fr)`, gap: '10px', margin: '14px 0' }}>
-              {activeCars.map((car) => (
+            {/* Top View Vehicle Choice Row - Scrollable if many cars */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px', 
+              margin: '14px 0', 
+              overflowX: 'auto', 
+              paddingBottom: '6px',
+              WebkitOverflowScrolling: 'touch'
+            }}>
+              {allVehicles.map((car) => (
                 <div 
                   key={car.id} 
                   style={{
+                    flex: '0 0 calc(25% - 8px)',
+                    minWidth: '85px',
                     background: (selectedCar === car.id || currentCarObj.id === car.id) ? '#212B46' : '#F1F5F9',
                     border: (selectedCar === car.id || currentCarObj.id === car.id) ? '2.5px solid #FFAA01' : '1px solid #E2E8F0',
                     borderRadius: '16px',
@@ -99,7 +108,7 @@ export default function SelectCarScreen({ userCoords, selectedSeat = 3, selected
                   onClick={() => setSelectedCar(car.id)}
                 >
                   <img src={car.img} alt={car.name} style={{ height: '55px', objectFit: 'contain' }} />
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: (selectedCar === car.id || currentCarObj.id === car.id) ? '#FFAA01' : '#212B46', marginTop: '4px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: (selectedCar === car.id || currentCarObj.id === car.id) ? '#FFAA01' : '#212B46', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                     {car.name}
                   </span>
                 </div>
@@ -126,7 +135,7 @@ export default function SelectCarScreen({ userCoords, selectedSeat = 3, selected
                 🕒 {currentCarObj.time}
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '8px', textAlign: 'center', fontFamily: 'League Spartan', fontWeight: '700', fontSize: '14px', color: '#22C55E' }}>
-                💲 {currentCarObj.price}
+                🏷️ {currentCarObj.price}
               </div>
             </div>
 
