@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cabsy Ride Booking</string>
+    <string name="title_activity_main">Cabsy Ride Booking</string>
+    <string name="package_name">com.cabsy.ridebooking</string>
+    <string name="custom_url_scheme">com.cabsy.ridebooking</string>
+</resources>

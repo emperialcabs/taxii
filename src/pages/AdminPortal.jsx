@@ -1,0 +1,2055 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, 
+  Inbox, 
+  Car, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  Plus, 
+  CheckCircle2, 
+  XCircle, 
+  Trash2, 
+  Eye, 
+  Search, 
+  DollarSign, 
+  TrendingUp, 
+  UserPlus, 
+  UserCheck, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  ShieldAlert, 
+  Save, 
+  RefreshCw,
+  LogOut,
+  ChevronRight,
+  Lock,
+  KeyRound,
+  Bell,
+  Zap,
+  Activity,
+  Edit
+} from 'lucide-react';
+import './AdminPortal.css';
+
+const INITIAL_VEHICLES = [
+  {
+    id: 'CAR-101',
+    name: 'Cabsy Reguler',
+    passengers: '1 - 4 Passenger',
+    rate: '2.20',
+    status: 'Active',
+    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
+    description: 'Comfortable executive sedan for daily commute and airport transfers.'
+  },
+  {
+    id: 'CAR-102',
+    name: 'Cabsy XL',
+    passengers: '1 - 6 Passenger',
+    rate: '3.50',
+    status: 'Active',
+    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
+    description: 'Spacious 6-seater SUV for family trips and heavy luggage.'
+  },
+  {
+    id: 'CAR-103',
+    name: 'Cabsy Luxury',
+    passengers: '1 - 4 Passenger',
+    rate: '4.80',
+    status: 'Active',
+    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
+    description: 'Premium BMW & Mercedes luxury class for VIP mobility.'
+  },
+  {
+    id: 'CAR-104',
+    name: 'Cabsy Electric',
+    passengers: '1 - 4 Passenger',
+    rate: '3.00',
+    status: 'Active',
+    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
+    description: 'Zero-emission eco-friendly electric ride experience.'
+  }
+];
+
+// Clean Database Initialization (Demo Data Removed)
+const INITIAL_DRIVERS = [];
+
+const INITIAL_INQUIRIES = [];
+
+const INITIAL_CUSTOMERS = [];
+
+const INITIAL_DESTINATIONS = [
+  { id: 'DEST-101', name: 'Bhavnagar → Railway Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Bhavnagar Railway Station', distanceKm: 18 },
+  { id: 'DEST-102', name: 'Bhavnagar → Ahmedabad Airport (AMD)', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ahmedabad Airport (AMD)', distanceKm: 175 },
+  { id: 'DEST-103', name: 'Bhavnagar → Vadodara Central Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Vadodara Central Railway Station', distanceKm: 110 },
+  { id: 'DEST-104', name: 'Bhavnagar → SG Highway IT Park', pickup: 'Bhavnagar, Gujarat', dropoff: 'SG Highway IT Park', distanceKm: 180 },
+  { id: 'DEST-105', name: 'Bhavnagar → Alkapuri Hub', pickup: 'Bhavnagar, Gujarat', dropoff: 'Alkapuri Commercial Hub', distanceKm: 112 },
+  { id: 'DEST-106', name: 'Bhavnagar → Ghogha Circle & Beach', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ghogha Circle & Beach', distanceKm: 12 },
+  { id: 'DEST-107', name: 'Bhavnagar → Mumbai Central Airport', pickup: 'Bhavnagar, Gujarat', dropoff: 'Mumbai Central Airport (BOM)', distanceKm: 540 }
+];
+
+const INITIAL_PLACES = [
+  'Bhavnagar Railway Station',
+  'Ahmedabad Airport (AMD)',
+  'Vadodara Central Railway Station',
+  'SG Highway IT Park',
+  'Alkapuri Commercial Hub',
+  'Ghogha Circle & Beach',
+  'Mumbai Central Airport (BOM)'
+];
+
+export default function AdminPortal() {
+  // Security PIN Auth State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('cabsy_admin_authed') === 'true';
+  });
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // State from localStorage or default
+  const [inquiries, setInquiries] = useState(() => {
+    const saved = localStorage.getItem('cabsy_inquiries');
+    return saved ? JSON.parse(saved) : INITIAL_INQUIRIES;
+  });
+
+  const [drivers, setDrivers] = useState(() => {
+    const saved = localStorage.getItem('cabsy_drivers');
+    return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
+  });
+
+  const [customers, setCustomers] = useState(() => {
+    const saved = localStorage.getItem('cabsy_customers');
+    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
+  });
+
+  const [vehicles, setVehicles] = useState(() => {
+    const saved = localStorage.getItem('cabsy_vehicles');
+    return saved ? JSON.parse(saved) : INITIAL_VEHICLES;
+  });
+
+  const [destinations, setDestinations] = useState(() => {
+    const saved = localStorage.getItem('cabsy_destinations');
+    const parsed = saved ? JSON.parse(saved) : INITIAL_DESTINATIONS;
+    return parsed.filter(d => d && d.pickup && d.dropoff);
+  });
+
+  const [places, setPlaces] = useState(() => {
+    const saved = localStorage.getItem('cabsy_places');
+    return saved ? JSON.parse(saved) : INITIAL_PLACES;
+  });
+
+  const [newPlaceInput, setNewPlaceInput] = useState('');
+
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('cabsy_website_settings');
+    return saved ? JSON.parse(saved) : {
+      heroHeading: 'The Easiest Way to Book Your Ride Download Our App for Instant Access',
+      contactPhone: '+62 831-9929-86700',
+      contactEmail: 'contact@domain.com',
+      officeAddress: 'Jl. Raya Sesetan No.210, Sesetan, Denpasar, Bali',
+      baseFareReguler: '2.20',
+      baseFareXL: '3.50',
+      baseFareLuxury: '4.80',
+    };
+  });
+
+  // Modal Control States
+  const [assignModal, setAssignModal] = useState({ open: false, inquiry: null });
+  const [addDriverModal, setAddDriverModal] = useState(false);
+  const [addCustomerModal, setAddCustomerModal] = useState(false);
+  const [addInquiryModal, setAddInquiryModal] = useState(false);
+  const [addVehicleModal, setAddVehicleModal] = useState(false);
+  const [editVehicleModal, setEditVehicleModal] = useState({ open: false, vehicle: null });
+  const [addDestModal, setAddDestModal] = useState(false);
+  const [editDestModal, setEditDestModal] = useState({ open: false, destination: null });
+  const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
+  const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
+
+  // Notification System State
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 ($65.00)', time: '2 mins ago', read: false },
+    { id: 2, type: 'driver', title: 'Fleet Driver Active', desc: 'Alex Morgan status changed to On Duty', time: '12 mins ago', read: false },
+    { id: 3, type: 'revenue', title: 'Daily Revenue Target', desc: 'Dispatch revenue crossed $1,450.00 today', time: '1 hour ago', read: true }
+  ]);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkAllRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const handleClearNotif = (id) => {
+    setNotifications(notifications.filter(n => n.id !== id));
+  };
+
+  // Form inputs
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
+  const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
+  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
+  const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
+  }, [inquiries]);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_drivers', JSON.stringify(drivers));
+  }, [drivers]);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_customers', JSON.stringify(customers));
+  }, [customers]);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_vehicles', JSON.stringify(vehicles));
+  }, [vehicles]);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_destinations', JSON.stringify(destinations));
+  }, [destinations]);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_places', JSON.stringify(places));
+  }, [places]);
+
+  const handleAddPlace = (e) => {
+    e.preventDefault();
+    if (!newPlaceInput.trim()) return;
+    const trimmed = newPlaceInput.trim();
+    if (places.includes(trimmed)) {
+      alert("This location place already exists in the system.");
+      return;
+    }
+    setPlaces([...places, trimmed]);
+    setNewPlaceInput('');
+  };
+
+  const handleDeletePlace = (placeName) => {
+    if (window.confirm(`Delete place "${placeName}" from location list?`)) {
+      setPlaces(places.filter(p => p !== placeName));
+    }
+  };
+
+  const handleAddDestSubmit = (e) => {
+    e.preventDefault();
+    const pickupVal = newDestForm.pickup || places[0] || 'Downtown Terminal';
+    const dropoffVal = newDestForm.dropoff || (places[1] ? places[1] : places[0]) || 'International Airport T3';
+    
+    if (pickupVal === dropoffVal) {
+      alert("Pick-up location and drop-off destination cannot be the same place!");
+      return;
+    }
+
+    const created = {
+      id: `DEST-${Math.floor(100 + Math.random() * 900)}`,
+      name: `${pickupVal} → ${dropoffVal}`,
+      pickup: pickupVal,
+      dropoff: dropoffVal,
+      distanceKm: Number(newDestForm.distanceKm) || 10
+    };
+    setDestinations([...destinations.filter(d => d && d.pickup && d.dropoff), created]);
+    setNewDestForm({ name: '', pickup: places[0] || '', dropoff: places[1] || '', distanceKm: 15 });
+    setAddDestModal(false);
+  };
+
+  const handleEditDestSubmit = (e) => {
+    e.preventDefault();
+    setDestinations(destinations.map(d => d.id === editDestModal.destination.id ? editDestModal.destination : d));
+    setEditDestModal({ open: false, destination: null });
+  };
+
+  const handleDeleteDest = (id) => {
+    if (window.confirm("Are you sure you want to remove this route destination?")) {
+      setDestinations(destinations.filter(d => d.id !== id));
+    }
+  };
+
+  const handleAddVehicleSubmit = (e) => {
+    e.preventDefault();
+    const created = {
+      id: `CAR-${Math.floor(100 + Math.random() * 900)}`,
+      name: newVehicleForm.name,
+      passengers: newVehicleForm.passengers,
+      rate: newVehicleForm.rate,
+      status: newVehicleForm.status,
+      image: newVehicleForm.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
+      description: newVehicleForm.description || 'Executive fleet vehicle.'
+    };
+    setVehicles([...vehicles, created]);
+    setNewVehicleForm({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
+    setAddVehicleModal(false);
+  };
+
+  const handleEditVehicleSubmit = (e) => {
+    e.preventDefault();
+    setVehicles(vehicles.map(v => v.id === editVehicleModal.vehicle.id ? editVehicleModal.vehicle : v));
+    setEditVehicleModal({ open: false, vehicle: null });
+  };
+
+  const handleDeleteVehicle = (id) => {
+    if (window.confirm("Are you sure you want to remove this car from the fleet roster?")) {
+      setVehicles(vehicles.filter(v => v.id !== id));
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_website_settings', JSON.stringify(settings));
+  }, [settings]);
+
+  // Listen for live new inquiries from BookingModal
+  useEffect(() => {
+    const handleNewInquiry = (e) => {
+      if (e.detail) {
+        setInquiries(prev => [e.detail, ...prev]);
+        autoSyncCustomer(e.detail.customerName, e.detail.customerPhone, e.detail.fare);
+      }
+    };
+    window.addEventListener('cabsy-new-inquiry', handleNewInquiry);
+    return () => window.removeEventListener('cabsy-new-inquiry', handleNewInquiry);
+  }, []);
+
+  // Handle PIN submit
+  const handlePinSubmit = (e) => {
+    e.preventDefault();
+    if (pinInput === '1234' || pinInput === '0000') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('cabsy_admin_authed', 'true');
+      setPinError(false);
+    } else {
+      setPinError(true);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('cabsy_admin_authed');
+    setPinInput('');
+  };
+
+  // Helper to auto sync customer
+  const autoSyncCustomer = (name, phone, fareAmount) => {
+    if (!name) return;
+    setCustomers(prev => {
+      const existingIndex = prev.findIndex(c => c.name.toLowerCase() === name.toLowerCase() || c.phone === phone);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          totalRides: updated[existingIndex].totalRides + 1,
+          totalSpent: updated[existingIndex].totalSpent + Number(fareAmount)
+        };
+        return updated;
+      } else {
+        const newCust = {
+          id: 'CUST-' + Math.floor(300 + Math.random() * 600),
+          name: name,
+          phone: phone || '+1 (555) ' + Math.floor(100 + Math.random() * 899) + '-9900',
+          email: name.toLowerCase().replace(/\s+/g, '.') + '@customer.com',
+          totalRides: 1,
+          totalSpent: Number(fareAmount),
+          joined: new Date().toISOString().split('T')[0]
+        };
+        return [newCust, ...prev];
+      }
+    });
+  };
+
+  // Calculations
+  const confirmedInquiries = inquiries.filter(i => i.status === 'Confirmed');
+  const totalRevenue = confirmedInquiries.reduce((sum, item) => sum + Number(item.fare || 0), 0);
+  const activeDriversCount = drivers.filter(d => d.status !== 'Off Duty').length;
+
+  // Confirm inquiry & add money to report
+  const handleConfirmInquiry = () => {
+    if (!assignModal.inquiry) return;
+    const driverObj = drivers.find(d => d.id === selectedDriverId) || drivers[0];
+
+    const updatedInquiries = inquiries.map(inq => {
+      if (inq.id === assignModal.inquiry.id) {
+        return {
+          ...inq,
+          status: 'Confirmed',
+          driver: driverObj.name
+        };
+      }
+      return inq;
+    });
+
+    setInquiries(updatedInquiries);
+
+    // Update driver earnings and trip count
+    setDrivers(prev => prev.map(d => {
+      if (d.id === driverObj.id) {
+        return {
+          ...d,
+          trips: d.trips + 1,
+          earnings: d.earnings + Number(assignModal.inquiry.fare),
+          status: 'On Ride'
+        };
+      }
+      return d;
+    }));
+
+    autoSyncCustomer(assignModal.inquiry.customerName, assignModal.inquiry.customerPhone, assignModal.inquiry.fare);
+    setAssignModal({ open: false, inquiry: null });
+  };
+
+  const handleCancelInquiry = (inquiryId) => {
+    setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i));
+  };
+
+  // Add Driver
+  const handleAddDriverSubmit = (e) => {
+    e.preventDefault();
+    if (!newDriverForm.name) return;
+    const createdDriver = {
+      id: 'DRV-' + Math.floor(100 + Math.random() * 899),
+      name: newDriverForm.name,
+      phone: newDriverForm.phone || '+1 (555) ' + Math.floor(100 + Math.random() * 899) + '-0011',
+      vehicle: newDriverForm.vehicle,
+      plate: newDriverForm.plate || 'CAB-' + Math.floor(1000 + Math.random() * 8999),
+      rating: 5.0,
+      status: 'Active',
+      trips: 0,
+      earnings: 0.00
+    };
+    setDrivers([createdDriver, ...drivers]);
+    setNewDriverForm({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
+    setAddDriverModal(false);
+  };
+
+  // Delete Driver
+  const handleDeleteDriver = (driverId) => {
+    if (window.confirm('Are you sure you want to remove this driver from the fleet?')) {
+      setDrivers(drivers.filter(d => d.id !== driverId));
+    }
+  };
+
+  // Add Customer
+  const handleAddCustomerSubmit = (e) => {
+    e.preventDefault();
+    if (!newCustomerForm.name) return;
+    const createdCustomer = {
+      id: 'CUST-' + Math.floor(300 + Math.random() * 600),
+      name: newCustomerForm.name,
+      phone: newCustomerForm.phone || '+1 (555) 000-1122',
+      email: newCustomerForm.email || newCustomerForm.name.toLowerCase().replace(/\s+/g, '.') + '@client.com',
+      totalRides: 0,
+      totalSpent: 0.00,
+      joined: new Date().toISOString().split('T')[0]
+    };
+    setCustomers([createdCustomer, ...customers]);
+    setNewCustomerForm({ name: '', phone: '', email: '' });
+    setAddCustomerModal(false);
+  };
+
+  // Add Manual Inquiry
+  const handleAddInquirySubmit = (e) => {
+    e.preventDefault();
+    if (!newInquiryForm.customerName || !newInquiryForm.pickup) return;
+    const createdInquiry = {
+      id: 'INQ-' + Math.floor(1000 + Math.random() * 8999),
+      customerName: newInquiryForm.customerName,
+      customerPhone: newInquiryForm.customerPhone || '+1 (555) 777-0099',
+      pickup: newInquiryForm.pickup,
+      dropoff: newInquiryForm.dropoff,
+      vehicle: newInquiryForm.vehicle,
+      fare: Number(newInquiryForm.fare || 35),
+      status: 'Pending',
+      driver: '-',
+      date: new Date().toLocaleString().slice(0, 16)
+    };
+    setInquiries([createdInquiry, ...inquiries]);
+    autoSyncCustomer(createdInquiry.customerName, createdInquiry.customerPhone, 0);
+    setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
+    setAddInquiryModal(false);
+  };
+
+  // Save Website Settings
+  const handleSaveSettings = (e) => {
+    e.preventDefault();
+    alert('Website Settings updated successfully! Changes saved to production state.');
+  };
+
+  // IF NOT AUTHENTICATED: RENDER PIN SECURITY UNLOCK SCREEN
+  if (!isAuthenticated) {
+    return (
+      <div className="admin-pin-screen">
+        <div className="pin-card card">
+          <div className="pin-header text-center">
+            <div className="lock-icon-badge">
+              <Lock size={32} />
+            </div>
+            <h2>Cabsy Admin Security</h2>
+            <p>Enter 4-Digit Security PIN to Access Dispatcher Portal</p>
+          </div>
+
+          <form onSubmit={handlePinSubmit} className="pin-form">
+            <div className="input-group">
+              <label><KeyRound size={16} className="inline-icon text-green" /> Security PIN Code</label>
+              <input 
+                type="password"
+                maxLength={4}
+                placeholder="• • • •"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                autoFocus
+                className={pinError ? 'input-error' : ''}
+              />
+              {pinError && <small className="text-red mt-1 display-block">Invalid PIN Code! Try default PIN: <strong>1234</strong></small>}
+            </div>
+
+            <div className="pin-keypad flex gap-2 justify-center mt-3">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map(num => (
+                <button 
+                  key={num} 
+                  type="button" 
+                  className="keypad-btn"
+                  onClick={() => pinInput.length < 4 && setPinInput(pinInput + num)}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-block mt-4">
+              Unlock Dispatcher Portal
+            </button>
+          </form>
+
+          <div className="pin-footer text-center mt-3">
+            <small className="text-muted">Default Demo PIN: <strong>1234</strong></small><br />
+            <a href="/" className="btn-exit-portal mt-2">← Back to Public Website</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // AUTHENTICATED: RENDER MAIN ADMIN DASHBOARD
+  return (
+    <div className="admin-portal-wrapper">
+      {/* LEFT SIDEBAR NAVIGATION */}
+      <aside className="admin-sidebar">
+        <div className="admin-brand flex align-center gap-2">
+          <div className="brand-badge">
+            <span>C</span>
+          </div>
+          <div>
+            <h3>Cabsy Admin</h3>
+            <small className="text-green flex align-center gap-1">
+              <span className="dot"></span> Authorized Portal
+            </small>
+          </div>
+        </div>
+
+        <nav className="admin-nav-menu">
+          <button 
+            className={`admin-nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <LayoutDashboard size={19} />
+            <span>Dashboard</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'inquiries' ? 'active' : ''}`}
+            onClick={() => setActiveTab('inquiries')}
+          >
+            <Inbox size={19} />
+            <span>All Inquiries</span>
+            {inquiries.filter(i => i.status === 'Pending').length > 0 && (
+              <span className="badge-pending">{inquiries.filter(i => i.status === 'Pending').length}</span>
+            )}
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'vehicles' ? 'active' : ''}`}
+            onClick={() => setActiveTab('vehicles')}
+          >
+            <Car size={19} />
+            <span>Fleet Vehicles</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'destinations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('destinations')}
+          >
+            <MapPin size={19} />
+            <span>Destinations & KM</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'drivers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('drivers')}
+          >
+            <UserCheck size={19} />
+            <span>Drivers</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'customers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('customers')}
+          >
+            <Users size={19} />
+            <span>Customers</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <BarChart3 size={19} />
+            <span>Trips & Reports</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <Settings size={19} />
+            <span>Website Settings</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-footer-card">
+          <button onClick={handleLogout} className="btn-logout-portal flex align-center gap-2">
+            <Lock size={15} /> Lock Admin Portal
+          </button>
+          <a href="/" className="btn-exit-portal">
+            <LogOut size={15} /> Exit to Site
+          </a>
+        </div>
+      </aside>
+
+      {/* RIGHT MAIN DATA CONTENT */}
+      <main className="admin-main-content">
+        {/* HEADER BAR */}
+        <header className="admin-topbar">
+          <div className="topbar-search flex align-center gap-2">
+            <Search size={18} className="muted-icon" />
+            <input type="text" placeholder="Search inquiries, drivers, customers..." />
+            <span className="search-shortcut">⌘K</span>
+          </div>
+
+          <div className="topbar-actions flex align-center gap-3">
+            <div className="notif-wrapper" style={{ position: 'relative' }}>
+              <div className="topbar-notif-btn" onClick={() => setShowNotifDropdown(!showNotifDropdown)} title="Notifications & Alerts">
+                <Bell size={19} />
+                {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+              </div>
+
+              {showNotifDropdown && (
+                <div className="notif-dropdown-card">
+                  <div className="notif-header flex justify-between align-center">
+                    <h4 className="m-0">Notifications & Alerts</h4>
+                    {unreadCount > 0 && (
+                      <button className="btn-text-sm text-green" onClick={handleMarkAllRead}>
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notif-list">
+                    {notifications.length === 0 ? (
+                      <div className="notif-empty">No active notifications</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
+                          <div className="notif-item-header flex justify-between align-center">
+                            <strong className="notif-title">{n.title}</strong>
+                            <span className="notif-time">{n.time}</span>
+                          </div>
+                          <p className="notif-desc">{n.desc}</p>
+                          <div className="notif-actions flex justify-between align-center mt-1">
+                            {n.type === 'inquiry' && (
+                              <button className="btn-notif-act" onClick={() => { setActiveTab('inquiries'); setShowNotifDropdown(false); }}>
+                                View Inquiry →
+                              </button>
+                            )}
+                            <button className="btn-notif-dismiss" onClick={() => handleClearNotif(n.id)}>Dismiss</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <span className="pill-badge flex align-center gap-2">
+              <Clock size={14} /> Live: {new Date().toLocaleTimeString()}
+            </span>
+
+            <div className="admin-profile flex align-center gap-2">
+              <div className="avatar">A</div>
+              <div className="admin-profile-info">
+                <span className="profile-name">Super Admin</span>
+                <span className="profile-role">Dispatcher</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* TAB 1: DASHBOARD */}
+        {activeTab === 'dashboard' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Dispatcher Command Center</h2>
+                <p>Real-time fleet operations, ride bookings, revenue analytics, and system performance.</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="btn btn-primary btn-sm flex align-center gap-1" onClick={() => setAddInquiryModal(true)}>
+                  <Plus size={16} /> New Inquiry
+                </button>
+                <button className="btn btn-outline btn-sm flex align-center gap-1" onClick={() => setAddDriverModal(true)}>
+                  <UserPlus size={16} /> Add Driver
+                </button>
+              </div>
+            </div>
+
+            {/* METRICS CARDS GRID */}
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <div className="metric-icon-bg green-bg">
+                  <DollarSign size={24} />
+                </div>
+                <div>
+                  <small>Total Confirmed Revenue</small>
+                  <h3>${totalRevenue.toFixed(2)}</h3>
+                  <span className="text-green flex align-center gap-1 text-xs">
+                    <TrendingUp size={13} /> +18.4% this week
+                  </span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-icon-bg blue-bg">
+                  <Car size={24} />
+                </div>
+                <div>
+                  <small>Active Drivers On Duty</small>
+                  <h3>{activeDriversCount} / {drivers.length}</h3>
+                  <span className="text-muted text-xs">Full fleet available</span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-icon-bg yellow-bg">
+                  <Inbox size={24} />
+                </div>
+                <div>
+                  <small>Ride Inquiries</small>
+                  <h3>{inquiries.length}</h3>
+                  <span className="text-yellow text-xs font-bold">
+                    {inquiries.filter(i => i.status === 'Pending').length} Pending Dispatch
+                  </span>
+                </div>
+              </div>
+
+              <div className="metric-card">
+                <div className="metric-icon-bg purple-bg">
+                  <Users size={24} />
+                </div>
+                <div>
+                  <small>Registered Customers</small>
+                  <h3>{customers.length}</h3>
+                  <span className="text-purple text-xs">Auto-synced</span>
+                </div>
+              </div>
+            </div>
+
+            {/* TWO COLUMN SUMMARY */}
+            <div className="dashboard-columns-grid">
+              {/* RECENT INQUIRIES */}
+              <div className="card admin-table-card">
+                <div className="card-header-flex">
+                  <h3>Recent Ride Inquiries</h3>
+                  <button className="btn-link-sm" onClick={() => setActiveTab('inquiries')}>View All ({inquiries.length}) &gt;</button>
+                </div>
+                <div className="table-responsive">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Pickup → Dropoff</th>
+                        <th>Fare</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inquiries.slice(0, 5).map(inq => (
+                        <tr key={inq.id}>
+                          <td><strong>{inq.id}</strong></td>
+                          <td>{inq.customerName}<br /><small className="text-muted">{inq.customerPhone}</small></td>
+                          <td className="route-cell">
+                            <span className="text-green">●</span> {inq.pickup}<br />
+                            <span className="text-red">●</span> {inq.dropoff}
+                          </td>
+                          <td><strong>${Number(inq.fare).toFixed(2)}</strong></td>
+                          <td>
+                            <span className={`status-tag status-${inq.status.toLowerCase()}`}>
+                              {inq.status}
+                            </span>
+                          </td>
+                          <td>
+                            {inq.status === 'Pending' ? (
+                              <button 
+                                className="btn btn-sm btn-primary-green"
+                                onClick={() => setAssignModal({ open: true, inquiry: inq })}
+                              >
+                                Confirm
+                              </button>
+                            ) : (
+                              <span className="text-muted text-xs">{inq.driver || 'Done'}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* FLEET DRIVER STATUS */}
+              <div className="card admin-table-card">
+                <div className="card-header-flex">
+                  <h3>Active Fleet Roster</h3>
+                  <button className="btn-link-sm" onClick={() => setActiveTab('drivers')}>Manage Drivers &gt;</button>
+                </div>
+                <div className="driver-mini-list">
+                  {drivers.map(drv => (
+                    <div key={drv.id} className="driver-mini-item flex justify-between align-center">
+                      <div className="flex align-center gap-2">
+                        <div className="driver-avatar">{drv.name.charAt(0)}</div>
+                        <div>
+                          <strong>{drv.name}</strong>
+                          <small className="display-block text-muted">{drv.vehicle} • {drv.plate}</small>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                          {drv.status}
+                        </span>
+                        <small className="display-block text-muted mt-1">{drv.trips} Trips (${drv.earnings.toFixed(0)})</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: ALL INQUIRIES */}
+        {activeTab === 'inquiries' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Ride Inquiries & Booking Studio</h2>
+                <p>Review incoming customer ride requests, assign drivers, confirm bookings, and manage fare revenue.</p>
+              </div>
+              <button className="btn btn-primary btn-lg-action flex align-center gap-2" onClick={() => setAddInquiryModal(true)}>
+                <Plus size={18} /> Add Manual Booking
+              </button>
+            </div>
+
+            <div className="card admin-table-card">
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Inquiry ID</th>
+                      <th>Customer Details</th>
+                      <th>Pick-up Location</th>
+                      <th>Destination</th>
+                      <th>Vehicle Class</th>
+                      <th>Estimated Fare</th>
+                      <th>Assigned Driver</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inquiries.map(inq => (
+                      <tr key={inq.id}>
+                        <td><strong>{inq.id}</strong><br /><small className="text-muted">{inq.date}</small></td>
+                        <td>
+                          <strong>{inq.customerName}</strong>
+                          <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone}</div>
+                        </td>
+                        <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
+                        <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
+                        <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
+                        <td><strong className="text-green">${Number(inq.fare).toFixed(2)}</strong></td>
+                        <td>
+                          {inq.driver && inq.driver !== '-' ? (
+                            <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
+                          ) : (
+                            <span className="text-muted italic">Unassigned</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`status-tag status-${inq.status.toLowerCase()}`}>
+                            {inq.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex gap-1">
+                            {inq.status === 'Pending' && (
+                              <button 
+                                className="btn-icon btn-icon-success"
+                                title="Confirm & Assign Driver"
+                                onClick={() => setAssignModal({ open: true, inquiry: inq })}
+                              >
+                                <CheckCircle2 size={16} />
+                              </button>
+                            )}
+                            {inq.status !== 'Cancelled' && (
+                              <button 
+                                className="btn-icon btn-icon-danger"
+                                title="Cancel Booking"
+                                onClick={() => handleCancelInquiry(inq.id)}
+                              >
+                                <XCircle size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: FLEET VEHICLES & RATE MANAGEMENT */}
+        {activeTab === 'vehicles' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Fleet Vehicles & Rate Management</h2>
+                <p>Manage vehicle roster, set base rate fares per kilometer, edit passenger capacities, and set showcase photos.</p>
+              </div>
+              <button className="btn btn-primary btn-lg-action flex align-center gap-2" onClick={() => setAddVehicleModal(true)}>
+                <Plus size={18} /> Add New Car
+              </button>
+            </div>
+
+            <div className="vehicles-cards-grid">
+              {vehicles.map(car => (
+                <div key={car.id} className="vehicle-card-full card">
+                  <div className="vehicle-card-image-wrap">
+                    <img src={car.image} alt={car.name} className="vehicle-card-img" />
+                    <span className={`status-badge status-${car.status.toLowerCase()}`}>{car.status}</span>
+                  </div>
+
+                  <div className="vehicle-card-body mt-3">
+                    <div className="flex justify-between align-center">
+                      <h3 className="vehicle-title m-0">{car.name}</h3>
+                      <span className="vehicle-rate-tag">${car.rate} / km</span>
+                    </div>
+
+                    <span className="vehicle-capacity-badge mt-2">{car.passengers}</span>
+                    <p className="vehicle-desc-text mt-2">{car.description}</p>
+
+                    <div className="driver-card-actions mt-3">
+                      <button 
+                        className="btn btn-outline flex-1 flex align-center justify-center gap-1"
+                        onClick={() => setEditVehicleModal({ open: true, vehicle: { ...car } })}
+                      >
+                        <Edit size={15} /> Edit Details & Price
+                      </button>
+                      <button 
+                        className="btn-danger-icon" 
+                        title="Remove Car from Fleet"
+                        onClick={() => handleDeleteVehicle(car.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: DESTINATIONS & KM MANAGEMENT */}
+        {activeTab === 'destinations' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center mb-4">
+              <div>
+                <h2>Locations & Route Distance (KM) Management</h2>
+                <p>Add city places/locations and configure exact distance in KM between any origin and destination pair.</p>
+              </div>
+              <button className="btn btn-primary btn-lg-action flex align-center gap-2" onClick={() => setAddDestModal(true)}>
+                <Plus size={18} /> Set Route KM Distance
+              </button>
+            </div>
+
+            {/* SECTION 1: PLACES ROSTER CARD */}
+            <div className="places-manager-card">
+              <div className="flex align-center gap-2 mb-1">
+                <MapPin className="text-green" size={22} />
+                <h3 className="m-0 text-xl font-bold">1. Available Location Places ({places.length})</h3>
+              </div>
+              <p className="text-muted text-sm mb-4">
+                These location places will appear directly in the customer pickup and drop-off dropdown lists.
+              </p>
+
+              {/* Input Form Bar */}
+              <form onSubmit={handleAddPlace} className="places-add-bar">
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Type new place name (e.g. Airport Terminal 3, Ubud Market...)"
+                  value={newPlaceInput}
+                  onChange={e => setNewPlaceInput(e.target.value)}
+                  required
+                />
+                <button type="submit" className="places-add-btn">
+                  <Plus size={18} /> Add Place
+                </button>
+              </form>
+
+              {/* Places Badges Grid */}
+              <div className="places-tags-grid">
+                {places.map((place, idx) => (
+                  <div key={idx} className="place-chip-tag">
+                    <MapPin size={14} className="pin-icon" />
+                    <span>{place}</span>
+                    <button 
+                      type="button" 
+                      className="place-chip-del"
+                      title={`Delete ${place}`}
+                      onClick={() => handleDeletePlace(place)}
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION 2: CONFIGURED DISTANCE MATRIX */}
+            <div className="card admin-table-card">
+              <div className="p-4 border-b flex justify-between align-center">
+                <div>
+                  <h3 className="m-0 text-lg font-bold">2. Configured Distance Matrix (KM Between Places)</h3>
+                  <p className="text-muted text-xs m-0 mt-1">Exact route distance definitions used to calculate dynamic customer fares.</p>
+                </div>
+                <span className="pill-badge-sm font-bold">{destinations.length} Active Routes</span>
+              </div>
+              
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Route ID</th>
+                      <th>Pick-up Location (From)</th>
+                      <th>Drop-off Destination (To)</th>
+                      <th>Distance (KM)</th>
+                      <th>Est. Reguler Fare</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {destinations.map(dest => (
+                      <tr key={dest.id}>
+                        <td><strong>{dest.id}</strong></td>
+                        <td>
+                          <div className="route-place-cell">
+                            <span className="dot-indicator green"></span>
+                            <span className="place-name-text">{dest.pickup}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="route-place-cell">
+                            <span className="dot-indicator red"></span>
+                            <span className="place-name-text">{dest.dropoff}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="pill-badge-sm font-bold">{dest.distanceKm} KM</span>
+                        </td>
+                        <td>
+                          <strong className="text-green text-base">₹{(dest.distanceKm * 15).toFixed(2)}</strong>
+                          <small className="text-muted block text-xs">(₹15.00 / km)</small>
+                        </td>
+                        <td>
+                          <div className="flex gap-2 align-center">
+                            <button 
+                              className="btn btn-outline btn-sm flex align-center gap-1"
+                              onClick={() => setEditDestModal({ open: true, destination: { ...dest } })}
+                            >
+                              <Edit size={14} /> Edit KM
+                            </button>
+                            <button 
+                              className="btn-icon btn-icon-danger"
+                              title="Delete Route"
+                              onClick={() => handleDeleteDest(dest.id)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: DRIVERS */}
+        {activeTab === 'drivers' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Fleet Drivers Management</h2>
+                <p>Register new drivers, monitor active status, track individual earnings, and view driver trip reports.</p>
+              </div>
+              <button className="btn btn-primary btn-sm flex align-center gap-1" onClick={() => setAddDriverModal(true)}>
+                <UserPlus size={16} /> Register New Driver
+              </button>
+            </div>
+
+            <div className="drivers-cards-grid">
+              {drivers.map(drv => (
+                <div key={drv.id} className="card driver-card-full">
+                  <div className="driver-card-header flex justify-between align-center">
+                    <div className="flex align-center gap-2">
+                      <div className="driver-avatar-lg">{drv.name.charAt(0)}</div>
+                      <div>
+                        <h3>{drv.name}</h3>
+                        <small className="text-muted">ID: {drv.id}</small>
+                      </div>
+                    </div>
+                    <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {drv.status}
+                    </span>
+                  </div>
+
+                  <div className="driver-details-list">
+                    <div className="detail-row">
+                      <span className="text-muted">Phone:</span>
+                      <strong>{drv.phone}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span className="text-muted">Assigned Car:</span>
+                      <strong>{drv.vehicle}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span className="text-muted">License Plate:</span>
+                      <strong className="plate-badge">{drv.plate}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span className="text-muted">Rating:</span>
+                      <strong className="text-yellow">★ {drv.rating}</strong>
+                    </div>
+                  </div>
+
+                  <div className="driver-stats-footer flex justify-between align-center">
+                    <div className="stat-col">
+                      <span className="stat-label">Completed Trips</span>
+                      <span className="stat-value">{drv.trips} Rides</span>
+                    </div>
+                    <div className="stat-col text-right">
+                      <span className="stat-label">Total Earnings</span>
+                      <span className="stat-value text-green">${drv.earnings.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="driver-card-actions flex gap-2 align-center">
+                    <button 
+                      className="btn btn-outline btn-sm flex-1 flex align-center justify-center gap-1"
+                      onClick={() => setDriverReportModal({ open: true, driver: drv })}
+                    >
+                      <Eye size={14} /> Performance Report
+                    </button>
+                    <button 
+                      className="btn btn-danger-icon btn-sm flex align-center justify-center"
+                      title="Delete Driver"
+                      onClick={() => handleDeleteDriver(drv.id)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: CUSTOMERS */}
+        {activeTab === 'customers' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Customer Directory</h2>
+                <p>Automatic customer profile creation from ride inquiries with complete trip history and billing logs.</p>
+              </div>
+              <button className="btn btn-primary btn-sm flex align-center gap-1" onClick={() => setAddCustomerModal(true)}>
+                <UserPlus size={16} /> Add Customer
+              </button>
+            </div>
+
+            <div className="card admin-table-card">
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Customer ID</th>
+                      <th>Name</th>
+                      <th>Phone Number</th>
+                      <th>Email Address</th>
+                      <th>Total Rides</th>
+                      <th>Total Revenue Spent</th>
+                      <th>Member Since</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customers.map(cust => (
+                      <tr key={cust.id}>
+                        <td><strong>{cust.id}</strong></td>
+                        <td><strong>{cust.name}</strong></td>
+                        <td><Phone size={12} className="inline-icon text-muted" /> {cust.phone}</td>
+                        <td><Mail size={12} className="inline-icon text-muted" /> {cust.email}</td>
+                        <td><span className="pill-badge-sm">{cust.totalRides} Rides</span></td>
+                        <td><strong className="text-green">${Number(cust.totalSpent).toFixed(2)}</strong></td>
+                        <td><small className="text-muted">{cust.joined}</small></td>
+                        <td>
+                          <button 
+                            className="btn btn-sm btn-outline flex align-center gap-1"
+                            onClick={() => setCustomerDetailModal({ open: true, customer: cust })}
+                          >
+                            <Eye size={13} /> View Profile & Trips
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: REPORTS & TRIPS */}
+        {activeTab === 'reports' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Financial & Trip Audit Reports</h2>
+                <p>Comprehensive earnings log, driver payouts (80%), company commission (20%), and completed ride manifests.</p>
+              </div>
+              <div className="pill-badge flex align-center gap-1">
+                <DollarSign size={15} /> Total Revenue: <strong>${totalRevenue.toFixed(2)}</strong>
+              </div>
+            </div>
+
+            <div className="reports-summary-grid">
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Gross Fare Revenue</small>
+                <h3 className="text-green">${totalRevenue.toFixed(2)}</h3>
+                <small className="text-xs text-muted">All confirmed bookings</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Company Platform Fee (20%)</small>
+                <h3 className="text-purple">${(totalRevenue * 0.20).toFixed(2)}</h3>
+                <small className="text-xs text-muted">Net platform profit</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Driver Payouts (80%)</small>
+                <h3>${(totalRevenue * 0.80).toFixed(2)}</h3>
+                <small className="text-xs text-muted">Distributed to drivers</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Completed Trips Count</small>
+                <h3 className="text-yellow">{confirmedInquiries.length}</h3>
+                <small className="text-xs text-muted">Success rate 100%</small>
+              </div>
+            </div>
+
+            <div className="card admin-table-card mt-3">
+              <div className="card-header-flex">
+                <h3>Confirmed Trip Manifest</h3>
+              </div>
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Booking ID</th>
+                      <th>Date / Time</th>
+                      <th>Customer</th>
+                      <th>Assigned Driver</th>
+                      <th>Vehicle Class</th>
+                      <th>Gross Fare</th>
+                      <th>Driver Payout (80%)</th>
+                      <th>Company Net (20%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {confirmedInquiries.map(item => (
+                      <tr key={item.id}>
+                        <td><strong>{item.id}</strong></td>
+                        <td><small className="text-muted">{item.date}</small></td>
+                        <td><strong>{item.customerName}</strong></td>
+                        <td><span className="text-green font-bold">{item.driver}</span></td>
+                        <td><span className="pill-badge-sm">{item.vehicle}</span></td>
+                        <td><strong>${Number(item.fare).toFixed(2)}</strong></td>
+                        <td>${(Number(item.fare) * 0.80).toFixed(2)}</td>
+                        <td><strong className="text-purple">${(Number(item.fare) * 0.20).toFixed(2)}</strong></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: WEBSITE SETTINGS (CMS) */}
+        {activeTab === 'settings' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Website Content & CMS Settings</h2>
+                <p>Dynamically modify website text copy, company contact details, and base vehicle fare rates in real-time.</p>
+              </div>
+              <button className="btn btn-primary btn-sm flex align-center gap-1" onClick={handleSaveSettings}>
+                <Save size={16} /> Save Changes
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="card settings-form-card">
+              <h3>Live Website Content Configuration</h3>
+
+              <div className="form-grid-2">
+                <div className="input-group span-full">
+                  <label>Home Hero Heading Banner Copy</label>
+                  <input 
+                    type="text" 
+                    value={settings.heroHeading} 
+                    onChange={(e) => setSettings({ ...settings, heroHeading: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Official Contact Phone</label>
+                  <input 
+                    type="text" 
+                    value={settings.contactPhone} 
+                    onChange={(e) => setSettings({ ...settings, contactPhone: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Official Contact Email</label>
+                  <input 
+                    type="text" 
+                    value={settings.contactEmail} 
+                    onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group span-full">
+                  <label>Company Office Address</label>
+                  <input 
+                    type="text" 
+                    value={settings.officeAddress} 
+                    onChange={(e) => setSettings({ ...settings, officeAddress: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <h3 className="mt-4">Vehicle Rate Settings ($ / km)</h3>
+              <div className="form-grid-3">
+                <div className="input-group">
+                  <label>Cabsy Reguler Base Rate</label>
+                  <input 
+                    type="text" 
+                    value={settings.baseFareReguler} 
+                    onChange={(e) => setSettings({ ...settings, baseFareReguler: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Cabsy XL Base Rate</label>
+                  <input 
+                    type="text" 
+                    value={settings.baseFareXL} 
+                    onChange={(e) => setSettings({ ...settings, baseFareXL: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Cabsy Luxury Base Rate</label>
+                  <input 
+                    type="text" 
+                    value={settings.baseFareLuxury} 
+                    onChange={(e) => setSettings({ ...settings, baseFareLuxury: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-actions mt-4">
+                <button type="submit" className="btn btn-primary">
+                  <Save size={16} /> Save All Website Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </main>
+
+      {/* MODAL 1: CONFIRM INQUIRY & ASSIGN DRIVER */}
+      {assignModal.open && (
+        <div className="admin-modal-overlay" onClick={() => setAssignModal({ open: false, inquiry: null })}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <h3>Confirm Booking & Assign Driver</h3>
+            <p>Select an available driver for <strong>{assignModal.inquiry.customerName}</strong>'s trip.</p>
+
+            <div className="modal-info-summary">
+              <div><strong>Route:</strong> {assignModal.inquiry.pickup} → {assignModal.inquiry.dropoff}</div>
+              <div><strong>Vehicle:</strong> {assignModal.inquiry.vehicle}</div>
+              <div><strong>Fare:</strong> <span className="text-green font-bold">${Number(assignModal.inquiry.fare).toFixed(2)}</span></div>
+            </div>
+
+            <div className="input-group mt-3">
+              <label>Select Driver from Fleet Roster</label>
+              <select value={selectedDriverId} onChange={e => setSelectedDriverId(e.target.value)}>
+                <option value="">-- Choose Driver --</option>
+                {drivers.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.vehicle} - {d.plate}) - [{d.status}]
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions-flex mt-4">
+              <button className="btn btn-outline" onClick={() => setAssignModal({ open: false, inquiry: null })}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleConfirmInquiry}>Confirm & Dispatch Money to Report</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: ADD NEW DRIVER */}
+      {addDriverModal && (
+        <div className="admin-modal-overlay" onClick={() => setAddDriverModal(false)}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <h3>Register New Driver</h3>
+            <form onSubmit={handleAddDriverSubmit}>
+              <div className="input-group">
+                <label>Full Driver Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. John Doe"
+                  value={newDriverForm.name} 
+                  onChange={e => setNewDriverForm({ ...newDriverForm, name: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Phone Number</label>
+                <input 
+                  type="text" 
+                  placeholder="+1 (555) 000-0000"
+                  value={newDriverForm.phone} 
+                  onChange={e => setNewDriverForm({ ...newDriverForm, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Assigned Vehicle Class</label>
+                <select value={newDriverForm.vehicle} onChange={e => setNewDriverForm({ ...newDriverForm, vehicle: e.target.value })}>
+                  <option value="Cabsy Reguler (Sedan)">Cabsy Reguler (Sedan)</option>
+                  <option value="Cabsy XL (SUV)">Cabsy XL (SUV)</option>
+                  <option value="Cabsy Luxury (BMW M4)">Cabsy Luxury (BMW M4)</option>
+                  <option value="Cabsy Electric (EV)">Cabsy Electric (EV)</option>
+                </select>
+              </div>
+
+              <div className="input-group">
+                <label>License Plate Number</label>
+                <input 
+                  type="text" 
+                  placeholder="CAB-1234"
+                  value={newDriverForm.plate} 
+                  onChange={e => setNewDriverForm({ ...newDriverForm, plate: e.target.value })}
+                />
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setAddDriverModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Add Driver to Fleet</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: ADD CUSTOMER */}
+      {addCustomerModal && (
+        <div className="admin-modal-overlay" onClick={() => setAddCustomerModal(false)}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <h3>Register New Customer</h3>
+            <form onSubmit={handleAddCustomerSubmit}>
+              <div className="input-group">
+                <label>Customer Name</label>
+                <input 
+                  type="text" 
+                  placeholder="Full name"
+                  value={newCustomerForm.name} 
+                  onChange={e => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Phone Number</label>
+                <input 
+                  type="text" 
+                  placeholder="+1 (555) 000-0000"
+                  value={newCustomerForm.phone} 
+                  onChange={e => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Email Address</label>
+                <input 
+                  type="email" 
+                  placeholder="email@domain.com"
+                  value={newCustomerForm.email} 
+                  onChange={e => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                />
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setAddCustomerModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Customer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: ADD INQUIRY */}
+      {addInquiryModal && (
+        <div className="admin-modal-overlay" onClick={() => setAddInquiryModal(false)}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <h3>Create Manual Ride Inquiry</h3>
+            <form onSubmit={handleAddInquirySubmit}>
+              <div className="input-group">
+                <label>Customer Name</label>
+                <input 
+                  type="text" 
+                  placeholder="Customer Name"
+                  value={newInquiryForm.customerName} 
+                  onChange={e => setNewInquiryForm({ ...newInquiryForm, customerName: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Customer Phone</label>
+                <input 
+                  type="text" 
+                  placeholder="Phone number"
+                  value={newInquiryForm.customerPhone} 
+                  onChange={e => setNewInquiryForm({ ...newInquiryForm, customerPhone: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Pick-up Location</label>
+                <input 
+                  type="text" 
+                  placeholder="Pick-up address"
+                  value={newInquiryForm.pickup} 
+                  onChange={e => setNewInquiryForm({ ...newInquiryForm, pickup: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Drop-off Destination</label>
+                <input 
+                  type="text" 
+                  placeholder="Drop-off address"
+                  value={newInquiryForm.dropoff} 
+                  onChange={e => setNewInquiryForm({ ...newInquiryForm, dropoff: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="form-grid-2">
+                <div className="input-group">
+                  <label>Vehicle Class</label>
+                  <select value={newInquiryForm.vehicle} onChange={e => setNewInquiryForm({ ...newInquiryForm, vehicle: e.target.value })}>
+                    <option value="Cabsy Reguler">Cabsy Reguler</option>
+                    <option value="Cabsy XL">Cabsy XL</option>
+                    <option value="Cabsy Luxury">Cabsy Luxury</option>
+                    <option value="Cabsy Electric">Cabsy Electric</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label>Fare ($)</label>
+                  <input 
+                    type="number" 
+                    value={newInquiryForm.fare} 
+                    onChange={e => setNewInquiryForm({ ...newInquiryForm, fare: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setAddInquiryModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create Booking Inquiry</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: CUSTOMER DETAIL VIEW */}
+      {customerDetailModal.open && customerDetailModal.customer && (
+        <div className="admin-modal-overlay" onClick={() => setCustomerDetailModal({ open: false, customer: null })}>
+          <div className="admin-modal-box card large-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Customer Profile & Trip History</h3>
+              <button className="btn-modal-close" onClick={() => setCustomerDetailModal({ open: false, customer: null })}>
+                <XCircle size={22} />
+              </button>
+            </div>
+
+            <div className="customer-profile-card mt-3 flex justify-between align-center">
+              <div>
+                <h2 className="m-0">{customerDetailModal.customer.name}</h2>
+                <div className="customer-meta-row mt-2">
+                  <span className="customer-meta-item"><Phone size={13} /> {customerDetailModal.customer.phone}</span>
+                  <span className="customer-meta-item"><Mail size={13} /> {customerDetailModal.customer.email}</span>
+                  <span className="customer-meta-item">Member Since: {customerDetailModal.customer.joined}</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="stat-label">Total Spent Revenue</span>
+                <h2 className="text-green m-0">${Number(customerDetailModal.customer.totalSpent).toFixed(2)}</h2>
+              </div>
+            </div>
+
+            <h4 className="mt-4">Trip History Logs</h4>
+            <div className="table-responsive mt-2">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Inquiry ID</th>
+                    <th>Date</th>
+                    <th>Route</th>
+                    <th>Vehicle</th>
+                    <th>Fare</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inquiries.filter(i => i.customerName.toLowerCase() === customerDetailModal.customer.name.toLowerCase()).map(tr => (
+                    <tr key={tr.id}>
+                      <td><strong>{tr.id}</strong></td>
+                      <td><small>{tr.date}</small></td>
+                      <td>{tr.pickup} → {tr.dropoff}</td>
+                      <td><span className="pill-badge-sm">{tr.vehicle}</span></td>
+                      <td><strong className="text-green">${Number(tr.fare).toFixed(2)}</strong></td>
+                      <td><span className={`status-tag status-${tr.status.toLowerCase()}`}>{tr.status}</span></td>
+                    </tr>
+                  ))}
+                  {inquiries.filter(i => i.customerName.toLowerCase() === customerDetailModal.customer.name.toLowerCase()).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-muted">No past trips recorded for this customer yet.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: DRIVER PERFORMANCE REPORT */}
+      {driverReportModal.open && driverReportModal.driver && (
+        <div className="admin-modal-overlay" onClick={() => setDriverReportModal({ open: false, driver: null })}>
+          <div className="admin-modal-box card large-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Driver Audit & Performance Report</h3>
+              <button className="btn-modal-close" onClick={() => setDriverReportModal({ open: false, driver: null })}>
+                <XCircle size={22} />
+              </button>
+            </div>
+
+            <div className="driver-profile-header mt-3 flex justify-between align-center">
+              <div>
+                <h2 className="m-0">{driverReportModal.driver.name}</h2>
+                <p className="text-muted mt-1 m-0">{driverReportModal.driver.vehicle} • Plate: <strong className="plate-badge">{driverReportModal.driver.plate}</strong></p>
+              </div>
+              <div className="text-right">
+                <span className="stat-label">Driver Total Earnings</span>
+                <h2 className="text-green m-0">${driverReportModal.driver.earnings.toFixed(2)}</h2>
+              </div>
+            </div>
+
+            <h4 className="mt-4">Assigned Trips & Completed Duties</h4>
+            <div className="table-responsive mt-2">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Trip ID</th>
+                    <th>Customer</th>
+                    <th>Pickup → Dropoff</th>
+                    <th>Trip Fare</th>
+                    <th>Driver Share (80%)</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inquiries.filter(i => i.driver === driverReportModal.driver.name).map(tr => (
+                    <tr key={tr.id}>
+                      <td><strong>{tr.id}</strong></td>
+                      <td>{tr.customerName}</td>
+                      <td>{tr.pickup} → {tr.dropoff}</td>
+                      <td>${Number(tr.fare).toFixed(2)}</td>
+                      <td><strong className="text-green">${(Number(tr.fare) * 0.80).toFixed(2)}</strong></td>
+                      <td><small className="text-muted">{tr.date}</small></td>
+                    </tr>
+                  ))}
+                  {inquiries.filter(i => i.driver === driverReportModal.driver.name).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-muted">No completed trips assigned to this driver yet.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: ADD NEW VEHICLE / CAR */}
+      {addVehicleModal && (
+        <div className="admin-modal-overlay" onClick={() => setAddVehicleModal(false)}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Register New Fleet Vehicle</h3>
+              <button className="btn-modal-close" onClick={() => setAddVehicleModal(false)}><XCircle size={22} /></button>
+            </div>
+            <form onSubmit={handleAddVehicleSubmit}>
+              <div className="input-group">
+                <label>Car Model Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Cabsy Electric (Tesla Model 3)"
+                  value={newVehicleForm.name} 
+                  onChange={e => setNewVehicleForm({ ...newVehicleForm, name: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Passenger Capacity</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 1 - 4 Passenger"
+                    value={newVehicleForm.passengers} 
+                    onChange={e => setNewVehicleForm({ ...newVehicleForm, passengers: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Base Fare Rate ($ / km)</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 2.80"
+                    value={newVehicleForm.rate} 
+                    onChange={e => setNewVehicleForm({ ...newVehicleForm, rate: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Vehicle Photo URL</label>
+                <input 
+                  type="url" 
+                  placeholder="https://images.unsplash.com/..."
+                  value={newVehicleForm.image} 
+                  onChange={e => setNewVehicleForm({ ...newVehicleForm, image: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Fleet Description</label>
+                <input 
+                  type="text" 
+                  placeholder="Short description of comfort and vehicle class..."
+                  value={newVehicleForm.description} 
+                  onChange={e => setNewVehicleForm({ ...newVehicleForm, description: e.target.value })}
+                />
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setAddVehicleModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Add Vehicle to Fleet</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 8: EDIT VEHICLE DETAILS & PRICE */}
+      {editVehicleModal.open && editVehicleModal.vehicle && (
+        <div className="admin-modal-overlay" onClick={() => setEditVehicleModal({ open: false, vehicle: null })}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Edit Vehicle Details & Pricing</h3>
+              <button className="btn-modal-close" onClick={() => setEditVehicleModal({ open: false, vehicle: null })}><XCircle size={22} /></button>
+            </div>
+            <form onSubmit={handleEditVehicleSubmit}>
+              <div className="input-group">
+                <label>Car Model Name</label>
+                <input 
+                  type="text" 
+                  value={editVehicleModal.vehicle.name} 
+                  onChange={e => setEditVehicleModal({ 
+                    ...editVehicleModal, 
+                    vehicle: { ...editVehicleModal.vehicle, name: e.target.value } 
+                  })}
+                  required 
+                />
+              </div>
+
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Passenger Limit</label>
+                  <input 
+                    type="text" 
+                    value={editVehicleModal.vehicle.passengers} 
+                    onChange={e => setEditVehicleModal({ 
+                      ...editVehicleModal, 
+                      vehicle: { ...editVehicleModal.vehicle, passengers: e.target.value } 
+                    })}
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Base Rate ($ / km)</label>
+                  <input 
+                    type="text" 
+                    value={editVehicleModal.vehicle.rate} 
+                    onChange={e => setEditVehicleModal({ 
+                      ...editVehicleModal, 
+                      vehicle: { ...editVehicleModal.vehicle, rate: e.target.value } 
+                    })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Vehicle Photo URL</label>
+                <input 
+                  type="text" 
+                  value={editVehicleModal.vehicle.image} 
+                  onChange={e => setEditVehicleModal({ 
+                    ...editVehicleModal, 
+                    vehicle: { ...editVehicleModal.vehicle, image: e.target.value } 
+                  })}
+                />
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Fleet Description</label>
+                <input 
+                  type="text" 
+                  value={editVehicleModal.vehicle.description} 
+                  onChange={e => setEditVehicleModal({ 
+                    ...editVehicleModal, 
+                    vehicle: { ...editVehicleModal.vehicle, description: e.target.value } 
+                  })}
+                />
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Status</label>
+                <select 
+                  value={editVehicleModal.vehicle.status} 
+                  onChange={e => setEditVehicleModal({ 
+                    ...editVehicleModal, 
+                    vehicle: { ...editVehicleModal.vehicle, status: e.target.value } 
+                  })}
+                >
+                  <option value="Active">Active in Fleet</option>
+                  <option value="Maintenance">In Maintenance</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setEditVehicleModal({ open: false, vehicle: null })}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 9: ADD NEW DESTINATION & ROUTE KM */}
+      {addDestModal && (
+        <div className="admin-modal-overlay" onClick={() => setAddDestModal(false)}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Configure Route KM Distance Between Places</h3>
+              <button className="btn-modal-close" onClick={() => setAddDestModal(false)}><XCircle size={22} /></button>
+            </div>
+            <form onSubmit={handleAddDestSubmit}>
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Pick-up Location (From)</label>
+                  <select 
+                    value={newDestForm.pickup || places[0]} 
+                    onChange={e => setNewDestForm({ ...newDestForm, pickup: e.target.value })}
+                    required
+                  >
+                    {places.map((pl, idx) => (
+                      <option key={idx} value={pl}>{pl}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label>Drop-off Destination (To)</label>
+                  <select 
+                    value={newDestForm.dropoff || places[1]} 
+                    onChange={e => setNewDestForm({ ...newDestForm, dropoff: e.target.value })}
+                    required
+                  >
+                    {places.map((pl, idx) => (
+                      <option key={idx} value={pl}>{pl}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Exact Distance in KM</label>
+                <input 
+                  type="number" 
+                  step="0.1"
+                  placeholder="e.g. 18.5"
+                  value={newDestForm.distanceKm} 
+                  onChange={e => setNewDestForm({ ...newDestForm, distanceKm: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setAddDestModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Route KM</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 10: EDIT DESTINATION & ROUTE KM */}
+      {editDestModal.open && editDestModal.destination && (
+        <div className="admin-modal-overlay" onClick={() => setEditDestModal({ open: false, destination: null })}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>Edit Route Distance (KM)</h3>
+              <button className="btn-modal-close" onClick={() => setEditDestModal({ open: false, destination: null })}><XCircle size={22} /></button>
+            </div>
+            <form onSubmit={handleEditDestSubmit}>
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Pick-up Location (From)</label>
+                  <select 
+                    value={editDestModal.destination.pickup} 
+                    onChange={e => setEditDestModal({ 
+                      ...editDestModal, 
+                      destination: { ...editDestModal.destination, pickup: e.target.value } 
+                    })}
+                    required
+                  >
+                    {places.map((pl, idx) => (
+                      <option key={idx} value={pl}>{pl}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label>Drop-off Destination (To)</label>
+                  <select 
+                    value={editDestModal.destination.dropoff} 
+                    onChange={e => setEditDestModal({ 
+                      ...editDestModal, 
+                      destination: { ...editDestModal.destination, dropoff: e.target.value } 
+                    })}
+                    required
+                  >
+                    {places.map((pl, idx) => (
+                      <option key={idx} value={pl}>{pl}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Distance in KM</label>
+                <input 
+                  type="number" 
+                  step="0.1"
+                  value={editDestModal.destination.distanceKm} 
+                  onChange={e => setEditDestModal({ 
+                    ...editDestModal, 
+                    destination: { ...editDestModal.destination, distanceKm: Number(e.target.value) } 
+                  })}
+                  required
+                />
+              </div>
+
+              <div className="modal-actions-flex mt-4">
+                <button type="button" className="btn btn-outline" onClick={() => setEditDestModal({ open: false, destination: null })}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
