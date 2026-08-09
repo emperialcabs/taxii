@@ -15,6 +15,7 @@ import HomeScreen from './mobile/HomeScreen';
 import RidesTabScreen from './mobile/RidesTabScreen';
 import WalletTabScreen from './mobile/WalletTabScreen';
 import AccountTabScreen from './mobile/AccountTabScreen';
+import AccountDetailScreen from './mobile/AccountDetailScreen';
 import SelectLocationScreen from './mobile/SelectLocationScreen';
 import SeatScheduleScreen from './mobile/SeatScheduleScreen';
 import SelectCarScreen from './mobile/SelectCarScreen';
@@ -36,6 +37,7 @@ export default function MobileAppView() {
   });
 
   // User Input & Booking States
+  const [selectedGoogleAccount, setSelectedGoogleAccount] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState(['', '', '', '']);
   const [selectedLang, setSelectedLang] = useState('English');
@@ -120,6 +122,7 @@ export default function MobileAppView() {
             setActiveTab={setActiveTab}
             onNavigateScreen={(target) => {
               if (target === 'letsyouin') setAppStage('LETS_YOU_IN');
+              if (target === 'accountdetail') setAppStage('ACCOUNT_DETAILS');
               if (target === 'lang') setAppStage('PREFERRED_LANG');
               if (target === 'notification') setAppStage('NOTIFICATION_OPT');
             }}
@@ -154,7 +157,20 @@ export default function MobileAppView() {
           phoneNumber={phoneNumber}
           setPhoneNumber={setPhoneNumber}
           onNext={() => setAppStage('OTP_VERIFY')}
+          onGoogleSignIn={(acc) => {
+            setSelectedGoogleAccount(acc);
+            setAppStage('ACCOUNT_DETAILS');
+          }}
           onBack={() => setAppStage('ONBOARDING')}
+        />
+      );
+
+    case 'ACCOUNT_DETAILS':
+      return (
+        <AccountDetailScreen 
+          googleAccount={selectedGoogleAccount}
+          onCompleteProfile={() => completeOnboarding()}
+          onBack={() => setAppStage('LETS_YOU_IN')}
         />
       );
 
