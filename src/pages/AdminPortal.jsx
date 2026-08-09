@@ -192,8 +192,28 @@ export default function AdminPortal() {
   const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
   const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
   const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
-  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
+  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '15.00', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
+
+  const handleImageFileUpload = (e, isEdit = false) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (isEdit) {
+        setEditVehicleModal(prev => ({
+          ...prev,
+          vehicle: { ...prev.vehicle, image: reader.result }
+        }));
+      } else {
+        setNewVehicleForm(prev => ({
+          ...prev,
+          image: reader.result
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Sync to localStorage
   useEffect(() => {
@@ -1789,10 +1809,10 @@ export default function AdminPortal() {
                 </div>
 
                 <div className="input-group">
-                  <label>Base Fare Rate ($ / km)</label>
+                  <label>Base Rate (₹ / km)</label>
                   <input 
                     type="text" 
-                    placeholder="e.g. 2.80"
+                    placeholder="e.g. 15.00"
                     value={newVehicleForm.rate} 
                     onChange={e => setNewVehicleForm({ ...newVehicleForm, rate: e.target.value })}
                     required
@@ -1801,13 +1821,31 @@ export default function AdminPortal() {
               </div>
 
               <div className="input-group mt-2">
-                <label>Vehicle Photo URL</label>
+                <label>Vehicle Photo</label>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', margin: '6px 0' }}>
+                  <label style={{ background: '#212B46', color: '#FFAA01', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    🖼️ Select Image from Gallery
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      style={{ display: 'none' }}
+                      onChange={e => handleImageFileUpload(e, false)}
+                    />
+                  </label>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>or enter image Web URL</span>
+                </div>
                 <input 
-                  type="url" 
-                  placeholder="https://images.unsplash.com/..."
+                  type="text" 
+                  placeholder="https://images.unsplash.com/... or upload image"
                   value={newVehicleForm.image} 
                   onChange={e => setNewVehicleForm({ ...newVehicleForm, image: e.target.value })}
                 />
+                {newVehicleForm.image && (
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={newVehicleForm.image} alt="Preview" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+                    <span style={{ fontSize: '12px', color: '#166534', fontWeight: 'bold' }}>✓ Photo Ready</span>
+                  </div>
+                )}
               </div>
 
               <div className="input-group mt-2">
@@ -1866,7 +1904,7 @@ export default function AdminPortal() {
                 </div>
 
                 <div className="input-group">
-                  <label>Base Rate ($ / km)</label>
+                  <label>Base Rate (₹ / km)</label>
                   <input 
                     type="text" 
                     value={editVehicleModal.vehicle.rate} 
@@ -1880,15 +1918,34 @@ export default function AdminPortal() {
               </div>
 
               <div className="input-group mt-2">
-                <label>Vehicle Photo URL</label>
+                <label>Vehicle Photo</label>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', margin: '6px 0' }}>
+                  <label style={{ background: '#212B46', color: '#FFAA01', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    🖼️ Select Image from Gallery
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      style={{ display: 'none' }}
+                      onChange={e => handleImageFileUpload(e, true)}
+                    />
+                  </label>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>or enter image Web URL</span>
+                </div>
                 <input 
                   type="text" 
+                  placeholder="https://images.unsplash.com/... or upload image"
                   value={editVehicleModal.vehicle.image} 
                   onChange={e => setEditVehicleModal({ 
                     ...editVehicleModal, 
                     vehicle: { ...editVehicleModal.vehicle, image: e.target.value } 
                   })}
                 />
+                {editVehicleModal.vehicle.image && (
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={editVehicleModal.vehicle.image} alt="Preview" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+                    <span style={{ fontSize: '12px', color: '#166534', fontWeight: 'bold' }}>✓ Photo Loaded</span>
+                  </div>
+                )}
               </div>
 
               <div className="input-group mt-2">
