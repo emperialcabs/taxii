@@ -10,19 +10,42 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       const googleUser = await signInWithGoogle();
       setLoading(false);
       
+      const realProfile = {
+        name: googleUser.name || 'Google User',
+        email: googleUser.email || 'user@taxigo.in',
+        phone: phoneNumber || '+91 98765 43210',
+        photoURL: googleUser.photoURL || null,
+        profession: 'Rider',
+        area: 'Bhavnagar, Gujarat'
+      };
+
+      try {
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
+        localStorage.setItem('taxigo_onboarded', 'true');
+      } catch(e) {}
+
       if (onGoogleSignIn) {
-        onGoogleSignIn({
-          name: googleUser.name || 'Rider',
-          email: googleUser.email || 'user@taxigo.in'
-        });
+        onGoogleSignIn(realProfile);
       } else {
         onNext();
       }
     } catch (err) {
       setLoading(false);
       console.warn("Google Auth handled:", err);
+      const fallbackProfile = {
+        name: 'Google User',
+        email: 'user@taxigo.in',
+        phone: phoneNumber || '+91 98765 43210',
+        photoURL: null,
+        profession: 'Rider',
+        area: 'Bhavnagar, Gujarat'
+      };
+      try {
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
+        localStorage.setItem('taxigo_onboarded', 'true');
+      } catch(e) {}
       if (onGoogleSignIn) {
-        onGoogleSignIn({ name: 'Rider', email: 'user@taxigo.in' });
+        onGoogleSignIn(fallbackProfile);
       } else {
         onNext();
       }

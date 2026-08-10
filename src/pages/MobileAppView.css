@@ -134,7 +134,7 @@ body, html {
 
 .car-detail.back { top: 15px; width: 92px; height: 15px; border-radius: 5px 8px 0 0; }
 .car-detail.center { top: 1px; left: 12px; width: 75px; height: 12px; border-radius: 10px 4px 0 0; }
-.car-detail.center1 { top: 1px; left: 25px; width: 25px; height: 12px; background: #212B46; border-radius: 5px 5px 0 0; }
+.car-detail.center1 { top: 1px; left: 25px; width: 25px; height: 12px; background: #FFFFFF; border-radius: 5px 5px 0 0; }
 .car-detail.front { top: 20px; left: 92px; width: 25px; height: 10px; border-radius: 0 8px 4px 0; }
 .car-detail.wheel {
   top: 20px; left: 12px; width: 22px; height: 22px; border-radius: 50%;

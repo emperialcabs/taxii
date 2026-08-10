@@ -5,21 +5,21 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
       return saved ? JSON.parse(saved) : {
-        name: 'Dhruvil Patel',
-        email: 'dhruvil@taxigo.in',
+        name: 'Rider',
+        email: 'user@taxigo.in',
         phone: '+91 98765 43210',
         age: 26,
-        profession: 'Software Engineer',
+        profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
         photoURL: null
       };
     } catch (e) {
       return {
-        name: 'Dhruvil Patel',
-        email: 'dhruvil@taxigo.in',
+        name: 'Rider',
+        email: 'user@taxigo.in',
         phone: '+91 98765 43210',
         age: 26,
-        profession: 'Software Engineer',
+        profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
         photoURL: null
       };
