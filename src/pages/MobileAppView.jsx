@@ -60,7 +60,7 @@ export default function MobileAppView() {
   const completeOnboarding = () => {
     try {
       localStorage.setItem('taxigo_onboarded', 'true');
-    } catch (e) {}
+    } catch (e) { }
     setAppStage('APP_HOME');
   };
 
@@ -68,7 +68,7 @@ export default function MobileAppView() {
     try {
       localStorage.removeItem('cabsy_user_profile');
       localStorage.removeItem('taxigo_onboarded');
-    } catch (e) {}
+    } catch (e) { }
     setSelectedGoogleAccount(null);
     setPhoneNumber('');
     setActiveTab('home');
@@ -85,7 +85,7 @@ export default function MobileAppView() {
         if (p.name) userProf.name = p.name;
         if (p.phone) userProf.phone = p.phone;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const selectedVehicleName = carObj?.name || 'SWIFT';
     const totalFareNum = carObj?.totalFareNum || 770;
@@ -133,7 +133,7 @@ export default function MobileAppView() {
     switch (activeTab) {
       case 'rides':
         return (
-          <RidesTabScreen 
+          <RidesTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onBookNewRide={() => {
@@ -144,14 +144,14 @@ export default function MobileAppView() {
         );
       case 'wallet':
         return (
-          <WalletTabScreen 
+          <WalletTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         );
       case 'account':
         return (
-          <AccountTabScreen 
+          <AccountTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onLogout={handleLogout}
@@ -166,7 +166,7 @@ export default function MobileAppView() {
       case 'home':
       default:
         return (
-          <HomeScreen 
+          <HomeScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onStartBooking={() => setAppStage('SELECT_LOCATION_LIST')}
@@ -188,7 +188,7 @@ export default function MobileAppView() {
 
     case 'LETS_YOU_IN':
       return (
-        <LetsYouInScreen 
+        <LetsYouInScreen
           selectedGoogleAccount={selectedGoogleAccount}
           setSelectedGoogleAccount={setSelectedGoogleAccount}
           phoneNumber={phoneNumber}
@@ -204,7 +204,7 @@ export default function MobileAppView() {
 
     case 'OTP_VERIFY':
       return (
-        <OtpVerifyScreen 
+        <OtpVerifyScreen
           phoneNumber={phoneNumber}
           otpCode={otpCode}
           setOtpCode={setOtpCode}
@@ -215,15 +215,15 @@ export default function MobileAppView() {
 
     case 'NOTIFICATION_OPT':
       return (
-        <NotificationOptScreen 
-          onNext={() => setAppStage('PREFERRED_LANG')} 
-          onBack={() => setAppStage('OTP_VERIFY')} 
+        <NotificationOptScreen
+          onNext={() => setAppStage('PREFERRED_LANG')}
+          onBack={() => setAppStage('OTP_VERIFY')}
         />
       );
 
     case 'PREFERRED_LANG':
       return (
-        <PreferredLangScreen 
+        <PreferredLangScreen
           selectedLang={selectedLang}
           setSelectedLang={setSelectedLang}
           onNext={() => setAppStage('LOCATION_PERM')}
@@ -233,15 +233,15 @@ export default function MobileAppView() {
 
     case 'LOCATION_PERM':
       return (
-        <LocationPermScreen 
-          onNext={() => setAppStage('ACCOUNT_CREATED')} 
-          onBack={() => setAppStage('PREFERRED_LANG')} 
+        <LocationPermScreen
+          onNext={() => setAppStage('ACCOUNT_CREATED')}
+          onBack={() => setAppStage('PREFERRED_LANG')}
         />
       );
 
     case 'ACCOUNT_CREATED':
       return (
-        <AccountCreatedScreen 
+        <AccountCreatedScreen
           onNext={() => completeOnboarding()}
           onBack={() => setAppStage('LOCATION_PERM')}
         />
@@ -255,7 +255,7 @@ export default function MobileAppView() {
 
     case 'SELECT_LOCATION_LIST':
       return (
-        <SelectLocationScreen 
+        <SelectLocationScreen
           pickupLoc={pickupLoc}
           setPickupLoc={setPickupLoc}
           dropoffLoc={dropoffLoc}
@@ -267,7 +267,7 @@ export default function MobileAppView() {
 
     case 'GOING_SEAT_SCHEDULE':
       return (
-        <SeatScheduleScreen 
+        <SeatScheduleScreen
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
@@ -288,7 +288,7 @@ export default function MobileAppView() {
 
     case 'SELECT_CAR':
       return (
-        <SelectCarScreen 
+        <SelectCarScreen
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
@@ -302,7 +302,7 @@ export default function MobileAppView() {
 
     case 'INQUIRY_SUBMITTED':
       return (
-        <InquirySubmittedScreen 
+        <InquirySubmittedScreen
           inquiry={lastCreatedInquiry}
           onGoHome={() => setAppStage('APP_HOME')}
           onViewRides={() => {
@@ -314,7 +314,7 @@ export default function MobileAppView() {
 
     case 'SELECT_PAYMENT':
       return (
-        <SelectPaymentScreen 
+        <SelectPaymentScreen
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
@@ -329,7 +329,7 @@ export default function MobileAppView() {
 
     case 'RADAR':
       return (
-        <ProcessingScreen 
+        <ProcessingScreen
           onCancel={() => setAppStage('SELECT_PAYMENT')}
           onMatched={() => setAppStage('MATCHED')}
         />
@@ -337,21 +337,21 @@ export default function MobileAppView() {
 
     case 'MATCHED':
       return (
-        <DriverFoundScreen 
-          userCoords={userCoords} 
+        <DriverFoundScreen
+          userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
-          onStartRide={() => setAppStage('TRACKING')} 
+          onStartRide={() => setAppStage('TRACKING')}
         />
       );
 
     case 'TRACKING':
       return (
-        <TripTrackingScreen 
-          userCoords={userCoords} 
+        <TripTrackingScreen
+          userCoords={userCoords}
           pickupLoc={pickupLoc}
-          dropoffLoc={dropoffLoc} 
-          onCompleteRide={() => setAppStage('RECEIPT')} 
+          dropoffLoc={dropoffLoc}
+          onCompleteRide={() => setAppStage('RECEIPT')}
         />
       );
 

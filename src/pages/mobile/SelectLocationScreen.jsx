@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getBestLiveLocation } from '../../services/liveLocationService';
 
 const DEFAULT_PLACES = [
   "Bhavnagar, Gujarat",
@@ -140,7 +141,23 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
 
             {/* Dropdown Options for Pickup */}
             {activeDropdown === 'pickup' && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '220px', overflowY: 'auto', marginTop: '6px' }}>
+                <div 
+                  onClick={async () => {
+                    setPickupLoc('Detecting live location...');
+                    const locRes = await getBestLiveLocation();
+                    if (locRes && locRes.address) {
+                      setPickupLoc(locRes.address);
+                    } else {
+                      setPickupLoc('Bhavnagar, Gujarat');
+                    }
+                    setActiveDropdown(null);
+                  }}
+                  style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '700', color: '#059669', background: '#ECFDF5', borderBottom: '1px solid #A7F3D0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                >
+                  <span>🎯</span>
+                  <span><strong>Use My Current Live GPS Spot</strong></span>
+                </div>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                   ADMIN CONFINED PLACES & LOCATIONS
                 </div>

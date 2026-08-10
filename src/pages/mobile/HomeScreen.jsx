@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
-import { Geolocation } from '@capacitor/geolocation';
 import { getCoordsForPlace } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
+import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
   // Load saved profile from localStorage
@@ -24,9 +24,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
     return 'Good Evening';
   }, []);
 
-  const [customerAddress, setCustomerAddress] = useState('Bhavnagar, Gujarat');
+  const [customerAddress, setCustomerAddress] = useState('Locating address...');
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
-  const hasRealGpsRef = React.useRef(false);
+  const [isLocating, setIsLocating] = useState(true);
 
   useEffect(() => {
     try {
@@ -52,61 +52,21 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   useEffect(() => {
     let watchId = null;
 
-    const requestLocationPermission = async () => {
-      try {
-        if (Geolocation && typeof Geolocation.requestPermissions === 'function') {
-          await Geolocation.requestPermissions();
-        }
-        const position = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 8000 });
-        if (position && position.coords) {
-          hasRealGpsRef.current = true;
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-          return true;
-        }
-      } catch (err) {}
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            hasRealGpsRef.current = true;
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-          },
-          () => {},
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      }
-      return false;
-    };
-
-    requestLocationPermission().then(success => {
-      if (!success && !hasRealGpsRef.current) {
-        fetch('http://ip-api.com/json')
-          .then(res => res.json())
-          .then(data => {
-            if (!hasRealGpsRef.current && data && typeof data.lat === 'number' && typeof data.lon === 'number') {
-              updateLocation({ lat: data.lat, lng: data.lon }, `${data.city || 'Current City'}, ${data.regionName || ''}`);
-            }
-          })
-          .catch(() => {});
+    // Fetch initial high-accuracy location via 3-Method 3-Check engine
+    getBestLiveLocation().then(res => {
+      if (res) {
+        updateLocation({ lat: res.lat, lng: res.lng }, res.address);
+        setIsLocating(false);
       }
     });
 
-    if (navigator.geolocation) {
-      watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          hasRealGpsRef.current = true;
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-        },
-        () => {},
-        { enableHighAccuracy: true, timeout: 15000 }
-      );
-    }
+    // Start real-time watch update
+    watchId = watchLiveLocation((updateRes) => {
+      if (updateRes) {
+        updateLocation({ lat: updateRes.lat, lng: updateRes.lng }, updateRes.address);
+        setIsLocating(false);
+      }
+    });
 
     return () => {
       if (watchId !== null && navigator.geolocation) {
@@ -171,17 +131,16 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             <div 
               className="floating-icon-btn" 
               onClick={() => {
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition((pos) => {
-                    hasRealGpsRef.current = true;
-                    updateLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }, `Live GPS (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`);
-                  });
-                }
+                setIsLocating(true);
+                getBestLiveLocation().then(res => {
+                  if (res) updateLocation({ lat: res.lat, lng: res.lng }, res.address);
+                  setIsLocating(false);
+                });
               }}
               title="Recenter Map"
               style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A' }}
             >
-              GPS
+              🎯
             </div>
             <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#22C55E' }}>●</span> GPS Live
