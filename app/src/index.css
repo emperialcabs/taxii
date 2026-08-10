@@ -54,6 +54,24 @@ html, body, #root {
   -webkit-overflow-scrolling: touch;
 }
 
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: visible !important;
+}
+
+.app-main-content {
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: visible !important;
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
