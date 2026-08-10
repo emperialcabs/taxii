@@ -23,7 +23,7 @@ export default function TripReceiptScreen({ onDone }) {
               Payment Successful!
             </h3>
             <p style={{ fontSize: '13px', color: '#64748B', margin: '4px 0 0 0', fontFamily: 'Space Grotesk' }}>
-              Taxigo Mobility Official E-Receipt
+              Empire Cab Mobility Official E-Receipt
             </p>
           </div>
 

@@ -30,7 +30,7 @@ export const signInWithGoogle = async () => {
     console.warn("Firebase Google Auth popup unavailable, using direct login session:", e);
     return {
       name: 'Google User',
-      email: 'user@taxigo.in',
+      email: 'user@empirecab.in',
       photoURL: null
     };
   }

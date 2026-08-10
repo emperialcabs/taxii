@@ -7,7 +7,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
       const saved = localStorage.getItem('cabsy_user_profile');
       return saved ? JSON.parse(saved) : {
         name: 'Rider',
-        email: 'user@taxigo.in',
+        email: 'user@empirecab.in',
         phone: '+91 98765 43210',
         age: 26,
         profession: 'Rider',
@@ -17,7 +17,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
     } catch (e) {
       return {
         name: 'Rider',
-        email: 'user@taxigo.in',
+        email: 'user@empirecab.in',
         phone: '+91 98765 43210',
         age: 26,
         profession: 'Rider',

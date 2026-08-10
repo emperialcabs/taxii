@@ -34,7 +34,7 @@ export const reverseGeocodeCoords = async (lat, lng) => {
       {
         headers: {
           'Accept-Language': 'en-US,en;q=0.9',
-          'User-Agent': 'TaxigoTaxiApp/1.0'
+          'User-Agent': 'Empire CabTaxiApp/1.0'
         }
       }
     );

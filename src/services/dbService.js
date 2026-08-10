@@ -1,4 +1,4 @@
-// TiDB Cloud & Central Database Sync Engine for Taxigo Ecosystem (Website, Android, iPhone)
+// TiDB Cloud & Central Database Sync Engine for Empire Cab Ecosystem (Website, Android, iPhone)
 
 const TIDB_CONFIG = {
   instanceName: 'dhruvil',
@@ -124,7 +124,7 @@ class DatabaseService {
     const updatedCustomer = {
       id: existingIdx >= 0 ? customers[existingIdx].id : 'CUST-' + Math.floor(10000 + Math.random() * 90000),
       name: customerProfile.name || 'Rider',
-      email: customerProfile.email || 'user@taxigo.in',
+      email: customerProfile.email || 'user@empirecab.in',
       phone: customerProfile.phone || '+91 98765 43210',
       photoURL: customerProfile.photoURL || null,
       registeredAt: existingIdx >= 0 ? customers[existingIdx].registeredAt : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),

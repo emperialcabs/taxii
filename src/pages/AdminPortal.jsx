@@ -189,9 +189,9 @@ export default function AdminPortal() {
 
   // Form inputs
   const [selectedDriverId, setSelectedDriverId] = useState('');
-  const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
+  const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Empire Regular', plate: '' });
   const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
-  const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
+  const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Empire Regular', fare: 35.00 });
   const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '4 Persons', rate: '15.00', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
@@ -480,7 +480,7 @@ export default function AdminPortal() {
       earnings: 0.00
     };
     setDrivers([createdDriver, ...drivers]);
-    setNewDriverForm({ name: '', phone: '', vehicle: 'Cabsy Reguler', plate: '' });
+    setNewDriverForm({ name: '', phone: '', vehicle: 'Empire Regular', plate: '' });
     setAddDriverModal(false);
   };
 
@@ -527,7 +527,7 @@ export default function AdminPortal() {
     };
     setInquiries([createdInquiry, ...inquiries]);
     autoSyncCustomer(createdInquiry.customerName, createdInquiry.customerPhone, 0);
-    setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
+    setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Empire Regular', fare: 35.00 });
     setAddInquiryModal(false);
   };
 
@@ -546,7 +546,7 @@ export default function AdminPortal() {
             <div className="lock-icon-badge">
               <Lock size={32} />
             </div>
-            <h2>Cabsy Admin Security</h2>
+            <h2>Empire Cab Admin Security</h2>
             <p>Enter 4-Digit Security PIN to Access Dispatcher Portal</p>
           </div>
 
@@ -602,7 +602,7 @@ export default function AdminPortal() {
             <span>C</span>
           </div>
           <div>
-            <h3>Cabsy Admin</h3>
+            <h3>Empire Cab Admin</h3>
             <small className="text-green flex align-center gap-1">
               <span className="dot"></span> Authorized Portal
             </small>
@@ -1443,7 +1443,7 @@ export default function AdminPortal() {
               <h3 className="mt-4">Vehicle Rate Settings ($ / km)</h3>
               <div className="form-grid-3">
                 <div className="input-group">
-                  <label>Cabsy Reguler Base Rate</label>
+                  <label>Empire Regular Base Rate</label>
                   <input 
                     type="text" 
                     value={settings.baseFareReguler} 
@@ -1452,7 +1452,7 @@ export default function AdminPortal() {
                 </div>
 
                 <div className="input-group">
-                  <label>Cabsy XL Base Rate</label>
+                  <label>Empire XL Base Rate</label>
                   <input 
                     type="text" 
                     value={settings.baseFareXL} 
@@ -1461,7 +1461,7 @@ export default function AdminPortal() {
                 </div>
 
                 <div className="input-group">
-                  <label>Cabsy Luxury Base Rate</label>
+                  <label>Empire Luxury Base Rate</label>
                   <input 
                     type="text" 
                     value={settings.baseFareLuxury} 
@@ -1543,10 +1543,10 @@ export default function AdminPortal() {
               <div className="input-group">
                 <label>Assigned Vehicle Class</label>
                 <select value={newDriverForm.vehicle} onChange={e => setNewDriverForm({ ...newDriverForm, vehicle: e.target.value })}>
-                  <option value="Cabsy Reguler (Sedan)">Cabsy Reguler (Sedan)</option>
-                  <option value="Cabsy XL (SUV)">Cabsy XL (SUV)</option>
-                  <option value="Cabsy Luxury (BMW M4)">Cabsy Luxury (BMW M4)</option>
-                  <option value="Cabsy Electric (EV)">Cabsy Electric (EV)</option>
+                  <option value="Empire Regular (Sedan)">Empire Regular (Sedan)</option>
+                  <option value="Empire XL (SUV)">Empire XL (SUV)</option>
+                  <option value="Empire Luxury (BMW M4)">Empire Luxury (BMW M4)</option>
+                  <option value="Empire Electric (EV)">Empire Electric (EV)</option>
                 </select>
               </div>
 
@@ -1688,10 +1688,10 @@ export default function AdminPortal() {
                 <div className="input-group">
                   <label>Vehicle Class</label>
                   <select value={newInquiryForm.vehicle} onChange={e => setNewInquiryForm({ ...newInquiryForm, vehicle: e.target.value })}>
-                    <option value="Cabsy Reguler">Cabsy Reguler</option>
-                    <option value="Cabsy XL">Cabsy XL</option>
-                    <option value="Cabsy Luxury">Cabsy Luxury</option>
-                    <option value="Cabsy Electric">Cabsy Electric</option>
+                    <option value="Empire Regular">Empire Regular</option>
+                    <option value="Empire XL">Empire XL</option>
+                    <option value="Empire Luxury">Empire Luxury</option>
+                    <option value="Empire Electric">Empire Electric</option>
                   </select>
                 </div>
 
@@ -1847,7 +1847,7 @@ export default function AdminPortal() {
                 <label>Car Model Name</label>
                 <input 
                   type="text" 
-                  placeholder="e.g. Cabsy Electric (Tesla Model 3)"
+                  placeholder="e.g. Empire Electric (Tesla Model 3)"
                   value={newVehicleForm.name} 
                   onChange={e => setNewVehicleForm({ ...newVehicleForm, name: e.target.value })}
                   required 

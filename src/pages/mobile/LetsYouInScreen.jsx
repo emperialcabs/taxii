@@ -13,7 +13,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       
       const realProfile = {
         name: googleUser.name || 'Google User',
-        email: googleUser.email || 'user@taxigo.in',
+        email: googleUser.email || 'user@empirecab.in',
         phone: phoneNumber || '+91 98765 43210',
         photoURL: googleUser.photoURL || null,
         profession: 'Rider',
@@ -36,7 +36,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       console.warn("Google Auth handled:", err);
       const fallbackProfile = {
         name: 'Google User',
-        email: 'user@taxigo.in',
+        email: 'user@empirecab.in',
         phone: phoneNumber || '+91 98765 43210',
         photoURL: null,
         profession: 'Rider',
@@ -66,7 +66,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
           </button>
           
           <div className="let-you-centered-logo-box">
-            <img src="/assets/images/let-you-screen/logo.svg" alt="Taxigo Logo" />
+            <img src="/assets/images/let-you-screen/logo.svg" alt="Empire Cab Logo" />
           </div>
         </div>
 

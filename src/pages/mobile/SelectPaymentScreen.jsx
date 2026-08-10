@@ -99,7 +99,7 @@ export default function SelectPaymentScreen({
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <input 
                 style={{ flex: 1, background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '14px', padding: '12px 16px', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '600', color: '#1E293B' }}
-                placeholder="Enter promo code (e.g. TAXIGO50)"
+                placeholder="Enter promo code (e.g. EMPIRE50)"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
               />

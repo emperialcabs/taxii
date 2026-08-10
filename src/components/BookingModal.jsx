@@ -13,10 +13,10 @@ export default function BookingModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const vehicles = [
-    { id: 'Reguler', name: 'Cabsy Reguler', capacity: '1-4 Passenger', ratePerKm: 15.0, icon: '🚕' },
-    { id: 'XL', name: 'Cabsy XL', capacity: '1-6 Passenger', ratePerKm: 22.0, icon: '🚙' },
-    { id: 'Luxury', name: 'Cabsy Luxury', capacity: '1-4 Passenger', ratePerKm: 35.0, icon: '🚘' },
-    { id: 'Electric', name: 'Cabsy Electric', capacity: '1-4 Passenger', ratePerKm: 18.0, icon: '⚡' },
+    { id: 'Reguler', name: 'Empire Regular', capacity: '1-4 Passenger', ratePerKm: 15.0, icon: '🚕' },
+    { id: 'XL', name: 'Empire XL', capacity: '1-6 Passenger', ratePerKm: 22.0, icon: '🚙' },
+    { id: 'Luxury', name: 'Empire Luxury', capacity: '1-4 Passenger', ratePerKm: 35.0, icon: '🚘' },
+    { id: 'Electric', name: 'Empire Electric', capacity: '1-4 Passenger', ratePerKm: 18.0, icon: '⚡' },
   ];
 
   const selectedVeh = vehicles.find(v => v.id === vehicle) || vehicles[0];
@@ -58,7 +58,7 @@ export default function BookingModal({ isOpen, onClose }) {
               <span className="pill-badge">
                 <span className="dot"></span> Online Booking Studio
               </span>
-              <h2>Book Your Cabsy Ride</h2>
+              <h2>Book Your Empire Cab Ride</h2>
               <p>Experience safe, reliable, and premium transportation at your fingertips.</p>
             </div>
 

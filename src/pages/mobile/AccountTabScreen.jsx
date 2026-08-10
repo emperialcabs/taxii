@@ -12,7 +12,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
       const saved = localStorage.getItem('cabsy_user_profile');
       return saved ? JSON.parse(saved) : {
         name: 'Rider',
-        email: 'user@taxigo.in',
+        email: 'user@empirecab.in',
         phone: '+91 98765 43210',
         age: 26,
         profession: 'Rider',
@@ -22,7 +22,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
     } catch (e) {
       return {
         name: 'Rider',
-        email: 'user@taxigo.in',
+        email: 'user@empirecab.in',
         phone: '+91 98765 43210',
         age: 26,
         profession: 'Rider',
@@ -124,9 +124,9 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
             { id: 'profile', icon: '👤', title: 'Personal Details & Photo', desc: 'Manage name, phone, age & picture' },
             { id: 'safety', icon: '🛡️', title: 'Safety & Emergency Contacts', desc: 'Share trip details with trusted contacts' },
             { id: 'notifications', icon: '🔔', title: 'Push Notifications', desc: 'Ride status alerts & offer updates' },
-            { id: 'terms', icon: '📄', title: 'Terms of Service', desc: 'Taxigo legal guidelines and privacy' },
+            { id: 'terms', icon: '📄', title: 'Terms of Service', desc: 'Empire Cab legal guidelines and privacy' },
             { id: 'privacy', icon: '🔒', title: 'Privacy Policy', desc: 'How your data is protected' },
-            { id: 'support', icon: '🎧', title: '24x7 Customer Support', desc: 'Call or chat with Taxigo help desk' }
+            { id: 'support', icon: '🎧', title: '24x7 Customer Support', desc: 'Call or chat with Empire Cab help desk' }
           ].map((item) => (
             <div 
               key={item.id} 
@@ -181,7 +181,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
               <button onClick={() => setShowInfoModal(null)} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', cursor: 'pointer', color: '#0F172A' }}>✕</button>
             </div>
             <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 20px 0' }}>
-              {showInfoModal.desc}. This setting is fully active for your Taxigo rider profile in Gujarat, India.
+              {showInfoModal.desc}. This setting is fully active for your Empire Cab rider profile in Gujarat, India.
             </p>
             <button 
               onClick={() => setShowInfoModal(null)}

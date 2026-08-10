@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------
-Project: Taxigo App
+Project: Empire Cab App
 Author: The_Krishna       
 Last change: 04/03/2024 
 Primary use: Taxi Booking Mobile App PWA
@@ -20,7 +20,7 @@ Primary use: Taxi Booking Mobile App PWA
 12.Privacy Screen CSS
 13.Enable location Screen CSS
 14.Reward Screen CSS
-15.Taxigo Platinum Screen CSS
+15.Empire Cab Platinum Screen CSS
 16.Promocode Screen CSS
 17.HomeScreen CSS
 18.Preloader CSS
@@ -1633,7 +1633,7 @@ label.custom-radio-sel-lang {
     border-radius: 16px;
 }
 
-/************************ 15.Taxigo Platinum Screen CSS ***************************/
+/************************ 15.Empire Cab Platinum Screen CSS ***************************/
 #header-top{
     background-image: url(../images/taxigo-platinum/bg-img.png);
     background-repeat: no-repeat;
