@@ -17,8 +17,7 @@ const DEFAULT_ROUTES = [
   { id: 'DEST-103', name: 'Bhavnagar ➔ Vadodara Central Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Vadodara Central Railway Station', distanceKm: 110 },
   { id: 'DEST-104', name: 'Bhavnagar ➔ SG Highway IT Park', pickup: 'Bhavnagar, Gujarat', dropoff: 'SG Highway IT Park', distanceKm: 180 },
   { id: 'DEST-105', name: 'Bhavnagar ➔ Alkapuri Hub', pickup: 'Bhavnagar, Gujarat', dropoff: 'Alkapuri Commercial Hub', distanceKm: 112 },
-  { id: 'DEST-106', name: 'Bhavnagar ➔ Ghogha Circle & Beach', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ghogha Circle & Beach', distanceKm: 12 },
-  { id: 'DEST-107', name: 'Bhavnagar ➔ Mumbai Central Airport', pickup: 'Bhavnagar, Gujarat', dropoff: 'Mumbai Central Airport (BOM)', distanceKm: 540 }
+  { id: 'DEST-106', name: 'Bhavnagar ➔ Ghogha Circle & Beach', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ghogha Circle & Beach', distanceKm: 12 }
 ];
 
 export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffLoc, setDropoffLoc, onSelectLocation, onBack }) {
@@ -26,21 +25,53 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
   const [routes, setRoutes] = useState(DEFAULT_ROUTES);
   const [activeDropdown, setActiveDropdown] = useState(null); // 'pickup' | 'dropoff' | null
 
-  // Sync with Admin Panel configuration from localStorage
-  useEffect(() => {
+  // Helper to fetch exact Admin Panel configuration
+  const loadAdminConfig = () => {
     try {
+      // 1. Load Admin Places
       const savedPlaces = localStorage.getItem('cabsy_places');
       if (savedPlaces) {
         const parsedP = JSON.parse(savedPlaces);
-        if (Array.isArray(parsedP) && parsedP.length > 0) setPlaces(parsedP);
+        if (Array.isArray(parsedP) && parsedP.length > 0) {
+          const cleanPlaces = parsedP.map(p => typeof p === 'string' ? p : (p.name || p.title || p.location));
+          setPlaces(cleanPlaces);
+        }
       }
 
-      const savedDestinations = localStorage.getItem('cabsy_destinations');
+      // 2. Load Admin Routes
+      const savedDestinations = localStorage.getItem('cabsy_destinations') || localStorage.getItem('cabsy_routes');
       if (savedDestinations) {
         const parsedD = JSON.parse(savedDestinations);
-        if (Array.isArray(parsedD) && parsedD.length > 0) setRoutes(parsedD);
+        if (Array.isArray(parsedD) && parsedD.length > 0) {
+          setRoutes(parsedD);
+          return;
+        }
       }
-    } catch (e) {}
+
+      // 3. Fallback: If admin saved custom places, generate routes strictly for those admin places
+      if (savedPlaces) {
+        const parsedP = JSON.parse(savedPlaces);
+        if (Array.isArray(parsedP) && parsedP.length > 0) {
+          const generatedRoutes = parsedP.map((placeStr, idx) => {
+            const pName = typeof placeStr === 'string' ? placeStr : (placeStr.name || placeStr.title || placeStr.location);
+            return {
+              id: `ADMIN-R-${idx}`,
+              name: `Bhavnagar ➔ ${pName}`,
+              pickup: 'Bhavnagar, Gujarat',
+              dropoff: pName,
+              distanceKm: 15 + (idx * 12)
+            };
+          });
+          setRoutes(generatedRoutes);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load admin routes:", e);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminConfig();
   }, []);
 
   // Calculate distance for selected route
@@ -107,7 +138,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 fontFamily: 'Space Grotesk, sans-serif', 
                 fontSize: '15px', 
                 fontWeight: '600', 
-                color: '#212B46', 
+                color: '#1E293B', 
                 background: '#F8FAFC',
                 boxSizing: 'border-box'
               }} 
@@ -121,12 +152,12 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             {activeDropdown === 'pickup' && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  AVAILABLE LOCATIONS
+                  ADMIN PLACES & LOCATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#1E293B', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setPickupLoc(place);
                       setActiveDropdown(null);
@@ -148,7 +179,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>WHERE TO?</span>
               </div>
               {currentDistance && (
-                <span style={{ background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)', color: '#FFAA01', padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
+                <span style={{ background: '#1E293B', color: '#FFAA01', padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
                   🛣️ {currentDistance}
                 </span>
               )}
@@ -163,7 +194,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 fontFamily: 'Space Grotesk, sans-serif', 
                 fontSize: '15px', 
                 fontWeight: '600', 
-                color: '#212B46', 
+                color: '#1E293B', 
                 background: '#F8FAFC',
                 boxSizing: 'border-box'
               }} 
@@ -177,12 +208,12 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             {activeDropdown === 'dropoff' && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  POPULAR DESTINATIONS
+                  ADMIN PLACES & LOCATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#1E293B', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setDropoffLoc(place);
                       setActiveDropdown(null);
@@ -197,12 +228,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           </div>
         </div>
 
-
-
         {/* DIRECT ROUTES SECTION */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#212B46', margin: 0 }}>
+            <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: 0 }}>
               Available Direct Routes
             </h3>
             <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>
@@ -220,7 +249,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                   key={route.id || idx} 
                   style={{ 
                     padding: '16px', 
-                    background: isSelected ? 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)' : '#FFFFFF', 
+                    background: isSelected ? '#FFFBEB' : '#FFFFFF', 
                     borderRadius: '20px', 
                     border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0', 
                     boxShadow: isSelected ? '0 6px 18px rgba(255,170,1,0.25)' : '0 2px 10px rgba(0,0,0,0.03)', 
@@ -236,7 +265,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                     <span style={{ 
                       fontSize: '11px', 
                       fontWeight: '800', 
-                      background: isSelected ? '#212B46' : '#F1F5F9', 
+                      background: isSelected ? '#1E293B' : '#F1F5F9', 
                       color: isSelected ? '#FFAA01' : '#475569', 
                       padding: '4px 10px', 
                       borderRadius: '12px',
@@ -262,10 +291,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       <span style={{ fontSize: '12px' }}>📍</span>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B', fontFamily: 'Space Grotesk, sans-serif' }}>
                         {route.pickup}
                       </div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B', fontFamily: 'Space Grotesk, sans-serif' }}>
                         {route.dropoff}
                       </div>
                     </div>
@@ -293,9 +322,9 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           style={{
             width: '100%',
             background: isBothLocationsEntered 
-              ? 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)' 
+              ? 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)' 
               : '#CBD5E1',
-            color: isBothLocationsEntered ? '#FFFFFF' : '#64748B',
+            color: isBothLocationsEntered ? '#FFAA01' : '#64748B',
             border: 'none',
             padding: '16px',
             borderRadius: '18px',
@@ -303,7 +332,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             fontSize: '18px',
             fontWeight: '800',
             cursor: isBothLocationsEntered ? 'pointer' : 'not-allowed',
-            boxShadow: isBothLocationsEntered ? '0 6px 20px rgba(255, 170, 1, 0.4)' : 'none',
+            boxShadow: isBothLocationsEntered ? '0 6px 20px rgba(30, 41, 59, 0.3)' : 'none',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
