@@ -1,155 +1,541 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
-  const [filter, setFilter] = useState('ACTIVE'); // ACTIVE, COMPLETED, CANCELLED
+  const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
+  const [inquiries, setInquiries] = useState([]);
+  const [selectedInquiry, setSelectedInquiry] = useState(null); // Modal state for viewing/editing receipt
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
 
-  const ridesData = [
-    {
-      id: "TX-984712",
-      date: "Today, 3:30 PM",
-      pickup: "Current Location (Seattle)",
-      dropoff: "856 Spinka Inlet Apt. 576",
-      driver: "Tom Hegde",
-      car: "Toyota Vios • CA3751",
-      fare: "$25.00",
-      status: "ACTIVE",
-      badge: "In Progress"
-    },
-    {
-      id: "TX-839210",
-      date: " Yesterday, 5:15 PM",
-      pickup: "Husky Metro Station",
-      dropoff: "University of Washington",
-      driver: "Sarah Jenkins",
-      car: "Honda Civic • WA9082",
-      fare: "$18.50",
-      status: "COMPLETED",
-      badge: "Completed"
-    },
-    {
-      id: "TX-710294",
-      date: "05 Nov, 11:20 AM",
-      pickup: "Woodland Park Zoo",
-      dropoff: "Parkview Garden Plaza",
-      driver: "Michael Chang",
-      car: "Hyundai Elantra • OR4412",
-      fare: "$22.00",
-      status: "COMPLETED",
-      badge: "Completed"
-    },
-    {
-      id: "TX-659102",
-      date: "01 Nov, 08:45 AM",
-      pickup: "Seattle Tacoma Airport",
-      dropoff: "Downtown Hotel Plaza",
-      driver: "Alex Rivera",
-      car: "Chevrolet Suburban • CA1120",
-      fare: "$45.00",
-      status: "CANCELLED",
-      badge: "Cancelled"
+  // Load real user inquiries from localStorage ONLY (NO DEMO DATA)
+  const loadInquiries = () => {
+    try {
+      const saved = localStorage.getItem('cabsy_inquiries');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setInquiries(parsed);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse cabsy_inquiries", e);
     }
-  ];
+    // Clean empty state - NO DEMO/DUMMY DATA
+    setInquiries([]);
+  };
 
-  const filteredRides = ridesData.filter(r => filter === 'ALL' || r.status === filter);
+  useEffect(() => {
+    loadInquiries();
+
+    // Listen for live updates from Admin Portal or booking submissions
+    const handleStorageChange = () => loadInquiries();
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('taxigo_ride_booked', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('taxigo_ride_booked', handleStorageChange);
+    };
+  }, []);
+
+  // Cancel Inquiry Action
+  const handleCancelInquiry = (inqId) => {
+    if (!window.confirm("Are you sure you want to cancel this booking inquiry?")) return;
+
+    try {
+      const updatedList = inquiries.map(item => {
+        if (item.id === inqId || (item.createdAt && item.createdAt === inqId)) {
+          return { ...item, status: 'Cancelled' };
+        }
+        return item;
+      });
+
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedList));
+      setInquiries(updatedList);
+      if (selectedInquiry && (selectedInquiry.id === inqId || selectedInquiry.createdAt === inqId)) {
+        setSelectedInquiry(prev => prev ? { ...prev, status: 'Cancelled' } : null);
+      }
+
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('taxigo_inquiry_cancelled', { detail: { id: inqId } }));
+    } catch (e) {
+      console.error("Error cancelling inquiry:", e);
+    }
+  };
+
+  // Save Edit Receipt Action
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    try {
+      const updatedList = inquiries.map(item => {
+        if (item.id === editForm.id || (item.createdAt && item.createdAt === editForm.createdAt)) {
+          return { ...item, ...editForm };
+        }
+        return item;
+      });
+
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedList));
+      setInquiries(updatedList);
+      setSelectedInquiry(editForm);
+      setIsEditing(false);
+      window.dispatchEvent(new Event('storage'));
+    } catch (err) {
+      console.error("Error saving inquiry edit:", err);
+    }
+  };
+
+  // Filter logic for 3 tabs: ALL, SUCCESS, REJECT
+  const getFilteredInquiries = () => {
+    return inquiries.filter(item => {
+      const st = (item.status || 'Pending').toLowerCase();
+      if (filter === 'ALL') return true;
+      if (filter === 'SUCCESS') {
+        return st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed');
+      }
+      if (filter === 'REJECT') {
+        return st.includes('reject') || st.includes('decline') || st.includes('cancel');
+      }
+      return true;
+    });
+  };
+
+  const filteredInquiries = getFilteredInquiries();
+
+  const getStatusBadge = (statusStr) => {
+    const st = (statusStr || 'Pending').toLowerCase();
+
+    if (st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed')) {
+      return {
+        label: '✅ Approved / Confirmed',
+        bg: '#DCFCE7',
+        border: '#86EFAC',
+        color: '#15803D',
+        canCancel: false
+      };
+    }
+    if (st.includes('reject') || st.includes('decline') || st.includes('cancel')) {
+      return {
+        label: '❌ Cancelled / Rejected',
+        bg: '#FEE2E2',
+        border: '#FCA5A5',
+        color: '#B91C1C',
+        canCancel: false
+      };
+    }
+    return {
+      label: '⏳ Pending Approval',
+      bg: '#F1F5F9',
+      border: '#CBD5E1',
+      color: '#475569',
+      canCancel: true
+    };
+  };
 
   return (
     <div className="real-mobile-app">
-      {/* Header */}
-      <div className="white-header-nav">
-        <h2 className="white-header-title">My Rides</h2>
+      {/* Header Nav */}
+      <div className="white-header-nav" style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+        <h2 className="white-header-title" style={{ fontFamily: 'League Spartan', fontSize: '22px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
+          My Rides & Inquiries
+        </h2>
       </div>
 
       <div style={{ padding: '16px 20px 90px 20px', overflowY: 'auto' }}>
-        {/* Filter Pills */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-          {['ACTIVE', 'COMPLETED', 'CANCELLED'].map((type) => (
-            <button
-              key={type}
-              style={{
-                flex: 1,
-                padding: '10px 0',
-                borderRadius: '12px',
-                border: filter === type ? '2px solid #FFAA01' : '1px solid #E2E8F0',
-                background: filter === type ? '#212B46' : '#FFFFFF',
-                color: filter === type ? '#FFFFFF' : '#212B46',
-                fontFamily: 'League Spartan',
-                fontWeight: '700',
-                fontSize: '13px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onClick={() => setFilter(type)}
-            >
-              {type === 'ACTIVE' ? '🚕 Active' : type === 'COMPLETED' ? '✅ Completed' : '❌ Cancelled'}
-            </button>
-          ))}
+        {/* 3 FILTER TABS: ALL | SUCCESS | REJECT */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '20px' }}>
+          {[
+            { key: 'ALL', label: 'All Rides', count: inquiries.length },
+            { 
+              key: 'SUCCESS', 
+              label: 'Success', 
+              count: inquiries.filter(i => {
+                const st = (i.status || '').toLowerCase();
+                return st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed');
+              }).length 
+            },
+            { 
+              key: 'REJECT', 
+              label: 'Rejected', 
+              count: inquiries.filter(i => {
+                const st = (i.status || '').toLowerCase();
+                return st.includes('reject') || st.includes('decline') || st.includes('cancel');
+              }).length 
+            }
+          ].map(tab => {
+            const isSelected = filter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setFilter(tab.key)}
+                style={{
+                  padding: '12px 6px',
+                  borderRadius: '14px',
+                  border: isSelected ? '2px solid #34D399' : '1.5px solid #E2E8F0',
+                  background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                  color: isSelected ? '#0F172A' : '#64748B',
+                  fontFamily: 'League Spartan, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? '0 4px 12px rgba(52, 211, 153, 0.2)' : 'none',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+              >
+                <span>{tab.label}</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: isSelected ? '#059669' : '#94A3B8' }}>
+                  ({tab.count})
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Rides List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {filteredRides.map((ride) => (
-            <div
-              key={ride.id}
+        {/* INQUIRIES LIST (NO DEMO DATA) */}
+        {filteredInquiries.length === 0 ? (
+          <div style={{ padding: '40px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1.5px solid #E2E8F0', marginTop: '10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🚕</div>
+            <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0' }}>
+              No {filter === 'SUCCESS' ? 'Confirmed' : filter === 'REJECT' ? 'Rejected' : ''} Trips Found
+            </h3>
+            <p style={{ fontFamily: 'Space Grotesk', fontSize: '13px', color: '#64748B', margin: '0 0 16px 0' }}>
+              {filter === 'ALL' ? "You haven't submitted any ride inquiries yet." : `No inquiries found in ${filter.toLowerCase()} tab.`}
+            </p>
+            <button
+              onClick={onBookNewRide}
               style={{
-                background: '#FFFFFF',
-                border: '1.5px solid #E2E8F0',
-                borderRadius: '16px',
-                padding: '16px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                transition: 'transform 0.2s ease'
+                background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '14px',
+                fontFamily: 'League Spartan',
+                fontWeight: '800',
+                fontSize: '15px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontFamily: 'League Spartan', fontWeight: '800', color: '#212B46', fontSize: '15px' }}>{ride.id}</span>
-                <span 
+              Book New Trip →
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {filteredInquiries.map((inq, index) => {
+              const badge = getStatusBadge(inq.status);
+              const inqId = inq.id || inq.createdAt || `INQ-${index}`;
+              return (
+                <div
+                  key={inqId}
                   style={{
-                    background: ride.status === 'ACTIVE' ? '#FEF3C7' : ride.status === 'COMPLETED' ? '#DCFCE7' : '#FEE2E2',
-                    color: ride.status === 'ACTIVE' ? '#D97706' : ride.status === 'COMPLETED' ? '#15803D' : '#B91C1C',
-                    padding: '4px 10px',
+                    background: '#FFFFFF',
+                    border: '1.5px solid #E2E8F0',
                     borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    fontFamily: 'League Spartan'
+                    padding: '16px',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    setSelectedInquiry(inq);
+                    setEditForm(inq);
+                    setIsEditing(false);
                   }}
                 >
-                  {ride.badge}
+                  {/* Top Bar ID & Status Badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div>
+                      <span style={{ fontFamily: 'League Spartan', fontWeight: '800', color: '#0F172A', fontSize: '16px' }}>
+                        {inq.id || `INQ-#${1000 + index}`}
+                      </span>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', marginLeft: '8px', textTransform: 'uppercase' }}>
+                        {inq.tripType === 'round-trip' ? '• Round Trip' : '• One-Way'}
+                      </span>
+                    </div>
+
+                    <span 
+                      style={{
+                        background: badge.bg,
+                        border: `1px solid ${badge.border}`,
+                        color: badge.color,
+                        padding: '4px 10px',
+                        borderRadius: '16px',
+                        fontSize: '12px',
+                        fontWeight: '800',
+                        fontFamily: 'League Spartan'
+                      }}
+                    >
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* Date & Time */}
+                  <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '12px', fontFamily: 'Space Grotesk', fontWeight: '600' }}>
+                    📅 {inq.scheduledDate || 'Today'} • {inq.scheduledTime || '04:30 PM'}
+                  </div>
+
+                  {/* Route Box */}
+                  <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '14px', marginBottom: '12px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <span style={{ color: '#22C55E', fontWeight: 'bold' }}>●</span>
+                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'League Spartan' }}>
+                        {inq.pickup || inq.pickupLoc || 'Pickup Location'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
+                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'League Spartan' }}>
+                        {inq.dropoff || inq.dropoffLoc || 'Destination Point'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Car, Fare & Action Buttons */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
+                    <div>
+                      <div style={{ fontWeight: '800', color: '#0F172A', fontSize: '15px', fontFamily: 'League Spartan' }}>
+                        {inq.carName || inq.selectedCar || 'Swift Dzire'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
+                        {inq.price || inq.fare || '₹1,694'}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedInquiry(inq);
+                          setEditForm(inq);
+                          setIsEditing(false);
+                        }}
+                        style={{
+                          background: '#F1F5F9',
+                          border: '1px solid #CBD5E1',
+                          color: '#0F172A',
+                          padding: '6px 12px',
+                          borderRadius: '12px',
+                          fontFamily: 'League Spartan',
+                          fontWeight: '800',
+                          fontSize: '13px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        View Receipt
+                      </button>
+
+                      {badge.canCancel && (
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelInquiry(inq.id || inq.createdAt);
+                          }}
+                          style={{
+                            background: '#FEF2F2',
+                            border: '1px solid #FECACA',
+                            color: '#DC2626',
+                            padding: '6px 12px',
+                            borderRadius: '12px',
+                            fontFamily: 'League Spartan',
+                            fontWeight: '800',
+                            fontSize: '13px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* DETAILED RECEIPT & EDIT MODAL */}
+      {selectedInquiry && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.25)' }}>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
+              <div>
+                <h3 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
+                  {isEditing ? 'Edit Inquiry Receipt' : 'Inquiry Receipt'}
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
+                  {selectedInquiry.id || 'INQ-REF'}
                 </span>
               </div>
+              <button 
+                onClick={() => setSelectedInquiry(null)} 
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', cursor: 'pointer', color: '#0F172A', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
 
-              <div style={{ fontSize: '13px', color: '#67696B', marginBottom: '12px', fontFamily: 'Space Grotesk' }}>🕒 {ride.date}</div>
-
-              {/* Route snippet */}
-              <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '12px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ color: '#22C55E' }}>●</span>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#212B46' }}>{ride.pickup}</span>
+            {!isEditing ? (
+              /* VIEW RECEIPT DETAILS */
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B' }}>STATUS:</span>
+                  <span style={{ background: getStatusBadge(selectedInquiry.status).bg, border: `1px solid ${getStatusBadge(selectedInquiry.status).border}`, color: getStatusBadge(selectedInquiry.status).color, padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', fontFamily: 'League Spartan' }}>
+                    {getStatusBadge(selectedInquiry.status).label}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#FB4945' }}>📍</span>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#212B46' }}>{ride.dropoff}</span>
+
+                <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '16px', marginBottom: '16px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block' }}>PICKUP LOCATION</span>
+                    <span style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.pickup || selectedInquiry.pickupLoc}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block' }}>DESTINATION POINT</span>
+                    <span style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.dropoff || selectedInquiry.dropoffLoc}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block' }}>SCHEDULED DATE</span>
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{selectedInquiry.scheduledDate || 'Today'}</span>
+                  </div>
+                  <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block' }}>TIME</span>
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{selectedInquiry.scheduledTime || '04:30 PM'}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '14px', borderRadius: '16px', marginBottom: '20px' }}>
+                  <div>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>VEHICLE</span>
+                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.carName || selectedInquiry.selectedCar || 'Swift Dzire'}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>TOTAL FARE</span>
+                    <span style={{ fontSize: '22px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>{selectedInquiry.price || selectedInquiry.fare || '₹1,694'}</span>
+                  </div>
+                </div>
+
+                {/* MODAL ACTION BUTTONS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    onClick={() => {
+                      setEditForm(selectedInquiry);
+                      setIsEditing(true);
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '14px',
+                      borderRadius: '16px',
+                      fontFamily: 'League Spartan',
+                      fontSize: '16px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)'
+                    }}
+                  >
+                    ✏️ Edit Inquiry Details
+                  </button>
+
+                  {getStatusBadge(selectedInquiry.status).canCancel && (
+                    <button
+                      onClick={() => handleCancelInquiry(selectedInquiry.id || selectedInquiry.createdAt)}
+                      style={{
+                        width: '100%',
+                        background: '#FEF2F2',
+                        border: '1.5px solid #FECACA',
+                        color: '#DC2626',
+                        padding: '14px',
+                        borderRadius: '16px',
+                        fontFamily: 'League Spartan',
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ❌ Cancel Inquiry
+                    </button>
+                  )}
                 </div>
               </div>
-
-              {/* Driver and Price */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
-                <div>
-                  <div style={{ fontWeight: '700', color: '#212B46', fontSize: '14px' }}>👤 {ride.driver}</div>
-                  <div style={{ fontSize: '12px', color: '#67696B' }}>{ride.car}</div>
+            ) : (
+              /* EDIT RECEIPT FORM */
+              <form onSubmit={handleSaveEdit}>
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>PICKUP LOCATION</label>
+                  <input 
+                    type="text"
+                    value={editForm.pickup || editForm.pickupLoc || ''}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, pickup: e.target.value, pickupLoc: e.target.value }))}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
+                  />
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '18px', color: '#212B46' }}>{ride.fare}</div>
-                  <button 
-                    style={{ background: 'none', border: 'none', color: '#FFAA01', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: 0 }}
-                    onClick={onBookNewRide}
+
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>DESTINATION POINT</label>
+                  <input 
+                    type="text"
+                    value={editForm.dropoff || editForm.dropoffLoc || ''}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, dropoff: e.target.value, dropoffLoc: e.target.value }))}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>DATE</label>
+                    <input 
+                      type="text"
+                      value={editForm.scheduledDate || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, scheduledDate: e.target.value }))}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>TIME</label>
+                    <input 
+                      type="text"
+                      value={editForm.scheduledTime || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    style={{ flex: 1, background: '#F1F5F9', border: 'none', padding: '14px', borderRadius: '16px', fontFamily: 'League Spartan', fontWeight: '800', cursor: 'pointer' }}
                   >
-                    Rebook ➔
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ flex: 1, background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontFamily: 'League Spartan', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)' }}
+                  >
+                    Save Changes
                   </button>
                 </div>
-              </div>
-            </div>
-          ))}
+              </form>
+            )}
+
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Bottom Navigation Toolbar */}
       <div className="taxigo-bottom-nav">
@@ -158,11 +544,11 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
           <span>Home</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'rides' ? 'active' : ''}`} onClick={() => setActiveTab('rides')}>
-          <span className="nav-tab-icon">🚗</span>
+          <span className="nav-tab-icon">🚕</span>
           <span>My Rides</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-          <span className="nav-tab-icon">👛</span>
+          <span className="nav-tab-icon">💳</span>
           <span>Wallet</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>

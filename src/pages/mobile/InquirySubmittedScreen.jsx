@@ -63,7 +63,7 @@ export default function InquirySubmittedScreen({ inquiry, onGoHome, onViewRides 
               <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block' }}>INQUIRY REFERENCE ID</span>
               <span style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A' }}>{inqData.id}</span>
             </div>
-            <span style={{ background: '#FEF3C7', border: '1px solid #FCD34D', color: '#D97706', padding: '6px 14px', borderRadius: '16px', fontSize: '12px', fontWeight: '800' }}>
+            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#059669', padding: '6px 14px', borderRadius: '16px', fontSize: '12px', fontWeight: '800' }}>
               ● {inqData.status} Confirmation
             </span>
           </div>
@@ -93,15 +93,15 @@ export default function InquirySubmittedScreen({ inquiry, onGoHome, onViewRides 
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block' }}>ESTIMATED FARE</span>
-                <span style={{ fontSize: '20px', fontWeight: '800', color: '#22C55E', fontFamily: 'League Spartan' }}>₹{inqData.fare}</span>
+                <span style={{ fontSize: '20px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>₹{inqData.fare}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Dispatcher Notice Box */}
-        <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', borderRadius: '16px', padding: '14px 16px', marginBottom: '28px', width: '100%', boxSizing: 'border-box' }}>
-          <p style={{ margin: 0, fontSize: '13px', color: '#B45309', fontFamily: 'Space Grotesk', fontWeight: '600', lineHeight: '1.4' }}>
+        <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '16px', padding: '14px 16px', marginBottom: '28px', width: '100%', boxSizing: 'border-box' }}>
+          <p style={{ margin: 0, fontSize: '13px', color: '#059669', fontFamily: 'Space Grotesk', fontWeight: '600', lineHeight: '1.4' }}>
             ℹ️ <strong>Dispatcher Action:</strong> Our admin dispatch team has received this inquiry in the Admin Panel and will call you at <strong>{inqData.customerPhone}</strong> to confirm vehicle availability and driver assignment.
           </p>
         </div>
