@@ -197,47 +197,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           </div>
         </div>
 
-        {/* Quick Location Chips Bar */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#212B46', margin: '0 0 10px 0', letterSpacing: '0.3px' }}>
-            Popular Destinations
-          </h3>
-          <div className="location-chips-bar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
-            {places.map((place, i) => {
-              const isSelected = dropoffLoc === place;
-              return (
-                <button 
-                  key={i} 
-                  style={{ 
-                    whiteSpace: 'nowrap', 
-                    padding: '8px 14px', 
-                    borderRadius: '20px', 
-                    fontSize: '13px', 
-                    fontFamily: 'Space Grotesk, sans-serif',
-                    fontWeight: '700', 
-                    cursor: 'pointer',
-                    background: isSelected ? 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)' : '#FFFFFF',
-                    color: isSelected ? '#FFAA01' : '#475569',
-                    border: isSelected ? '1.5px solid #212B46' : '1.5px solid #E2E8F0',
-                    boxShadow: isSelected ? '0 4px 12px rgba(33,43,70,0.2)' : '0 2px 6px rgba(0,0,0,0.02)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  onClick={() => {
-                    if (!pickupLoc || pickupLoc.trim() === '') {
-                      setPickupLoc("Bhavnagar, Gujarat");
-                    }
-                    setDropoffLoc(place);
-                  }}
-                >
-                  <span>{getPlaceIcon(place)}</span>
-                  <span>{place}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+
 
         {/* DIRECT ROUTES SECTION */}
         <div>
