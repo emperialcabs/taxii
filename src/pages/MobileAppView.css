@@ -90,96 +90,45 @@ body, html {
 
 .loading-window {
   position: relative;
-  width: 160px;
+  width: 170px;
   height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.car {
-  position: absolute;
-  width: 120px;
-  height: 48px;
+.preloader-car-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-.car .strike {
-  position: absolute;
-  width: 12px;
-  height: 2px;
-  background: #FFAA01;
-  border-radius: 1px;
-  animation: strikes 0.25s linear infinite;
+.svg-car-body {
+  animation: svgCarBounce 0.4s ease-in-out infinite alternate;
 }
 
-.car .strike2 { top: 12px; animation-delay: 0.05s; }
-.car .strike3 { top: 24px; animation-delay: 0.1s; }
-.car .strike4 { top: 34px; animation-delay: 0.15s; }
-.car .strike5 { top: 44px; animation-delay: 0.2s; }
-
-.car-detail {
-  position: absolute;
-  display: block;
-  background: #FFAA01;
-  animation: speed 0.5s linear infinite;
+.spinning-spokes {
+  transform-origin: center;
+  animation: spin 0.35s linear infinite;
 }
 
-.car-detail.spoiler {
-  width: 0;
-  height: 0;
-  top: 9px;
-  left: 0;
-  background: none;
-  border: 6px solid transparent;
-  border-right: 10px solid #FFAA01;
+.svg-strike {
+  animation: svgStrikes 0.3s linear infinite;
 }
 
-.car-detail.back {
-  top: 18px;
-  left: 8px;
-  width: 105px;
-  height: 15px;
-  border-radius: 4px 10px 4px 4px;
+.svg-strike.s2 { animation-delay: 0.07s; }
+.svg-strike.s3 { animation-delay: 0.14s; }
+.svg-strike.s4 { animation-delay: 0.21s; }
+
+@keyframes svgCarBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-1.5px); }
 }
 
-.car-detail.center {
-  top: 4px;
-  left: 14px;
-  width: 78px;
-  height: 16px;
-  border-radius: 18px 16px 0 0;
+@keyframes svgStrikes {
+  0% { transform: translateX(40px); opacity: 1; }
+  100% { transform: translateX(-30px); opacity: 0; }
 }
-
-.car-detail.center1 {
-  top: 6px;
-  left: 36px;
-  width: 32px;
-  height: 13px;
-  background: #FFFFFF;
-  border-radius: 4px 12px 0 0;
-}
-
-.car-detail.front {
-  top: 22px;
-  left: 98px;
-  width: 22px;
-  height: 11px;
-  border-radius: 0 12px 6px 0;
-}
-
-.car-detail.wheel {
-  top: 22px;
-  left: 18px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, transparent 45%, #FFAA01 46%, #FFAA01 54%, transparent 55%), radial-gradient(#FFAA01 28%, transparent 29%, transparent 52%, #FFAA01 53%), #1E293B;
-  border: 2px solid #FFAA01;
-  box-sizing: border-box;
-  animation: spin 0.4s linear infinite;
-}
-
-.car-detail.wheel2 { left: 76px; }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes strikes { 0% { left: 117px; opacity: 1; } 100% { left: -10px; opacity: 0; } }
