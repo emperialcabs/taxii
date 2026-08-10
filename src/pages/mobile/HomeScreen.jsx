@@ -3,7 +3,7 @@ import InteractiveMap from '../../components/InteractiveMap';
 import { Geolocation } from '@capacitor/geolocation';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
-  // Load saved Google profile from localStorage
+  // Load saved profile from localStorage
   const userProfile = React.useMemo(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
@@ -21,15 +21,11 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
     if (h < 17) return 'Good Afternoon 🌤️';
     return 'Good Evening 🌙';
   }, []);
+
   const [customerAddress, setCustomerAddress] = useState('Bhavnagar, Gujarat');
-  // Initial coords state set to Bhavnagar, Gujarat
-  const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 }); // Bhavnagar Center
-
-  const nearbyTaxis = [];
-
+  const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const hasRealGpsRef = React.useRef(false);
 
-  // Restore saved location if present
   useEffect(() => {
     try {
       const saved = localStorage.getItem('taxigo_user_location');
@@ -54,10 +50,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   useEffect(() => {
     let watchId = null;
 
-    // Automatic Permission Popup Request (Allow / Deny System Prompt)
     const requestLocationPermission = async () => {
       try {
-        // Trigger Capacitor Native OS Permission Dialog (Allow / Deny)
         if (Geolocation && typeof Geolocation.requestPermissions === 'function') {
           await Geolocation.requestPermissions();
         }
@@ -69,11 +63,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
           return true;
         }
-      } catch (err) {
-        console.warn("Native location request notice:", err);
-      }
+      } catch (err) {}
 
-      // Fallback for HTML5 / Safari Browser Native Permission Bar
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -82,9 +73,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             const lng = pos.coords.longitude;
             updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
           },
-          (err) => {
-            console.warn("Browser GPS permission notice:", err);
-          },
+          () => {},
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
       }
@@ -93,7 +82,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
     requestLocationPermission().then(success => {
       if (!success && !hasRealGpsRef.current) {
-        // Backup IP Geolocation ONLY if hardware GPS was denied or delayed
         fetch('http://ip-api.com/json')
           .then(res => res.json())
           .then(data => {
@@ -105,7 +93,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
       }
     });
 
-    // Continuously stream high-precision hardware GPS updates
     if (navigator.geolocation) {
       watchId = navigator.geolocation.watchPosition(
         (pos) => {
@@ -114,9 +101,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           const lng = pos.coords.longitude;
           updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
         },
-        (err) => {
-          console.warn("Hardware GPS streaming notice:", err);
-        },
+        () => {},
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
@@ -143,9 +128,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
     { name: '📍 Bhavnagar Airport (BHU)', lat: 21.7523, lng: 72.1852 },
     { name: '📍 Takhteshwar Temple, Bhavnagar', lat: 21.7565, lng: 72.1456 },
     { name: '📍 Alkapuri, Vadodara', lat: 22.3106, lng: 73.1670 },
-    { name: '📍 Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 },
-    { name: '📍 Connaught Place, New Delhi', lat: 28.6139, lng: 77.2090 },
-    { name: '📍 MG Road, Bengaluru', lat: 12.9716, lng: 77.5946 },
+    { name: '📍 Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 }
   ];
 
   const filteredLocations = searchLocations.filter(loc => 
@@ -155,20 +138,18 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   return (
     <div className="real-mobile-app">
       <div className="full-homescreen-map-wrapper">
-        {/* Google Map Viewport */}
         <div className="live-map-viewport" style={{ position: 'relative', overflow: 'hidden' }}>
-          {/* Interactive Google Maps Leaflet Engine */}
+          {/* Leaflet Interactive Map */}
           <InteractiveMap
             center={userCoords}
             zoom={15}
-            userLabel="Your Live Location (Drag pin to move!)"
-            nearbyTaxis={nearbyTaxis}
+            userLabel="Your Live Spot"
             onUserLocationChange={(newCoords) => {
               updateLocation(newCoords, `Pinned Spot (${newCoords.lat.toFixed(4)}, ${newCoords.lng.toFixed(4)})`);
             }}
           />
 
-          {/* Floating Top Nav Controls */}
+          {/* Floating Top Controls */}
           <div className="map-floating-header">
             <div 
               className="floating-icon-btn" 
@@ -184,30 +165,32 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             >
               🎯
             </div>
-            <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontFamily: 'League Spartan', fontSize: '13px', fontWeight: '700', color: '#212B46', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: '#22C55E' }}>●</span> GPS Active
+            <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ color: '#22C55E' }}>●</span> GPS Live
             </div>
             {userPhoto ? (
-              <img className="floating-user-avatar" src={userPhoto} alt="User" style={{ borderRadius: '50%', border: '2px solid #FFAA01' }} />
+              <img className="floating-user-avatar" src={userPhoto} alt="User" />
             ) : (
-              <div className="floating-user-avatar" style={{ background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#FFAA01', borderRadius: '50%', border: '2px solid #FFAA01' }}>👤</div>
+              <div className="floating-user-avatar" style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#FFAA01' }}>👤</div>
             )}
           </div>
 
-          {/* Bottom Expandable Trip Card */}
+          {/* Bottom Expandable Trip Sheet */}
           <div className="homescreen-bottom-card">
             <div className="drag-handle-bar" />
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ marginBottom: '14px' }}>
               <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
-              <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#67696B', margin: '2px 0 0 0' }}>Welcome back, <strong style={{ color: '#212B46' }}>{userName}</strong> 🚀</p>
+              <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#1E293B', margin: '2px 0 0 0' }}>
+                Welcome back, {userName} ✨
+              </p>
             </div>
 
-            {/* Pickup / Dropoff Box with Customer Address */}
+            {/* Pickup Spot Selector Card */}
             <div 
               style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: '16px',
+                borderRadius: '18px',
                 padding: '14px 16px',
                 display: 'flex',
                 alignItems: 'center',
@@ -217,23 +200,25 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               }}
               onClick={() => setIsSearchOpen(true)}
             >
-              <span style={{ fontSize: '20px' }}>📍</span>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                📍
+              </div>
               <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <div style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>CURRENT PICKUP</div>
-                <div style={{ fontFamily: 'Space Grotesk', color: '#212B46', fontSize: '15px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: '11px', color: '#22C55E', fontWeight: '800', letterSpacing: '0.5px' }}>CURRENT PICKUP LOCATION</div>
+                <div style={{ fontFamily: 'Space Grotesk', color: '#1E293B', fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {customerAddress}
                 </div>
               </div>
-              <span style={{ fontSize: '18px', color: '#67696B' }}>›</span>
+              <span style={{ fontSize: '16px', color: '#64748B', fontWeight: 'bold' }}>→</span>
             </div>
 
             {/* Primary Action Button */}
             <button 
               className="taxigo-btn-primary" 
-              style={{ width: '100%', marginTop: '8px', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              style={{ width: '100%', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
               onClick={onStartBooking}
             >
-              <span>🚘</span> Request Ride Now
+              <span>🚕</span> Where do you want to go?
             </button>
           </div>
         </div>
@@ -241,19 +226,19 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
       {/* Location Search Modal Overlay */}
       {isSearchOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-          <div style={{ background: '#FFFFFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '20px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FFFFFF', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', padding: '24px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#212B46', margin: 0 }}>📍 Select Pickup Location</h2>
-              <button onClick={() => setIsSearchOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#212B46' }}>✕</button>
+              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#1E293B', margin: 0 }}>📍 Select Pickup Location</h2>
+              <button onClick={() => setIsSearchOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#1E293B' }}>✕</button>
             </div>
 
             <input 
               type="text" 
-              placeholder="Search street, locality or city (e.g. Alkapuri)..."
+              placeholder="Search street, locality or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '14px', border: '2px solid #E2E8F0', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#F8FAFC' }}
+              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#F8FAFC' }}
               autoFocus
             />
 
@@ -266,19 +251,19 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
                     setIsSearchOpen(false);
                     setSearchQuery('');
                   }}
-                  style={{ padding: '12px 14px', borderRadius: '12px', background: '#F8FAFC', cursor: 'pointer', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  style={{ padding: '14px 16px', borderRadius: '14px', background: '#F8FAFC', cursor: 'pointer', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                 >
-                  <span style={{ fontFamily: 'Space Grotesk', fontWeight: '600', color: '#212B46', fontSize: '14px' }}>{loc.name}</span>
-                  <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>Select ›</span>
+                  <span style={{ fontFamily: 'Space Grotesk', fontWeight: '700', color: '#1E293B', fontSize: '14px' }}>{loc.name}</span>
+                  <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '800' }}>Select →</span>
                 </div>
               ))}
             </div>
 
             <button 
               onClick={() => { setIsSearchOpen(false); onStartBooking(); }}
-              style={{ background: '#212B46', color: '#FFAA01', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px' }}
+              style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: '#FFAA01', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px' }}
             >
-              Confirm Location & Proceed to Booking 🚕
+              Confirm Location & Continue →
             </button>
           </div>
         </div>
@@ -291,11 +276,11 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           <span>Home</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'rides' ? 'active' : ''}`} onClick={() => setActiveTab('rides')}>
-          <span className="nav-tab-icon">🚗</span>
+          <span className="nav-tab-icon">🚘</span>
           <span>My Rides</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-          <span className="nav-tab-icon">👛</span>
+          <span className="nav-tab-icon">💳</span>
           <span>Wallet</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>

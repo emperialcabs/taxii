@@ -9,10 +9,10 @@ const createUserPinIcon = (label = "Your Location") => {
     className: 'custom-leaflet-user-pin',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
-        <div style="background: #212B46; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'League Spartan', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 4px;">
+        <div style="background: #1E293B; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 4px;">
           📍 ${label}
         </div>
-        <div style="width: 18px; height: 18px; background: #22C55E; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(34,197,94,0.8); animation: pulse 2s infinite;"></div>
+        <div style="width: 18px; height: 18px; background: #22C55E; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(34,197,94,0.8);"></div>
       </div>
     `,
     iconSize: [0, 0],
@@ -24,7 +24,7 @@ const createTaxiPinIcon = (badge = "Taxi") => {
   return L.divIcon({
     className: 'custom-leaflet-taxi-pin',
     html: `
-      <div style="transform: translate(-50%, -50%); background: #FFAA01; color: #212B46; padding: 6px 10px; border-radius: 20px; font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; border: 2px solid #212B46; font-weight: bold;">
+      <div style="transform: translate(-50%, -50%); background: #FFAA01; color: #1E293B; padding: 6px 10px; border-radius: 20px; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; border: 2px solid #1E293B; font-weight: bold;">
         🚕 <span style="font-size: 10px; margin-left: 3px; font-family: sans-serif;">${badge}</span>
       </div>
     `,
@@ -38,7 +38,7 @@ const createDestinationPinIcon = (label = "Dropoff") => {
     className: 'custom-leaflet-dest-pin',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
-        <div style="background: #EF4444; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'League Spartan', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 4px;">
+        <div style="background: #EF4444; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 4px;">
           🏁 ${label}
         </div>
         <div style="width: 16px; height: 16px; background: #EF4444; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(239,68,68,0.7);"></div>
@@ -49,23 +49,33 @@ const createDestinationPinIcon = (label = "Dropoff") => {
   });
 };
 
-// Component to dynamically re-center map & trigger map.invalidateSize() safely
-function MapRecenter({ center, zoom }) {
+// Component to dynamically re-center & auto-fit route bounds on map view update
+function MapRecenter({ center, destination, routePolyline, zoom }) {
   const map = useMap();
+
   useEffect(() => {
     if (!map) return;
     const timer = setTimeout(() => {
       try {
         map.invalidateSize();
-        if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
+
+        if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' && center && typeof center.lat === 'number') {
+          const bounds = L.latLngBounds([
+            [center.lat, center.lng],
+            [destination.lat, destination.lng]
+          ]);
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+        } else if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
           map.flyTo([center.lat, center.lng], zoom || 15, { animate: true, duration: 1.2 });
         }
       } catch (err) {
         console.warn("Leaflet map view set notice:", err);
       }
-    }, 100);
+    }, 120);
+
     return () => clearTimeout(timer);
-  }, [center?.lat, center?.lng, zoom, map]);
+  }, [center?.lat, center?.lng, destination?.lat, destination?.lng, zoom, map]);
+
   return null;
 }
 
@@ -85,10 +95,10 @@ class MapErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      const lat = this.props.center?.lat || 47.6062;
-      const lng = this.props.center?.lng || -122.3321;
+      const lat = this.props.center?.lat || 21.7645;
+      const lng = this.props.center?.lng || 72.1519;
       return (
-        <div style={{ width: '100%', height: '100%', position: 'relative', background: '#E5E7EB' }}>
+        <div style={{ width: '100%', height: '100%', position: 'relative', background: '#F1F5F9' }}>
           <iframe
             title="Google Maps Live Vector Fallback"
             src={`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
@@ -102,7 +112,7 @@ class MapErrorBoundary extends React.Component {
 }
 
 export default function InteractiveMap({
-  center = { lat: 47.6062, lng: -122.3321 },
+  center = { lat: 21.7645, lng: 72.1519 },
   zoom = 15,
   showUserPin = true,
   userLabel = "Your Location",
@@ -113,11 +123,11 @@ export default function InteractiveMap({
   onUserLocationChange = null,
   style = { width: '100%', height: '100%' }
 }) {
-  const safeLat = (center && typeof center.lat === 'number' && !isNaN(center.lat)) ? center.lat : 47.6062;
-  const safeLng = (center && typeof center.lng === 'number' && !isNaN(center.lng)) ? center.lng : -122.3321;
+  const safeLat = (center && typeof center.lat === 'number' && !isNaN(center.lat)) ? center.lat : 21.7645;
+  const safeLng = (center && typeof center.lng === 'number' && !isNaN(center.lng)) ? center.lng : 72.1519;
   const mapCenter = [safeLat, safeLng];
 
-  // Calculate Haversine distance in KM between pickup and destination
+  // Calculate distance in KM between pickup and destination
   const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
     if (typeof lat1 !== 'number' || typeof lon1 !== 'number' || typeof lat2 !== 'number' || typeof lon2 !== 'number') return 18.5;
     const R = 6371;
@@ -137,7 +147,7 @@ export default function InteractiveMap({
 
   return (
     <div className="interactive-google-map-container" style={{ ...style, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' }}>
-      {/* Floating Total Distance Badge (Light Map Theme, Single Line) */}
+      {/* Floating Total Distance Badge */}
       {distKm && (
         <div 
           style={{
@@ -146,10 +156,10 @@ export default function InteractiveMap({
             left: '50%',
             transform: 'translateX(-50%)',
             background: '#FFFFFF',
-            color: '#212B46',
+            color: '#1E293B',
             padding: '6px 14px',
             borderRadius: '20px',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.14)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
             fontFamily: "'Space Grotesk', 'League Spartan', sans-serif",
             fontWeight: '700',
             fontSize: '13px',
@@ -162,9 +172,9 @@ export default function InteractiveMap({
           }}
         >
           <span style={{ fontSize: '14px' }}>🛣️</span>
-          <span style={{ color: '#212B46', fontWeight: '800' }}>{distKm} KM</span>
-          <span style={{ color: '#94A3B8' }}>•</span>
-          <span style={{ color: '#22C55E', fontWeight: '600' }}>~{estMins} mins</span>
+          <span style={{ color: '#1E293B', fontWeight: '800' }}>{distKm} KM</span>
+          <span style={{ color: '#CBD5E1' }}>•</span>
+          <span style={{ color: '#22C55E', fontWeight: '800' }}>~{estMins} mins</span>
         </div>
       )}
 
@@ -177,19 +187,18 @@ export default function InteractiveMap({
           touchZoom={true}
           scrollWheelZoom={true}
           doubleClickZoom={true}
-          style={{ width: '100%', height: '100%', background: '#E5E7EB' }}
+          style={{ width: '100%', height: '100%', background: '#F8FAFC' }}
         >
-          <MapRecenter center={{ lat: safeLat, lng: safeLng }} zoom={zoom} />
+          <MapRecenter center={{ lat: safeLat, lng: safeLng }} destination={destination} routePolyline={routePolyline} zoom={zoom} />
           
-          {/* High Performance Vector Roadmap Tile Layer (100% iOS Safari & WebView Compatible) */}
+          {/* Google Maps Vector Vector Tile Layer */}
           <TileLayer
-            attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://maps.google.com">Google Maps</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
             maxZoom={20}
-            subdomains={['a', 'b', 'c', 'd']}
           />
 
-          {/* User GPS Location Marker (Draggable for Pinpoint Accuracy) */}
+          {/* User GPS Location Marker */}
           {showUserPin && (
             <Marker 
               position={[safeLat, safeLng]} 
@@ -206,7 +215,7 @@ export default function InteractiveMap({
                 }
               }}
             >
-              <Popup>📍 Drag pin to set exact pickup spot!</Popup>
+              <Popup>📍 Drag pin to set pickup spot!</Popup>
             </Marker>
           )}
 
@@ -236,27 +245,27 @@ export default function InteractiveMap({
             </Marker>
           )}
 
-          {/* Bold High-Contrast Route Line (Start -> End Map Route) */}
+          {/* High-Contrast Route Line (Start -> End Map Route) */}
           {Array.isArray(routePolyline) && routePolyline.length > 0 ? (
             <>
               <Polyline 
                 positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
-                pathOptions={{ color: '#212B46', weight: 8, opacity: 0.9 }} 
+                pathOptions={{ color: '#1E293B', weight: 7, opacity: 0.9 }} 
               />
               <Polyline 
                 positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
-                pathOptions={{ color: '#FFAA01', weight: 5, opacity: 1.0 }} 
+                pathOptions={{ color: '#FFAA01', weight: 4, opacity: 1.0 }} 
               />
             </>
           ) : (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' ? (
             <>
               <Polyline
                 positions={[[safeLat, safeLng], [destination.lat, destination.lng]]}
-                pathOptions={{ color: '#212B46', weight: 8, opacity: 0.9 }}
+                pathOptions={{ color: '#1E293B', weight: 7, opacity: 0.9 }}
               />
               <Polyline
                 positions={[[safeLat, safeLng], [destination.lat, destination.lng]]}
-                pathOptions={{ color: '#FFAA01', weight: 5, opacity: 1.0 }}
+                pathOptions={{ color: '#FFAA01', weight: 4, opacity: 1.0 }}
               />
             </>
           ) : null)}

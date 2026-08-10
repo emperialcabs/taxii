@@ -26,7 +26,7 @@ import TripTrackingScreen from './mobile/TripTrackingScreen';
 import TripReceiptScreen from './mobile/TripReceiptScreen';
 
 export default function MobileAppView() {
-  // Navigation Flow State Machine - Onboarding runs ONLY on first install/visit
+  // Navigation Flow State Machine
   const [appStage, setAppStage] = useState(() => {
     try {
       const hasOnboarded = localStorage.getItem('taxigo_onboarded');
@@ -42,10 +42,10 @@ export default function MobileAppView() {
   const [otpCode, setOtpCode] = useState(['', '', '', '']);
   const [selectedLang, setSelectedLang] = useState('English');
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
-  const [pickupLoc, setPickupLoc] = useState('Current Location');
-  const [dropoffLoc, setDropoffLoc] = useState('856 Spinka Inlet Apt. 576');
+  const [pickupLoc, setPickupLoc] = useState('Bhavnagar, Gujarat');
+  const [dropoffLoc, setDropoffLoc] = useState('Ahmedabad Airport (AMD)');
   const [selectedSeat, setSelectedSeat] = useState(3);
-  const [scheduledDate, setScheduledDate] = useState('Today, 09 Aug 2026');
+  const [scheduledDate, setScheduledDate] = useState('Today, 10 Aug 2026');
   const [scheduledTime, setScheduledTime] = useState('3:30 PM');
   const [selectedCar, setSelectedCar] = useState(2); // Car 2 (Sedan)
   const [selectedPayment, setSelectedPayment] = useState('wallet');
@@ -60,12 +60,12 @@ export default function MobileAppView() {
     setAppStage('APP_HOME');
   };
 
-  // Vehicle List Data
+  // Indian Rupee Vehicle Fleet
   const vehicleList = [
-    { id: 1, name: "Economy", img: "/assets/images/map/car1.png", dist: "4.5 KM", time: "15 Min", price: "$15" },
-    { id: 2, name: "Sedan Comfort", img: "/assets/images/map/car2.png", dist: "4.5 KM", time: "15 Min", price: "$25" },
-    { id: 3, name: "Luxury Executive", img: "/assets/images/map/car3.png", dist: "4.5 KM", time: "15 Min", price: "$35" },
-    { id: 4, name: "EV Green SUV", img: "/assets/images/map/car4.png", dist: "4.5 KM", time: "15 Min", price: "$45" },
+    { id: 1, name: "Economy", img: "/assets/images/map/car1.png", dist: "18 KM", time: "25 Min", price: "₹180" },
+    { id: 2, name: "Sedan Comfort", img: "/assets/images/map/car2.png", dist: "18 KM", time: "25 Min", price: "₹270" },
+    { id: 3, name: "Luxury Executive", img: "/assets/images/map/car3.png", dist: "18 KM", time: "25 Min", price: "₹450" },
+    { id: 4, name: "EV Green SUV", img: "/assets/images/map/car4.png", dist: "18 KM", time: "25 Min", price: "₹675" },
   ];
 
   // Dispatch Admin Notification & Save to Central DB when Ride is Requested
@@ -75,8 +75,8 @@ export default function MobileAppView() {
       customerPhone: phoneNumber ? ('+91 ' + phoneNumber) : '+91 9876543210',
       pickup: pickupLoc,
       dropoff: dropoffLoc,
-      vehicle: selectedCar === 2 ? 'Sedan Comfort' : 'Standard Taxi',
-      fare: '$25.00',
+      vehicle: selectedCar === 4 ? 'EV Green SUV' : (selectedCar === 2 ? 'Sedan Comfort' : 'Standard Taxi'),
+      fare: '₹270',
       seats: selectedSeat,
       scheduledDate,
       scheduledTime,
@@ -159,7 +159,6 @@ export default function MobileAppView() {
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoogleSignIn={(acc) => {
             setSelectedGoogleAccount(acc);
-            // If profile already saved, skip setup and go home
             try {
               const saved = localStorage.getItem('cabsy_user_profile');
               if (saved) {
@@ -179,7 +178,6 @@ export default function MobileAppView() {
           googleAccount={selectedGoogleAccount}
           onCompleteProfile={() => completeOnboarding()}
           onBack={() => {
-            // If already onboarded (editing from profile tab), go back to home
             try {
               const isOnboarded = localStorage.getItem('taxigo_onboarded');
               if (isOnboarded === 'true') {
@@ -248,6 +246,8 @@ export default function MobileAppView() {
       return (
         <SeatScheduleScreen 
           userCoords={userCoords}
+          pickupLoc={pickupLoc}
+          dropoffLoc={dropoffLoc}
           selectedSeat={selectedSeat}
           setSelectedSeat={setSelectedSeat}
           scheduledDate={scheduledDate}
@@ -263,6 +263,8 @@ export default function MobileAppView() {
       return (
         <SelectCarScreen 
           userCoords={userCoords}
+          pickupLoc={pickupLoc}
+          dropoffLoc={dropoffLoc}
           selectedSeat={selectedSeat}
           selectedCar={selectedCar}
           setSelectedCar={setSelectedCar}
@@ -275,6 +277,9 @@ export default function MobileAppView() {
     case 'SELECT_PAYMENT':
       return (
         <SelectPaymentScreen 
+          userCoords={userCoords}
+          pickupLoc={pickupLoc}
+          dropoffLoc={dropoffLoc}
           selectedPayment={selectedPayment}
           setSelectedPayment={setSelectedPayment}
           promoCode={promoCode}
@@ -293,10 +298,24 @@ export default function MobileAppView() {
       );
 
     case 'MATCHED':
-      return <DriverFoundScreen userCoords={userCoords} onStartRide={() => setAppStage('TRACKING')} />;
+      return (
+        <DriverFoundScreen 
+          userCoords={userCoords} 
+          pickupLoc={pickupLoc}
+          dropoffLoc={dropoffLoc}
+          onStartRide={() => setAppStage('TRACKING')} 
+        />
+      );
 
     case 'TRACKING':
-      return <TripTrackingScreen userCoords={userCoords} dropoffLoc={dropoffLoc} onCompleteRide={() => setAppStage('RECEIPT')} />;
+      return (
+        <TripTrackingScreen 
+          userCoords={userCoords} 
+          pickupLoc={pickupLoc}
+          dropoffLoc={dropoffLoc} 
+          onCompleteRide={() => setAppStage('RECEIPT')} 
+        />
+      );
 
     case 'RECEIPT':
       return <TripReceiptScreen onDone={() => setAppStage('APP_HOME')} />;

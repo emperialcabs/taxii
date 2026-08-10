@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
+import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 
-export default function TripTrackingScreen({ userCoords, dropoffLoc, onCompleteRide }) {
-  const pickupPos = (userCoords && typeof userCoords.lat === 'number') ? userCoords : { lat: 21.7645, lng: 72.1519, label: 'Pickup Point' };
-  const destPos = { lat: pickupPos.lat - 0.012, lng: pickupPos.lng + 0.014, label: dropoffLoc || 'Destination' };
+export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, onCompleteRide }) {
+  const pickupPos = getCoordsForPlace(pickupLoc || "Bhavnagar, Gujarat", userCoords);
+  const destPos = getCoordsForPlace(dropoffLoc || "Ahmedabad Airport (AMD)", userCoords);
+  const routePolyline = generateRoutePolyline(pickupPos, destPos);
 
-  // Simulated live route polyline points
-  const routePolyline = [
-    pickupPos,
-    { lat: pickupPos.lat - 0.004, lng: pickupPos.lng + 0.005 },
-    { lat: pickupPos.lat - 0.008, lng: pickupPos.lng + 0.009 },
-    destPos
-  ];
-
-  // Animate driver progress along route
   const [driverStep, setDriverStep] = useState(1);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -30,17 +23,33 @@ export default function TripTrackingScreen({ userCoords, dropoffLoc, onCompleteR
         <div className="live-map-viewport">
           <InteractiveMap
             center={currentDriverPos}
-            zoom={14}
-            userLabel="Pickup Point"
+            zoom={13}
+            userLabel={pickupLoc || "Pickup Point"}
             destination={destPos}
             activeDriverPos={currentDriverPos}
             routePolyline={routePolyline}
           />
 
           <div className="homescreen-bottom-card">
-            <h2 style={{ fontFamily: 'League Spartan', fontSize: '24px', margin: 0, color: '#212B46' }}>On Trip to {dropoffLoc}</h2>
-            <p style={{ color: '#67696B', margin: '4px 0 16px 0' }}>Estimated Arrival in 12 Mins</p>
-            <button className="taxigo-btn-primary" onClick={onCompleteRide}>Complete Trip & Pay</button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ background: '#DCFCE7', color: '#15803D', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
+                ● Trip In Progress
+              </span>
+              <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '800', color: '#22C55E' }}>
+                ₹270 Total
+              </span>
+            </div>
+
+            <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', margin: '0 0 4px 0', color: '#1E293B' }}>
+              Heading to {dropoffLoc || 'Destination'} 🚗
+            </h2>
+            <p style={{ color: '#64748B', margin: '0 0 16px 0', fontSize: '13px', fontFamily: 'Space Grotesk' }}>
+              Estimated Arrival: 18 mins • Driver: Ramesh Patel
+            </p>
+
+            <button className="taxigo-btn-primary" onClick={onCompleteRide}>
+              Complete Trip & Pay ₹270 →
+            </button>
           </div>
         </div>
       </div>
