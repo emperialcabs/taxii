@@ -1,46 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+const DEFAULT_PLACES = [
+  "Bhavnagar, Gujarat",
+  "Bhavnagar Railway Station",
+  "Ahmedabad Airport (AMD)",
+  "Vadodara Central Railway Station",
+  "SG Highway IT Park",
+  "Alkapuri Commercial Hub",
+  "Ghogha Circle & Beach",
+  "Mumbai Central Airport (BOM)"
+];
+
+const DEFAULT_ROUTES = [
+  { id: 'DEST-101', name: 'Bhavnagar ➔ Railway Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Bhavnagar Railway Station', distanceKm: 18 },
+  { id: 'DEST-102', name: 'Bhavnagar ➔ Ahmedabad Airport (AMD)', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ahmedabad Airport (AMD)', distanceKm: 175 },
+  { id: 'DEST-103', name: 'Bhavnagar ➔ Vadodara Central Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Vadodara Central Railway Station', distanceKm: 110 },
+  { id: 'DEST-104', name: 'Bhavnagar ➔ SG Highway IT Park', pickup: 'Bhavnagar, Gujarat', dropoff: 'SG Highway IT Park', distanceKm: 180 },
+  { id: 'DEST-105', name: 'Bhavnagar ➔ Alkapuri Hub', pickup: 'Bhavnagar, Gujarat', dropoff: 'Alkapuri Commercial Hub', distanceKm: 112 },
+  { id: 'DEST-106', name: 'Bhavnagar ➔ Ghogha Circle & Beach', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ghogha Circle & Beach', distanceKm: 12 },
+  { id: 'DEST-107', name: 'Bhavnagar ➔ Mumbai Central Airport', pickup: 'Bhavnagar, Gujarat', dropoff: 'Mumbai Central Airport (BOM)', distanceKm: 540 }
+];
 
 export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffLoc, setDropoffLoc, onSelectLocation, onBack }) {
-  // Read Owner/Admin-configured destinations & distance from localStorage (Admin Portal sync)
-  const defaultOwnerDestinations = [
-    { title: "Bhavnagar Railway Station", sub: "Station Road, Bhavnagar, Gujarat", distance: "18 km", duration: "25 mins" },
-    { title: "Ahmedabad Airport (AMD)", sub: "Hansol, Ahmedabad, Gujarat", distance: "175 km", duration: "2 hr 45 min" },
-    { title: "Vadodara Central Railway Station", sub: "Sayajiganj, Vadodara, Gujarat", distance: "110 km", duration: "1 hr 50 min" },
-    { title: "SG Highway IT Park", sub: "Sarkhej - Gandhinagar Hwy, Ahmedabad", distance: "180 km", duration: "2 hr 55 min" },
-    { title: "Alkapuri Commercial Hub", sub: "Alkapuri, Vadodara, Gujarat", distance: "112 km", duration: "1 hr 55 min" },
-    { title: "Ghogha Circle & Beach", sub: "Ghogha Road, Bhavnagar, Gujarat", distance: "12 km", duration: "18 mins" },
-    { title: "Mumbai Central Airport (BOM)", sub: "Vile Parle East, Mumbai, Maharashtra", distance: "540 km", duration: "8 hrs" }
-  ];
+  const [places, setPlaces] = useState(DEFAULT_PLACES);
+  const [routes, setRoutes] = useState(DEFAULT_ROUTES);
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'pickup' | 'dropoff' | null
 
-  const getOwnerConfiguredLocations = () => {
+  // Fetch live Admin Panel configuration from localStorage
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem('cabsy_destinations');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(d => ({
-            title: d.dropoff || d.name,
-            sub: `Pickup: ${d.pickup || 'Bhavnagar'}`,
-            distance: `${d.distanceKm || 15} km`,
-            duration: `~${Math.max(12, Math.round((d.distanceKm || 15) * 1.5))} mins`
-          }));
+      const savedPlaces = localStorage.getItem('cabsy_places');
+      if (savedPlaces) {
+        const parsedP = JSON.parse(savedPlaces);
+        if (Array.isArray(parsedP) && parsedP.length > 0) {
+          setPlaces(parsedP);
         }
       }
-    } catch (e) {}
-    return defaultOwnerDestinations;
-  };
 
-  const locationList = getOwnerConfiguredLocations();
-
-  // Selected item distance matching
-  const matchedItem = locationList.find(i => dropoffLoc && (dropoffLoc.toLowerCase().includes(i.title.toLowerCase().split(' ')[0]) || i.title.toLowerCase().includes(dropoffLoc.toLowerCase())));
-  const currentDistanceDisplay = matchedItem ? matchedItem.distance : (dropoffLoc ? '18 km' : '');
-
-  const handleChooseDestination = (title) => {
-    if (!pickupLoc || pickupLoc.trim() === '') {
-      setPickupLoc("Current Location, Bhavnagar");
+      const savedDestinations = localStorage.getItem('cabsy_destinations');
+      if (savedDestinations) {
+        const parsedD = JSON.parse(savedDestinations);
+        if (Array.isArray(parsedD) && parsedD.length > 0) {
+          setRoutes(parsedD);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load admin routes:", e);
     }
-    setDropoffLoc(title);
+  }, []);
+
+  // Calculate distance display for selected route
+  const currentMatchedRoute = routes.find(r => 
+    (pickupLoc && (r.pickup.toLowerCase().includes(pickupLoc.toLowerCase()) || pickupLoc.toLowerCase().includes(r.pickup.toLowerCase()))) &&
+    (dropoffLoc && (r.dropoff.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc.toLowerCase().includes(r.dropoff.toLowerCase())))
+  );
+
+  const currentDistance = currentMatchedRoute 
+    ? `${currentMatchedRoute.distanceKm} km`
+    : (dropoffLoc ? '18 km' : '');
+
+  const handleSelectAdminRoute = (route) => {
+    setPickupLoc(route.pickup);
+    setDropoffLoc(route.dropoff);
+    setActiveDropdown(null);
   };
 
   const isBothLocationsEntered = pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '';
@@ -51,75 +73,171 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
         <button className="header-back-arrow" onClick={onBack}>‹</button>
         <h2 className="white-header-title">Select Destination</h2>
       </div>
-      <div style={{ padding: '16px 20px', paddingBottom: '100px' }}>
-        {/* Pickup & Dropoff Fields */}
-        <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '16px', border: '1.5px solid #E2E8F0', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-            <span style={{ color: '#22C55E', fontWeight: '700', fontSize: '18px' }}>●</span>
-            <input 
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '600', color: '#212B46' }} 
-              value={pickupLoc} 
-              onChange={(e) => setPickupLoc(e.target.value)} 
-              placeholder="Enter Pickup Location"
-            />
-          </div>
-          <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
-              <span style={{ color: '#FB4945', fontWeight: '700', fontSize: '18px' }}>📍</span>
+
+      <div style={{ padding: '16px 20px', paddingBottom: '100px', overflowY: 'auto' }}>
+        {/* Pickup & Dropoff Selection Card */}
+        <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '16px', border: '1.5px solid #E2E8F0', marginBottom: '16px', position: 'relative' }}>
+          
+          {/* Pickup Location Selector */}
+          <div style={{ position: 'relative', marginBottom: '12px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#22C55E', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>●</span> PICK-UP LOCATION (FROM ADMIN PLACES)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input 
-                style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '600', color: '#212B46' }} 
-                value={dropoffLoc} 
-                onChange={(e) => setDropoffLoc(e.target.value)} 
-                placeholder="Enter Dropoff Destination"
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#212B46', background: '#FFFFFF' }} 
+                value={pickupLoc} 
+                onChange={(e) => setPickupLoc(e.target.value)} 
+                onFocus={() => setActiveDropdown('pickup')}
+                placeholder="Select or type Pick-up Location"
               />
             </div>
-            {currentDistanceDisplay && (
-              <span style={{ background: '#212B46', color: '#FFAA01', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                🛣️ {currentDistanceDisplay}
+
+            {/* Dropdown Options for Pickup */}
+            {activeDropdown === 'pickup' && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', maxHeight: '180px', overflowY: 'auto', marginTop: '4px' }}>
+                <div style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
+                  ADMIN PLACES ({places.length})
+                </div>
+                {places.map((place, i) => (
+                  <div 
+                    key={i}
+                    style={{ padding: '10px 14px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                    onClick={() => {
+                      setPickupLoc(place);
+                      setActiveDropdown(null);
+                    }}
+                  >
+                    🟢 {place}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Dropoff Location Selector */}
+          <div style={{ position: 'relative', borderTop: '1px dashed #CBD5E1', paddingTop: '12px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#FB4945', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>📍</span> DROP-OFF DESTINATION (TO ADMIN PLACES)
               </span>
+              {currentDistance && (
+                <span style={{ background: '#212B46', color: '#FFAA01', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '700' }}>
+                  🛣️ {currentDistance}
+                </span>
+              )}
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input 
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#212B46', background: '#FFFFFF' }} 
+                value={dropoffLoc} 
+                onChange={(e) => setDropoffLoc(e.target.value)} 
+                onFocus={() => setActiveDropdown('dropoff')}
+                placeholder="Select or type Dropoff Destination"
+              />
+            </div>
+
+            {/* Dropdown Options for Dropoff */}
+            {activeDropdown === 'dropoff' && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', maxHeight: '180px', overflowY: 'auto', marginTop: '4px' }}>
+                <div style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
+                  ADMIN DESTINATIONS ({places.length})
+                </div>
+                {places.map((place, i) => (
+                  <div 
+                    key={i}
+                    style={{ padding: '10px 14px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                    onClick={() => {
+                      setDropoffLoc(place);
+                      setActiveDropdown(null);
+                    }}
+                  >
+                    🔴 {place}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Validation Warning Alert */}
-        {!isBothLocationsEntered && (
-          <div style={{ background: '#FEF3C7', color: '#92400E', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>⚠️</span> Please fill both Pickup & Dropoff locations to proceed.
+        {/* Admin Places Badges Bar */}
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '800', color: '#212B46', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>📍 ADMIN LOCATION PLACES ({places.length})</span>
+            <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Tap to select</span>
           </div>
-        )}
-
-        {/* Quick Location Chips */}
-        <div className="location-chips-bar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px' }}>
-          <button className="location-chip-btn active" onClick={() => handleChooseDestination("Bhavnagar Railway Station, Gujarat")}>🌊 Bhavnagar (18 km)</button>
-          <button className="location-chip-btn" onClick={() => handleChooseDestination("Ahmedabad Airport (AMD), Gujarat")}>🏙️ Ahmedabad (175 km)</button>
-          <button className="location-chip-btn" onClick={() => handleChooseDestination("Vadodara Central Railway Station, Gujarat")}>🏢 Vadodara (110 km)</button>
-          <button className="location-chip-btn" onClick={() => handleChooseDestination("Mumbai Airport (BOM), Maharashtra")}>🌆 Mumbai (540 km)</button>
+          <div className="location-chips-bar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+            {places.map((place, i) => (
+              <button 
+                key={i} 
+                className={`location-chip-btn ${dropoffLoc === place ? 'active' : ''}`}
+                style={{ whiteSpace: 'nowrap', padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
+                onClick={() => {
+                  if (!pickupLoc || pickupLoc.trim() === '') {
+                    setPickupLoc("Bhavnagar, Gujarat");
+                  }
+                  setDropoffLoc(place);
+                }}
+              >
+                📍 {place}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Nearby Suggestions List with Distance (KM) */}
-        <div className="nearby-suggestions-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {locationList
-            .filter(item => !dropoffLoc || item.title.toLowerCase().includes(dropoffLoc.toLowerCase()) || item.sub.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc === '856 Spinka Inlet Apt. 576')
-            .map((item, idx) => (
-              <div 
-                key={idx} 
-                className="suggestion-item-row"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: '#FFFFFF', borderRadius: '14px', border: '1px solid #F1F5F9', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', cursor: 'pointer' }}
-                onClick={() => handleChooseDestination(item.title)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div className="suggestion-pin-box">📍</div>
-                  <div>
-                    <h4 className="suggestion-title" style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#212B46' }}>{item.title}</h4>
-                    <p className="suggestion-subtitle" style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748B' }}>{item.sub}</p>
+        {/* ADMIN CREATED ROUTES SECTION ONLY */}
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: '800', color: '#212B46', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>🛣️ ADMIN CONFIGURED ROUTES ({routes.length})</span>
+            <span style={{ fontSize: '11px', color: '#22C55E', fontWeight: '700' }}>Tap route to auto-fill</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {routes.map((route, idx) => {
+              const isSelected = (pickupLoc === route.pickup && dropoffLoc === route.dropoff);
+              const estFare = Math.round((route.distanceKm || 15) * 15);
+
+              return (
+                <div 
+                  key={route.id || idx} 
+                  style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '14px', 
+                    background: isSelected ? '#FEF3C7' : '#FFFFFF', 
+                    borderRadius: '16px', 
+                    border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0', 
+                    boxShadow: isSelected ? '0 4px 12px rgba(255,170,1,0.2)' : '0 2px 8px rgba(0,0,0,0.03)', 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => handleSelectAdminRoute(route)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', background: '#212B46', color: '#FFAA01', padding: '3px 8px', borderRadius: '8px' }}>
+                      {route.id || `ROUTE-${idx + 1}`}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#212B46' }}>🛣️ {route.distanceKm} KM</span>
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#22C55E' }}>₹{estFare}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#212B46' }}>
+                      <span style={{ color: '#22C55E', fontWeight: 'bold' }}>●</span>
+                      <span>From: {route.pickup}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#212B46' }}>
+                      <span style={{ color: '#FB4945', fontWeight: 'bold' }}>📍</span>
+                      <span>To: {route.dropoff}</span>
+                    </div>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#212B46' }}>🛣️ {item.distance}</div>
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: '#22C55E' }}>⏱️ {item.duration}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -131,11 +249,11 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             background: isBothLocationsEntered ? '#212B46' : '#94A3B8',
             color: isBothLocationsEntered ? '#FFAA01' : '#FFFFFF',
             border: 'none',
-            padding: '14px',
+            padding: '16px',
             borderRadius: '16px',
             fontFamily: 'Space Grotesk, sans-serif',
             fontSize: '16px',
-            fontWeight: '700',
+            fontWeight: '800',
             cursor: isBothLocationsEntered ? 'pointer' : 'not-allowed',
             boxShadow: isBothLocationsEntered ? '0 4px 14px rgba(33,43,70,0.3)' : 'none',
             transition: 'all 0.2s ease'
@@ -147,7 +265,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             }
           }}
         >
-          {isBothLocationsEntered ? 'Confirm Route & Proceed →' : 'Enter Both Locations to Continue'}
+          {isBothLocationsEntered ? 'Confirm Admin Route & Proceed →' : 'Select Pickup & Dropoff Location'}
         </button>
       </div>
     </div>
