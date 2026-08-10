@@ -31,19 +31,24 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
 
   return (
     <div className="real-mobile-app">
-      <div className="let-you-in-container">
-        <div className="let-you-top-header">
-          <button className="let-you-back-btn" onClick={onBack}>
+      <div className="let-you-in-page-wrapper">
+        {/* Red City Banner Header */}
+        <div className="let-you-red-header">
+          <button className="let-you-white-back-btn" onClick={onBack}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 18L9 12L15 6" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <div className="let-you-logo-card">
-            <img src="/assets/images/let-you-screen/logo.svg" alt="Logo" />
+          
+          <div className="let-you-centered-logo-box">
+            <img src="/assets/images/let-you-screen/logo.svg" alt="Taxigo Logo" />
           </div>
         </div>
-        <div className="let-you-content-box">
-          <h1 className="let-you-title">Let’s you in</h1>
+
+        {/* White Curved Bottom Sheet Content */}
+        <div className="let-you-white-bottom-sheet">
+          <h1 className="let-you-title">Let’s You In</h1>
+
           <div className="phone-input-wrapper">
             <span className="flag-icon-span">🇮🇳 +91</span>
             <input 
@@ -59,11 +64,11 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
             Sign In with OTP
           </button>
 
-          <div style={{ textAlign: 'center', margin: '16px 0 10px 0', fontSize: '13px', color: '#94A3B8', fontWeight: 'bold' }}>
+          <div style={{ textAlign: 'center', margin: '18px 0 12px 0', fontSize: '13px', color: '#94A3B8', fontWeight: '700' }}>
             ────── OR ──────
           </div>
 
-          {/* Real Firebase Google Sign In Button - Direct OAuth */}
+          {/* Real Firebase Google Sign In Button */}
           <button 
             type="button"
             disabled={loading}
@@ -75,7 +80,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
               border: '1.5px solid #E2E8F0',
               background: '#FFFFFF',
               color: '#212B46',
-              fontFamily: 'League Spartan',
+              fontFamily: 'League Spartan, sans-serif',
               fontWeight: '800',
               fontSize: '15px',
               cursor: loading ? 'wait' : 'pointer',
@@ -95,8 +100,11 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
             </svg>
             {loading ? 'Opening Firebase Auth...' : 'Continue with Google'}
           </button>
+
+          <p className="let-you-footer-txt" style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748B', fontWeight: '600' }}>
+            Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={onNext}>Sign up</span>
+          </p>
         </div>
-        <p className="let-you-footer-txt">Don’t have an account? <span onClick={onNext}>Sign up</span></p>
       </div>
     </div>
   );
