@@ -1,0 +1,1313 @@
+{
+    "manifest_version": "1.0.21",
+    "title": "Empire Cab - Transport Company & On Demand Taxi Elementor Template Kit",
+    "page_builder": "elementor",
+    "kit_version": "1.0.0",
+    "templates": [
+        {
+            "name": "Global Kit Styles",
+            "screenshot": "screenshots\/global-kit-styles.jpg",
+            "source": "templates\/global.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com",
+            "type": "section",
+            "category": "page",
+            "metadata": {
+                "template_type": "global-styles",
+                "include_in_zip": "1",
+                "elementor_pro_required": null,
+                "additional_template_information": [
+                    "These are the global theme styles configured through the Elementor Theme Styles area."
+                ]
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "JKit Tab Step",
+            "screenshot": "screenshots\/jkit-tab-step.jpg",
+            "source": "templates\/jkit-tab-step.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/jkit-tab-step\/",
+            "type": "section",
+            "category": "section",
+            "metadata": {
+                "template_type": "section-other",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Home",
+            "screenshot": "screenshots\/home.jpg",
+            "source": "templates\/home.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/home\/",
+            "type": "section",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-home",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "About",
+            "screenshot": "screenshots\/about.jpg",
+            "source": "templates\/about.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/about\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Services",
+            "screenshot": "screenshots\/services.jpg",
+            "source": "templates\/services.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/services\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Driver",
+            "screenshot": "screenshots\/driver.jpg",
+            "source": "templates\/driver.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/driver\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "FAQ",
+            "screenshot": "screenshots\/faq.jpg",
+            "source": "templates\/faq.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/faq\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "404 Page",
+            "screenshot": "screenshots\/404-page.jpg",
+            "source": "templates\/404-page.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/404-page\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "MetForm Contact",
+            "screenshot": "screenshots\/metform-contact.jpg",
+            "source": "templates\/metform-contact.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/metform-contact\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Contact",
+            "screenshot": "screenshots\/contact.jpg",
+            "source": "templates\/contact.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/contact\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Blog",
+            "screenshot": "screenshots\/blog.jpg",
+            "source": "templates\/blog.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/blog\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Single Post",
+            "screenshot": "screenshots\/single-post.jpg",
+            "source": "templates\/single-post.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/single-post\/",
+            "type": "page",
+            "category": "page",
+            "metadata": {
+                "template_type": "single-page",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Header",
+            "screenshot": "screenshots\/header.jpg",
+            "source": "templates\/header.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/header\/",
+            "type": "section",
+            "category": "section",
+            "metadata": {
+                "template_type": "section-header",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        },
+        {
+            "name": "Footer",
+            "screenshot": "screenshots\/footer.jpg",
+            "source": "templates\/footer.json",
+            "preview_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/template-kit\/footer\/",
+            "type": "section",
+            "category": "section",
+            "metadata": {
+                "template_type": "section-footer",
+                "include_in_zip": "1",
+                "elementor_pro_required": null
+            },
+            "elementor_pro_required": false
+        }
+    ],
+    "required_plugins": [
+        {
+            "name": "Elementor",
+            "version": "3.12.1",
+            "file": "elementor\/elementor.php",
+            "author": "Elementor.com"
+        },
+        {
+            "name": "Jeg Elementor Kit",
+            "version": "2.6.1",
+            "file": "jeg-elementor-kit\/jeg-elementor-kit.php",
+            "author": "Jegtheme"
+        },
+        {
+            "name": "MetForm",
+            "version": "3.2.3",
+            "file": "metform\/metform.php",
+            "author": "Wpmet"
+        }
+    ],
+    "images": [
+        {
+            "filename": "Step-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Step-1.png",
+            "templates": [
+                {
+                    "source": "templates\/jkit-tab-step.json",
+                    "name": "JKit Tab Step"
+                }
+            ],
+            "filesize": 79656,
+            "dimensions": [
+                665,
+                1360
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/iphone-14-pro-max-mockup-73TFXTR"
+        },
+        {
+            "filename": "smiling-taxi-driver-with-woman-passenger-pointing-on-road-e1688700362352.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/smiling-taxi-driver-with-woman-passenger-pointing-on-road-e1688700362352-800x571.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                }
+            ],
+            "filesize": 217871,
+            "dimensions": [
+                1681,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-TFTBRDG"
+        },
+        {
+            "filename": "hero-app-mockup-silver.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/hero-app-mockup-silver-800x1180.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                }
+            ],
+            "filesize": 271079,
+            "dimensions": [
+                1418,
+                2091
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/phone-mockup-XNLWGHE"
+        },
+        {
+            "filename": "Sedan-3d.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Sedan-3d-800x640.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 222591,
+            "dimensions": [
+                1500,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/generic-hybrid-car-79R4AD"
+        },
+        {
+            "filename": "suv-3d.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/suv-3d-800x640.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 229034,
+            "dimensions": [
+                1500,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/car-gradient-YW4MFY3"
+        },
+        {
+            "filename": "Luxury-3d.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Luxury-3d-800x640.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 215498,
+            "dimensions": [
+                1500,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/gradient-car-RZ9XH8H"
+        },
+        {
+            "filename": "electric-3d.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/electric-3d-800x640.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 290004,
+            "dimensions": [
+                1500,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/electric-suv-RLDLGL9"
+        },
+        {
+            "filename": "map-ornamen-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/map-ornamen-1-800x1308.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                },
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 33718,
+            "dimensions": [
+                1000,
+                1635
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/24-marketing-doodle-concepts-JK6LMX"
+        },
+        {
+            "filename": "young-woman-holding-smartphone-and-talking-to-smiling-taxi-driver-e1688700401195.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/young-woman-holding-smartphone-and-talking-to-smiling-taxi-driver-e1688700401195-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                }
+            ],
+            "filesize": 286264,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-S4V4P6W"
+        },
+        {
+            "filename": "map-ornamen-2-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/map-ornamen-2-1-800x490.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 16377,
+            "dimensions": [
+                1000,
+                613
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/24-marketing-doodle-concepts-JK6LMX"
+        },
+        {
+            "filename": "selective-focus-of-smiling-taxi-driver-and-woman-with-smartphone-in-car-e1688700427594.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/selective-focus-of-smiling-taxi-driver-and-woman-with-smartphone-in-car-e1688700427594-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 262372,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-9HSYF4D"
+        },
+        {
+            "filename": "map-bg-2.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/map-bg-2-800x651.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 117946,
+            "dimensions": [
+                2880,
+                2343
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/seamless-map-pattern-set-V2BEU8S"
+        },
+        {
+            "filename": "departure-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/departure-1.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 5862,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/airport-line-icons-9BVPSE6"
+        },
+        {
+            "filename": "time.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/time.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 9610,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/delivery-ui-icons-H8SCYX7"
+        },
+        {
+            "filename": "follower-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/follower-1.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 8783,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/influencer-line-icons-H33WVNC"
+        },
+        {
+            "filename": "3d-box-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/3d-box-1.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 5803,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/delivery-ui-icons-ZR774JH"
+        },
+        {
+            "filename": "calendar-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/calendar-1.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 6269,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/logistic-line-icons-HP5GE5B"
+        },
+        {
+            "filename": "bag-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/bag-1.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 5607,
+            "dimensions": [
+                340,
+                340
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/law-line-icons-FLDA97A"
+        },
+        {
+            "filename": "maps-pattern-bg-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/maps-pattern-bg-1-800x471.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                },
+                {
+                    "source": "templates\/blog.json",
+                    "name": "Blog"
+                }
+            ],
+            "filesize": 72720,
+            "dimensions": [
+                1390,
+                818
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/seamless-map-pattern-set-V2BEU8S"
+        },
+        {
+            "filename": "Mobile-play-store-badge.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Mobile-play-store-badge.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                },
+                {
+                    "source": "templates\/footer.json",
+                    "name": "Footer"
+                }
+            ],
+            "filesize": 7000,
+            "dimensions": [
+                297,
+                88
+            ],
+            "image_source": "cc0",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/play.google.com\/intl\/en_us\/badges\/"
+        },
+        {
+            "filename": "Mobile-app-store-badge.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Mobile-app-store-badge.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                },
+                {
+                    "source": "templates\/footer.json",
+                    "name": "Footer"
+                }
+            ],
+            "filesize": 3908,
+            "dimensions": [
+                264,
+                88
+            ],
+            "image_source": "cc0",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/developer.apple.com\/app-store\/marketing\/guidelines\/"
+        },
+        {
+            "filename": "cta-mockup.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/cta-mockup-800x1220.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 179917,
+            "dimensions": [
+                1119,
+                1707
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/iphone-14-pro-mockup-LV44FLH"
+        },
+        {
+            "filename": "mature-woman-using-mobile-app-device-on-smartphone-to-arrange-a-taxi-ride-in-downtown-city-street-e1688700454885.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/mature-woman-using-mobile-app-device-on-smartphone-to-arrange-a-taxi-ride-in-downtown-city-street-e1688700454885-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 247114,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-F2XXQNB"
+        },
+        {
+            "filename": "businessman-looking-at-the-watch-on-the-back-of-the-limousine-e1688700474222.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/businessman-looking-at-the-watch-on-the-back-of-the-limousine-e1688700474222-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 222051,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-PLPQTNA"
+        },
+        {
+            "filename": "map-ornamen-3.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/map-ornamen-3-800x334.png",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 15949,
+            "dimensions": [
+                1000,
+                418
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/24-marketing-doodle-concepts-JK6LMX"
+        },
+        {
+            "filename": "taxi-driver-opening-car-door-for-smiling-woman-e1688700498669.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/taxi-driver-opening-car-door-for-smiling-woman-e1688700498669-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/home.json",
+                    "name": "Home"
+                },
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                },
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 294822,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-WU3URQL"
+        },
+        {
+            "filename": "smiling-female-taxi-driver-and-businessman-in-car-e1688700518664.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/smiling-female-taxi-driver-and-businessman-in-car-e1688700518664-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                }
+            ],
+            "filesize": 317353,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-5YVAZRZ"
+        },
+        {
+            "filename": "smiling-taxi-driver-beside-open-car-door-e1688700540117.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/smiling-taxi-driver-beside-open-car-door-e1688700540117-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                }
+            ],
+            "filesize": 210198,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-8E44EHD"
+        },
+        {
+            "filename": "bg-4.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/bg-4-800x651.png",
+            "templates": [
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                }
+            ],
+            "filesize": 115701,
+            "dimensions": [
+                2880,
+                2343
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/seamless-map-pattern-set-V2BEU8S"
+        },
+        {
+            "filename": "businesswoman-listening-to-music-in-taxi-e1688700565478.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/businesswoman-listening-to-music-in-taxi-e1688700565478-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                }
+            ],
+            "filesize": 169720,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-4NXBAT7"
+        },
+        {
+            "filename": "woman-talking-with-smiling-taxi-driver-beside-car-e1688700584890.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/woman-talking-with-smiling-taxi-driver-beside-car-e1688700584890-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/about.json",
+                    "name": "About"
+                },
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 305084,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-WGWUUYS"
+        },
+        {
+            "filename": "chauffeur-driven-limousine-with-the-business-woman-in-the-back-seat-e1688700607547.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/chauffeur-driven-limousine-with-the-business-woman-in-the-back-seat-e1688700607547-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/services.json",
+                    "name": "Services"
+                }
+            ],
+            "filesize": 201010,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-9UMZ4QF"
+        },
+        {
+            "filename": "side-view-of-female-taxi-driver-holding-steering-wheel-e1688700626750.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/side-view-of-female-taxi-driver-holding-steering-wheel-e1688700626750-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 258484,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-CYTZSWG"
+        },
+        {
+            "filename": "Team-1.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/Team-1-800x930.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 198073,
+            "dimensions": [
+                860,
+                1000
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-GNA6SSL"
+        },
+        {
+            "filename": "Team-2-2.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/Team-2-2-800x930.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 263063,
+            "dimensions": [
+                860,
+                1000
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-B4YAGHA"
+        },
+        {
+            "filename": "Team-3.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/Team-3-800x930.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 221725,
+            "dimensions": [
+                860,
+                1000
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-5AETAZF"
+        },
+        {
+            "filename": "Team-4.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/Team-4-800x930.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 240268,
+            "dimensions": [
+                860,
+                1000
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-Q7FWY7N"
+        },
+        {
+            "filename": "Team-5.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/Team-5-800x930.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 255268,
+            "dimensions": [
+                860,
+                1000
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-M9CG8DS"
+        },
+        {
+            "filename": "smiling-taxi-driver-sitting-in-car-with-open-door-and-holding-smartphone-e1688700650217.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/smiling-taxi-driver-sitting-in-car-with-open-door-and-holding-smartphone-e1688700650217-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 235718,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-ZD4FW97"
+        },
+        {
+            "filename": "driver-app.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/driver-app.png",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 106577,
+            "dimensions": [
+                784,
+                1200
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/taxi-app-ui-kit-3E5TXSF"
+        },
+        {
+            "filename": "taxi-driver-waving-hand-waiting-for-client-sitting-in-car-transportation-concept-e1688700673351.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/taxi-driver-waving-hand-waiting-for-client-sitting-in-car-transportation-concept-e1688700673351-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 201346,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-XSQFY8W"
+        },
+        {
+            "filename": "handsome-redhaired-ginger-man-with-long-beard-going-on-trip-during-summer-vacation-on-new-car-e1688700693377.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/handsome-redhaired-ginger-man-with-long-beard-going-on-trip-during-summer-vacation-on-new-car-e1688700693377-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 303538,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-XRMHKY2"
+        },
+        {
+            "filename": "joyful-indian-man-driving-car-smiling-at-camera-sitting-inside-e1688700713542.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/joyful-indian-man-driving-car-smiling-at-camera-sitting-inside-e1688700713542-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/driver.json",
+                    "name": "Driver"
+                }
+            ],
+            "filesize": 208919,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-PWL4P9W"
+        },
+        {
+            "filename": "man-in-suit-driving-a-car-personal-driver-business-taxi-back-view-from-saloon-e1688700743443.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/man-in-suit-driving-a-car-personal-driver-business-taxi-back-view-from-saloon-e1688700743443-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/faq.json",
+                    "name": "FAQ"
+                }
+            ],
+            "filesize": 210384,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-YHNZJMV"
+        },
+        {
+            "filename": "black-and-white-taxi-sign-on-car-roof-e1688700763674.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/black-and-white-taxi-sign-on-car-roof-e1688700763674-800x534.jpg",
+            "templates": [
+                {
+                    "source": "templates\/404-page.json",
+                    "name": "404 Page"
+                }
+            ],
+            "filesize": 190789,
+            "dimensions": [
+                1920,
+                1282
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/elements.envato.com\/image-UQAAKL6"
+        },
+        {
+            "filename": "businesswoman-with-wireless-earbuds-commuting-to-work-in-taxi-talking-on-mobile-phone-e1688700785756.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/businesswoman-with-wireless-earbuds-commuting-to-work-in-taxi-talking-on-mobile-phone-e1688700785756-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/contact.json",
+                    "name": "Contact"
+                }
+            ],
+            "filesize": 245694,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-V2859XR"
+        },
+        {
+            "filename": "unrecognizable-african-lady-in-hijab-using-digital-tablet-on-backseat-in-taxi-e1688700807755.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/unrecognizable-african-lady-in-hijab-using-digital-tablet-on-backseat-in-taxi-e1688700807755-800x524.jpg",
+            "templates": [
+                {
+                    "source": "templates\/blog.json",
+                    "name": "Blog"
+                }
+            ],
+            "filesize": 163322,
+            "dimensions": [
+                1920,
+                1257
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-NQF9QV9"
+        },
+        {
+            "filename": "girl-chatting-on-cellphone-having-fun-during-luxury-taxi-ride-e1688700833858.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/girl-chatting-on-cellphone-having-fun-during-luxury-taxi-ride-e1688700833858-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/single-post.json",
+                    "name": "Single Post"
+                }
+            ],
+            "filesize": 159290,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-KZ666DV"
+        },
+        {
+            "filename": "young-woman-hailing-a-taxi-on-the-street-in-the-city-e1688700849596.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/young-woman-hailing-a-taxi-on-the-street-in-the-city-e1688700849596-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/single-post.json",
+                    "name": "Single Post"
+                }
+            ],
+            "filesize": 254671,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-AT6SSHJ"
+        },
+        {
+            "filename": "passenger-greeting-taxi-driver-e1688700868704.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/07\/passenger-greeting-taxi-driver-e1688700868704-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/single-post.json",
+                    "name": "Single Post"
+                }
+            ],
+            "filesize": 191072,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-KAQGER4"
+        },
+        {
+            "filename": "happy-mature-man-in-taxi-talking-on-phone-e1688700889980.jpg",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/happy-mature-man-in-taxi-talking-on-phone-e1688700889980-800x533.jpg",
+            "templates": [
+                {
+                    "source": "templates\/single-post.json",
+                    "name": "Single Post"
+                }
+            ],
+            "filesize": 340670,
+            "dimensions": [
+                1920,
+                1280
+            ],
+            "image_source": "envato_elements",
+            "person_or_place": "yes",
+            "image_urls": "https:\/\/elements.envato.com\/image-PSLXYDU"
+        },
+        {
+            "filename": "Logo-3.png",
+            "thumbnail_url": "https:\/\/templatekit.jegtheme.com\/cabsy\/wp-content\/uploads\/sites\/392\/2023\/06\/Logo-3.png",
+            "templates": [
+                {
+                    "source": "templates\/header.json",
+                    "name": "Header"
+                },
+                {
+                    "source": "templates\/footer.json",
+                    "name": "Footer"
+                }
+            ],
+            "filesize": 5937,
+            "dimensions": [
+                388,
+                91
+            ],
+            "image_source": "cc0",
+            "person_or_place": "no",
+            "image_urls": "https:\/\/www.freepik.com\/free-vector\/flat-c-logo-template-pack_13405193.htm"
+        }
+    ]
+}

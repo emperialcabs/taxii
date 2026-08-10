@@ -1,0 +1,431 @@
+import React, { useState, useEffect } from 'react';
+import db from '../services/dbService';
+import { 
+  MapPin, 
+  Car, 
+  Calendar, 
+  Clock, 
+  User, 
+  Phone, 
+  CheckCircle2, 
+  ArrowRightLeft, 
+  ShieldCheck, 
+  ChevronRight
+} from 'lucide-react';
+import './Pages.css';
+
+const DEFAULT_PLACES = [
+  'Downtown Terminal',
+  'International Airport T3',
+  'Grand Central Plaza',
+  'Metro Business Bay',
+  'Westside Marina Resort',
+  'City Convention Center',
+  'Silicon Heights Tower A',
+  'Northside Mall',
+  'Harbor Cruise Port',
+  'Beachside Luxury Resort'
+];
+
+const DEFAULT_DESTINATIONS = [
+  { id: 'DEST-101', name: 'Downtown Terminal → International Airport T3', pickup: 'Downtown Terminal', dropoff: 'International Airport T3', distanceKm: 18 },
+  { id: 'DEST-102', name: 'Grand Central Plaza → Metro Business Bay', pickup: 'Grand Central Plaza', dropoff: 'Metro Business Bay', distanceKm: 12 },
+  { id: 'DEST-103', name: 'Westside Marina Resort → City Convention Center', pickup: 'Westside Marina Resort', dropoff: 'City Convention Center', distanceKm: 25 },
+  { id: 'DEST-104', name: 'Silicon Heights → Northside Mall', pickup: 'Silicon Heights Tower A', dropoff: 'Northside Mall', distanceKm: 8 },
+  { id: 'DEST-105', name: 'Harbor Cruise Port → Beachside Luxury Resort', pickup: 'Harbor Cruise Port', dropoff: 'Beachside Luxury Resort', distanceKm: 34 },
+];
+
+const DEFAULT_VEHICLES = [
+  {
+    id: 'CAR-101',
+    name: 'Standard Sedan',
+    passengers: '4 Seats',
+    rate: '15',
+    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
+    description: 'Comfortable sedan for daily rides'
+  },
+  {
+    id: 'CAR-102',
+    name: 'Executive SUV',
+    passengers: '6 Seats',
+    rate: '22',
+    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
+    description: 'Spacious family SUV with luggage space'
+  },
+  {
+    id: 'CAR-103',
+    name: 'Luxury Class',
+    passengers: '4 Seats',
+    rate: '35',
+    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
+    description: 'Premium BMW & Mercedes ride'
+  },
+  {
+    id: 'CAR-104',
+    name: 'Eco Electric',
+    passengers: '4 Seats',
+    rate: '20',
+    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
+    description: 'Quiet & clean Tesla electric vehicle'
+  }
+];
+
+export default function BookRide() {
+  const [places, setPlaces] = useState([]);
+  const [destinations, setDestinations] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffDestination, setDropoffDestination] = useState('');
+  const [distanceKm, setDistanceKm] = useState(18);
+  const [isMatchedRoute, setIsMatchedRoute] = useState(false);
+  
+  const [selectedVehicleId, setSelectedVehicleId] = useState('');
+  
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
+  const [pickupTime, setPickupTime] = useState('10:00');
+
+  const [bookingSuccess, setBookingSuccess] = useState(null);
+
+  // Load places, destinations, and vehicles from localStorage
+  useEffect(() => {
+    const savedPlaces = localStorage.getItem('cabsy_places');
+    const parsedPlaces = savedPlaces ? JSON.parse(savedPlaces) : DEFAULT_PLACES;
+    setPlaces(parsedPlaces);
+    
+    const initialFrom = parsedPlaces[0] || 'Downtown Terminal';
+    const initialTo = parsedPlaces[1] || 'International Airport T3';
+    setPickupLocation(initialFrom);
+    setDropoffDestination(initialTo);
+
+    const savedDest = localStorage.getItem('cabsy_destinations');
+    const parsedDest = savedDest ? JSON.parse(savedDest) : DEFAULT_DESTINATIONS;
+    setDestinations(parsedDest);
+
+    const savedVehicles = localStorage.getItem('cabsy_vehicles');
+    const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : DEFAULT_VEHICLES;
+    setVehicles(parsedVehicles);
+    if (parsedVehicles.length > 0) {
+      setSelectedVehicleId(parsedVehicles[0].id);
+    }
+  }, []);
+
+  // Update KM whenever Pickup or Dropoff changes
+  useEffect(() => {
+    if (!pickupLocation || !dropoffDestination) return;
+
+    if (pickupLocation === dropoffDestination) {
+      setDistanceKm(0);
+      setIsMatchedRoute(true);
+      return;
+    }
+
+    const matched = destinations.find(
+      d => (d.pickup === pickupLocation && d.dropoff === dropoffDestination) ||
+           (d.pickup === dropoffDestination && d.dropoff === pickupLocation)
+    );
+
+    if (matched) {
+      setDistanceKm(Number(matched.distanceKm));
+      setIsMatchedRoute(true);
+    } else {
+      setDistanceKm(15);
+      setIsMatchedRoute(false);
+    }
+  }, [pickupLocation, dropoffDestination, destinations]);
+
+  // Swap pickup & dropoff
+  const handleSwapPlaces = () => {
+    const temp = pickupLocation;
+    setPickupLocation(dropoffDestination);
+    setDropoffDestination(temp);
+  };
+
+  const currentVehicle = vehicles.find(v => v.id === selectedVehicleId) || vehicles[0] || DEFAULT_VEHICLES[0];
+  const ratePerKm = parseFloat(currentVehicle?.rate || 15);
+  const calculatedFare = (distanceKm * ratePerKm).toFixed(2);
+
+  const handleSubmitBooking = (e) => {
+    e.preventDefault();
+    if (!customerName || !customerPhone) {
+      alert("Please enter your name and phone number to complete booking.");
+      return;
+    }
+
+    if (pickupLocation === dropoffDestination) {
+      alert("Pick-up location and drop-off destination cannot be the same!");
+      return;
+    }
+
+    const newInquiryId = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newInquiry = {
+      id: newInquiryId,
+      customerName,
+      customerPhone,
+      pickup: pickupLocation,
+      dropoff: dropoffDestination,
+      vehicle: currentVehicle.name,
+      fare: parseFloat(calculatedFare),
+      status: 'Pending',
+      driver: 'Unassigned',
+      date: `${pickupDate} ${pickupTime}`
+    };
+
+    db.saveInquiry(newInquiry);
+    setBookingSuccess(newInquiry);
+  };
+
+  return (
+    <div className="light-booking-container">
+      <div className="light-booking-wrapper">
+        
+        {/* LIGHT PAGE HEADER */}
+        <div className="light-booking-header text-center">
+          <h2>Book Your Taxi Ride</h2>
+          <p>Choose your pick-up location, drop-off destination, and vehicle class to estimate your fare.</p>
+        </div>
+
+        {bookingSuccess ? (
+          /* LIGHT SUCCESS CONFIRMATION BOX */
+          <div className="light-success-card">
+            <div className="success-icon-badge">
+              <CheckCircle2 size={54} />
+            </div>
+            <h3>Booking Confirmed!</h3>
+            <p className="subtitle">Your booking request reference is <strong>{bookingSuccess.id}</strong>.</p>
+
+            <div className="success-details-list">
+              <div className="detail-item">
+                <span>Passenger Name:</span>
+                <strong>{bookingSuccess.customerName}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Pick-up Location:</span>
+                <strong>{bookingSuccess.pickup}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Destination:</span>
+                <strong>{bookingSuccess.dropoff}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Vehicle Class:</span>
+                <strong>{bookingSuccess.vehicle}</strong>
+              </div>
+              <div className="detail-item fare-item">
+                <span>Total Calculated Fare:</span>
+                <strong className="text-green text-xl">₹{Number(bookingSuccess.fare).toFixed(2)}</strong>
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-3 justify-center">
+              <button className="btn btn-primary" onClick={() => setBookingSuccess(null)}>
+                Book Another Ride
+              </button>
+              <a href="/" className="btn btn-outline">
+                Back to Home
+              </a>
+            </div>
+          </div>
+        ) : (
+          /* SINGLE-SCREEN LIGHT FORM GRID */
+          <div className="light-booking-grid">
+            
+            {/* LEFT FORM COLUMN */}
+            <div className="light-form-card">
+              <form onSubmit={handleSubmitBooking}>
+                
+                {/* STEP 1: ROUTE PICKER */}
+                <div className="form-section">
+                  <label className="section-title">
+                    <MapPin size={16} className="text-green" /> 1. Select Route Locations
+                  </label>
+                  
+                  <div className="route-picker-row mt-2">
+                    <div className="field-group">
+                      <span className="field-label">From (Pick-up)</span>
+                      <select 
+                        className="light-select"
+                        value={pickupLocation}
+                        onChange={e => setPickupLocation(e.target.value)}
+                        required
+                      >
+                        {places.map((p, idx) => (
+                          <option key={idx} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      className="light-btn-swap"
+                      title="Swap Pickup & Dropoff"
+                      onClick={handleSwapPlaces}
+                    >
+                      <ArrowRightLeft size={16} />
+                    </button>
+
+                    <div className="field-group">
+                      <span className="field-label">To (Drop-off)</span>
+                      <select 
+                        className="light-select"
+                        value={dropoffDestination}
+                        onChange={e => setDropoffDestination(e.target.value)}
+                        required
+                      >
+                        {places.map((p, idx) => (
+                          <option key={idx} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="route-distance-chip mt-2">
+                    <span className="dot green"></span>
+                    <span>Configured Distance: <strong>{distanceKm} KM</strong></span>
+                  </div>
+                </div>
+
+                {/* STEP 2: VEHICLE CHOICE */}
+                <div className="form-section mt-3">
+                  <label className="section-title">
+                    <Car size={16} className="text-green" /> 2. Choose Vehicle Class
+                  </label>
+
+                  <div className="vehicle-light-grid mt-2">
+                    {vehicles.map(v => (
+                      <div 
+                        key={v.id} 
+                        className={`vehicle-light-card ${selectedVehicleId === v.id ? 'active' : ''}`}
+                        onClick={() => setSelectedVehicleId(v.id)}
+                      >
+                        <img src={v.image} alt={v.name} className="vehicle-thumb" />
+                        <div className="vehicle-info">
+                          <h4 className="m-0 text-sm font-bold">{v.name}</h4>
+                          <small className="text-muted">{v.passengers}</small>
+                        </div>
+                        <span className="vehicle-price">₹{v.rate}/km</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* STEP 3: CONTACT & SCHEDULE */}
+                <div className="form-section mt-3">
+                  <label className="section-title">
+                    <User size={16} className="text-green" /> 3. Contact & Schedule
+                  </label>
+
+                  <div className="form-row-4col mt-2">
+                    <div className="field-group">
+                      <span className="field-label">Full Name</span>
+                      <input 
+                        type="text" 
+                        className="light-input"
+                        placeholder="Rajesh Kumar"
+                        value={customerName}
+                        onChange={e => setCustomerName(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="field-group">
+                      <span className="field-label">Phone</span>
+                      <input 
+                        type="tel" 
+                        className="light-input"
+                        placeholder="+91 98765 43210"
+                        value={customerPhone}
+                        onChange={e => setCustomerPhone(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="field-group">
+                      <span className="field-label">Date</span>
+                      <input 
+                        type="date" 
+                        className="light-input"
+                        value={pickupDate}
+                        onChange={e => setPickupDate(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="field-group">
+                      <span className="field-label">Time</span>
+                      <input 
+                        type="time" 
+                        className="light-input"
+                        value={pickupTime}
+                        onChange={e => setPickupTime(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" className="light-submit-btn mt-3">
+                  Book Ride Now <ChevronRight size={18} />
+                </button>
+              </form>
+            </div>
+
+            {/* RIGHT FARE SUMMARY CARD */}
+            <div className="light-summary-card">
+              <h3 className="summary-title">Trip Summary</h3>
+
+              <div className="route-timeline mt-3">
+                <div className="timeline-item">
+                  <span className="timeline-dot green"></span>
+                  <div>
+                    <small>PICK-UP LOCATION</small>
+                    <strong>{pickupLocation}</strong>
+                  </div>
+                </div>
+
+                <div className="timeline-line"></div>
+
+                <div className="timeline-item">
+                  <span className="timeline-dot red"></span>
+                  <div>
+                    <small>DROP-OFF DESTINATION</small>
+                    <strong>{dropoffDestination}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="summary-list mt-3">
+                <div className="summary-row">
+                  <span>Distance:</span>
+                  <strong>{distanceKm} KM</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Vehicle:</span>
+                  <strong>{currentVehicle.name}</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Rate:</span>
+                  <strong className="text-green">₹{currentVehicle.rate} / km</strong>
+                </div>
+              </div>
+
+              <div className="fare-big-box mt-3">
+                <div className="fare-label">Estimated Total Fare</div>
+                <div className="fare-price">₹{calculatedFare}</div>
+                <small className="fare-note">Fixed transparent pricing based on KM</small>
+              </div>
+
+              <div className="trust-badge mt-3 flex align-center gap-2">
+                <ShieldCheck size={18} className="text-green" />
+                <small className="text-muted">Instant confirmation & driver dispatch.</small>
+              </div>
+            </div>
+
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

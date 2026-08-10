@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import BookingModal from './components/BookingModal';
+
+import Home from './pages/Home';
+import About from './pages/About';
+import Services from './pages/Services';
+import Faq from './pages/Faq';
+import Contact from './pages/Contact';
+import BookRide from './pages/BookRide';
+import AdminPortal from './pages/AdminPortal';
+import MobileAppView from './pages/MobileAppView';
+import NotFound from './pages/NotFound';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
+function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
+  const location = useLocation();
+  const isAdmin = location.pathname === '/admin';
+  const isWebSite = location.pathname === '/web';
+  const isMobileRoute = location.pathname === '/app' || location.pathname === '/mobile';
+
+  if (isAdmin) {
+    return <AdminPortal />;
+  }
+
+  // App Mode Environment Flag (Supports 3 separate Vercel deployments: website, android, ios)
+  const appMode = import.meta.env.VITE_APP_MODE || 'mobile';
+
+  // Force Website mode if VITE_APP_MODE === 'website' and not on /admin or /mobile
+  if (appMode === 'website' && !isMobileRoute) {
+    return (
+      <div className="app-container">
+        <Header onOpenBooking={handleOpenBooking} />
+        
+        <main className="app-main-content">
+          <Routes>
+            <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
+            <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
+            <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
+            <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
+            <Route path="/book-ride" element={<BookRide />} />
+            <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+
+        <Footer />
+        <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
+      </div>
+    );
+  }
+
+  // Native Mobile App View (Default for Mobile Apps / Android / iOS Vercel Deployments)
+  const isCapacitorNative = window.Capacitor !== undefined || window.location.protocol === 'file:';
+  const isMobilePath = location.pathname === '/' || location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.endsWith('/index.html');
+
+  if (!isWebSite && (isMobilePath || isCapacitorNative)) {
+    return <MobileAppView />;
+  }
+
+  return (
+    <div className="app-container">
+      <Header onOpenBooking={handleOpenBooking} />
+      
+      <main className="app-main-content">
+        <Routes>
+          <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
+          <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
+          <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
+          <Route path="/book-ride" element={<BookRide />} />
+          <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      <Footer />
+
+      <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
+    </div>
+  );
+}
+
+export default function App() {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  const handleOpenBooking = () => {
+    setIsBookingOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setIsBookingOpen(false);
+  };
+
+  return (
+    <Router>
+      <ScrollToTop />
+      <MainLayout 
+        handleOpenBooking={handleOpenBooking}
+        isBookingOpen={isBookingOpen}
+        handleCloseBooking={handleCloseBooking}
+      />
+    </Router>
+  );
+}
