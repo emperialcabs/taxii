@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { Geolocation } from '@capacitor/geolocation';
+import { getCoordsForPlace } from '../../utils/locationCoords';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
   // Load saved profile from localStorage
@@ -116,22 +117,51 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const searchLocations = [
-    { name: '📍 Bhavnagar City Center, Gujarat', lat: 21.7645, lng: 72.1519 },
-    { name: '📍 Waghawadi Road, Bhavnagar', lat: 21.7580, lng: 72.1460 },
-    { name: '📍 Ghogha Circle, Bhavnagar', lat: 21.7610, lng: 72.1480 },
-    { name: '📍 Kalanala, Bhavnagar', lat: 21.7690, lng: 72.1500 },
-    { name: '📍 Chitra GIDC, Bhavnagar', lat: 21.7810, lng: 72.1280 },
-    { name: '📍 Subhashnagar, Bhavnagar', lat: 21.7450, lng: 72.1620 },
-    { name: '📍 Victoria Park, Bhavnagar', lat: 21.7430, lng: 72.1380 },
-    { name: '📍 Bhavnagar Railway Station', lat: 21.7702, lng: 72.1444 },
-    { name: '📍 Bhavnagar Airport (BHU)', lat: 21.7523, lng: 72.1852 },
-    { name: '📍 Takhteshwar Temple, Bhavnagar', lat: 21.7565, lng: 72.1456 },
-    { name: '📍 Alkapuri, Vadodara', lat: 22.3106, lng: 73.1670 },
-    { name: '📍 Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 }
-  ];
+  // Dynamically load places configured in Admin Panel (cabsy_places in localStorage)
+  const getAdminPlaces = () => {
+    try {
+      const saved = localStorage.getItem('cabsy_places');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(p => {
+            const nameStr = typeof p === 'string' ? p : (p.name || p.title || p.location);
+            const coords = getCoordsForPlace(nameStr, userCoords);
+            return {
+              name: `📍 ${nameStr}`,
+              lat: coords.lat,
+              lng: coords.lng
+            };
+          });
+        }
+      }
+    } catch (e) {}
 
-  const filteredLocations = searchLocations.filter(loc => 
+    // Default Fallback Places
+    return [
+      { name: '📍 Bhavnagar City Center, Gujarat', lat: 21.7645, lng: 72.1519 },
+      { name: '📍 Waghawadi Road, Bhavnagar', lat: 21.7580, lng: 72.1460 },
+      { name: '📍 Ghogha Circle, Bhavnagar', lat: 21.7610, lng: 72.1480 },
+      { name: '📍 Kalanala, Bhavnagar', lat: 21.7690, lng: 72.1500 },
+      { name: '📍 Chitra GIDC, Bhavnagar', lat: 21.7810, lng: 72.1280 },
+      { name: '📍 Subhashnagar, Bhavnagar', lat: 21.7450, lng: 72.1620 },
+      { name: '📍 Victoria Park, Bhavnagar', lat: 21.7430, lng: 72.1380 },
+      { name: '📍 Bhavnagar Railway Station', lat: 21.7702, lng: 72.1444 },
+      { name: '📍 Bhavnagar Airport (BHU)', lat: 21.7523, lng: 72.1852 },
+      { name: '📍 Takhteshwar Temple, Bhavnagar', lat: 21.7565, lng: 72.1456 },
+      { name: '📍 Alkapuri, Vadodara', lat: 22.3106, lng: 73.1670 },
+      { name: '📍 Ahmedabad Airport (AMD)', lat: 23.0772, lng: 72.6347 },
+      { name: '📍 Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 }
+    ];
+  };
+
+  const [adminPlacesList, setAdminPlacesList] = useState(getAdminPlaces);
+
+  useEffect(() => {
+    setAdminPlacesList(getAdminPlaces());
+  }, [isSearchOpen]);
+
+  const filteredLocations = adminPlacesList.filter(loc => 
     loc.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
