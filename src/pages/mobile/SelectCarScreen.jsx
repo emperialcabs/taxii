@@ -106,7 +106,7 @@ export default function SelectCarScreen({
               >
                 <span>←</span> Back
               </button>
-              <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' }}>
+              <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', color: '#059669', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
                 <span>●</span> {tripType === 'round-trip' ? `Round Trip • ${effectiveDistanceKm} KM` : `One-Way • ${effectiveDistanceKm} KM`}
               </div>
             </div>
@@ -132,8 +132,8 @@ export default function SelectCarScreen({
                     style={{
                       flex: '0 0 calc(32% - 8px)',
                       minWidth: '110px',
-                      background: isSelected ? '#FFFBEB' : '#FFFFFF',
-                      border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0',
+                      background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                      border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                       borderRadius: '18px',
                       padding: '12px 8px',
                       display: 'flex',
@@ -141,7 +141,7 @@ export default function SelectCarScreen({
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 14px rgba(255,170,1,0.25)' : '0 2px 6px rgba(0,0,0,0.02)',
+                      boxShadow: isSelected ? '0 4px 14px rgba(16,185,129,0.2)' : '0 2px 6px rgba(0,0,0,0.02)',
                       transition: 'all 0.2s ease'
                     }}
                     onClick={() => setSelectedCar(car.id)}

@@ -18,9 +18,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   // Time-based greeting
   const greeting = React.useMemo(() => {
     const h = new Date().getHours();
-    if (h < 12) return 'Good Morning ☀️';
-    if (h < 17) return 'Good Afternoon 🌤️';
-    return 'Good Evening 🌙';
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }, []);
 
   const [customerAddress, setCustomerAddress] = useState('Bhavnagar, Gujarat');
@@ -103,7 +103,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           updateLocation({ lat, lng }, `Live Phone GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
         },
         () => {},
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000 }
       );
     }
 
@@ -117,41 +117,27 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Dynamically load places configured in Admin Panel (cabsy_places in localStorage)
+  // Dynamically load places configured in Admin Portal (cabsy_places)
   const getAdminPlaces = () => {
     try {
-      const saved = localStorage.getItem('cabsy_places');
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const savedPlaces = localStorage.getItem('cabsy_places');
+      if (savedPlaces) {
+        const parsed = JSON.parse(savedPlaces);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(p => {
-            const nameStr = typeof p === 'string' ? p : (p.name || p.title || p.location);
-            const coords = getCoordsForPlace(nameStr, userCoords);
-            return {
-              name: `📍 ${nameStr}`,
-              lat: coords.lat,
-              lng: coords.lng
-            };
-          });
+          return parsed.map(p => ({
+            name: p,
+            ...getCoordsForPlace(p, userCoords)
+          }));
         }
       }
     } catch (e) {}
 
-    // Default Fallback Places
     return [
-      { name: '📍 Bhavnagar City Center, Gujarat', lat: 21.7645, lng: 72.1519 },
-      { name: '📍 Waghawadi Road, Bhavnagar', lat: 21.7580, lng: 72.1460 },
-      { name: '📍 Ghogha Circle, Bhavnagar', lat: 21.7610, lng: 72.1480 },
-      { name: '📍 Kalanala, Bhavnagar', lat: 21.7690, lng: 72.1500 },
-      { name: '📍 Chitra GIDC, Bhavnagar', lat: 21.7810, lng: 72.1280 },
-      { name: '📍 Subhashnagar, Bhavnagar', lat: 21.7450, lng: 72.1620 },
-      { name: '📍 Victoria Park, Bhavnagar', lat: 21.7430, lng: 72.1380 },
-      { name: '📍 Bhavnagar Railway Station', lat: 21.7702, lng: 72.1444 },
-      { name: '📍 Bhavnagar Airport (BHU)', lat: 21.7523, lng: 72.1852 },
-      { name: '📍 Takhteshwar Temple, Bhavnagar', lat: 21.7565, lng: 72.1456 },
-      { name: '📍 Alkapuri, Vadodara', lat: 22.3106, lng: 73.1670 },
-      { name: '📍 Ahmedabad Airport (AMD)', lat: 23.0772, lng: 72.6347 },
-      { name: '📍 Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 }
+      { name: 'Bhavnagar Airport (BHU)', lat: 21.7523, lng: 72.1852 },
+      { name: 'Takhteshwar Temple, Bhavnagar', lat: 21.7565, lng: 72.1456 },
+      { name: 'Alkapuri, Vadodara', lat: 22.3106, lng: 73.1670 },
+      { name: 'Ahmedabad Airport (AMD)', lat: 23.0772, lng: 72.6347 },
+      { name: 'Mumbai Central, Maharashtra', lat: 19.0760, lng: 72.8777 }
     ];
   };
 
@@ -192,8 +178,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
                 }
               }}
               title="Recenter Map"
+              style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A' }}
             >
-              🎯
+              GPS
             </div>
             <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#22C55E' }}>●</span> GPS Live
@@ -201,7 +188,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             {userPhoto ? (
               <img className="floating-user-avatar" src={userPhoto} alt="User" />
             ) : (
-              <div className="floating-user-avatar" style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#D97706' }}>👤</div>
+              <div className="floating-user-avatar" style={{ background: '#F1F5F9', border: '1.5px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>{userName.charAt(0)}</div>
             )}
           </div>
 
@@ -211,7 +198,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             <div style={{ marginBottom: '14px' }}>
               <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
               <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: '2px 0 0 0' }}>
-                Welcome back, {userName} ✨
+                Welcome back, {userName}
               </p>
             </div>
 

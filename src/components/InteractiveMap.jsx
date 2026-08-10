@@ -9,10 +9,10 @@ const createUserPinIcon = (label = "Your Location") => {
     className: 'custom-leaflet-user-pin',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
-        <div style="background: #1E293B; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 4px;">
-          📍 ${label}
+        <div style="background: #0F172A; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 4px;">
+          <span style="color: #22C55E; margin-right: 4px;">●</span> ${label}
         </div>
-        <div style="width: 18px; height: 18px; background: #22C55E; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(34,197,94,0.8);"></div>
+        <div style="width: 16px; height: 16px; background: #22C55E; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(34,197,94,0.8);"></div>
       </div>
     `,
     iconSize: [0, 0],
@@ -24,8 +24,8 @@ const createTaxiPinIcon = (badge = "Taxi") => {
   return L.divIcon({
     className: 'custom-leaflet-taxi-pin',
     html: `
-      <div style="transform: translate(-50%, -50%); background: #FFAA01; color: #1E293B; padding: 6px 10px; border-radius: 20px; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; border: 2px solid #1E293B; font-weight: bold;">
-        🚕 <span style="font-size: 10px; margin-left: 3px; font-family: sans-serif;">${badge}</span>
+      <div style="transform: translate(-50%, -50%); background: #10B981; color: #FFFFFF; padding: 5px 10px; border-radius: 16px; font-size: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3); display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; font-weight: 800; font-family: 'Space Grotesk', sans-serif;">
+        <span style="margin-right: 3px;">●</span> ${badge}
       </div>
     `,
     iconSize: [0, 0],
@@ -39,9 +39,9 @@ const createDestinationPinIcon = (label = "Dropoff") => {
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
         <div style="background: #EF4444; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 4px;">
-          🏁 ${label}
+          <span style="color: #FFFFFF; margin-right: 4px;">●</span> ${label}
         </div>
-        <div style="width: 16px; height: 16px; background: #EF4444; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(239,68,68,0.7);"></div>
+        <div style="width: 14px; height: 14px; background: #EF4444; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(239,68,68,0.7);"></div>
       </div>
     `,
     iconSize: [0, 0],

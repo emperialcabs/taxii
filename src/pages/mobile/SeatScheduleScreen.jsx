@@ -76,7 +76,7 @@ export default function SeatScheduleScreen({
               >
                 <span>←</span> Back
               </button>
-              <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#D97706', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' }}>
+              <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
                 <span>●</span> {tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`}
               </div>
             </div>
@@ -93,14 +93,14 @@ export default function SeatScheduleScreen({
                 style={{
                   padding: '14px',
                   borderRadius: '16px',
-                  border: tripType === 'one-way' ? '2px solid #FFAA01' : '1.5px solid #E2E8F0',
-                  background: tripType === 'one-way' ? '#FFFBEB' : '#FFFFFF',
+                  border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                  background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'one-way' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
                   fontSize: '16px',
                   fontWeight: '800',
                   cursor: 'pointer',
-                  boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(255,170,1,0.25)' : 'none',
+                  boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
                   transition: 'all 0.2s ease',
                   display: 'flex',
                   flexDirection: 'column',
@@ -109,7 +109,7 @@ export default function SeatScheduleScreen({
                 }}
               >
                 <span>One-Way Trip</span>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#22C55E' }}>{baseDistance} KM</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669' }}>{baseDistance} KM</span>
               </button>
 
               <button
@@ -118,14 +118,14 @@ export default function SeatScheduleScreen({
                 style={{
                   padding: '14px',
                   borderRadius: '16px',
-                  border: tripType === 'round-trip' ? '2px solid #FFAA01' : '1.5px solid #E2E8F0',
-                  background: tripType === 'round-trip' ? '#FFFBEB' : '#FFFFFF',
+                  border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                  background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
                   fontSize: '16px',
                   fontWeight: '800',
                   cursor: 'pointer',
-                  boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(255,170,1,0.25)' : 'none',
+                  boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
                   transition: 'all 0.2s ease',
                   display: 'flex',
                   flexDirection: 'column',
@@ -134,7 +134,7 @@ export default function SeatScheduleScreen({
                 }}
               >
                 <span>Round Trip (Return)</span>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#D97706' }}>{baseDistance * 2} KM (2×)</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM (2×)</span>
               </button>
             </div>
 
