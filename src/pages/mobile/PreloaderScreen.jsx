@@ -9,49 +9,59 @@ export default function PreloaderScreen({ onFinish }) {
   }, [onFinish]);
 
   return (
-    <div className="real-mobile-app">
+    <div className="real-mobile-app" style={{ background: '#FFFFFF' }}>
       <div className="taxigo-preloader-container">
         <div className="loading-window">
-          <svg viewBox="0 0 160 70" className="preloader-car-svg">
-            <defs>
-              <linearGradient id="taxiBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#FFAA01" />
-                <stop offset="100%" stopColor="#FF9100" />
-              </linearGradient>
-            </defs>
-            
-            {/* Animated Speed Lines */}
-            <line className="svg-strike s1" x1="0" y1="28" x2="18" y2="28" stroke="#FFAA01" strokeWidth="2.5" strokeLinecap="round" />
-            <line className="svg-strike s2" x1="5" y1="38" x2="25" y2="38" stroke="#FFAA01" strokeWidth="2" strokeLinecap="round" />
-            <line className="svg-strike s3" x1="0" y1="48" x2="15" y2="48" stroke="#FFAA01" strokeWidth="2" strokeLinecap="round" />
-            <line className="svg-strike s4" x1="60" y1="58" x2="80" y2="58" stroke="#FFAA01" strokeWidth="2" strokeLinecap="round" />
+          <svg viewBox="0 0 180 80" className="taxigo-exact-car-svg">
+            {/* Speed Lines */}
+            <g className="car-speed-lines">
+              <rect className="dash dash1" x="2" y="38" width="12" height="2.5" rx="1.2" fill="#FFAA01" />
+              <rect className="dash dash2" x="14" y="46" width="16" height="3" rx="1.5" fill="#FFAA01" />
+              <rect className="dash dash3" x="6" y="54" width="10" height="2.5" rx="1.2" fill="#FFAA01" />
+              <rect className="dash dash4" x="72" y="68" width="18" height="3" rx="1.5" fill="#FFAA01" />
+            </g>
 
-            {/* Main Car Body Group */}
-            <g className="svg-car-body">
-              {/* Rear Spoiler */}
-              <path d="M 22 28 L 30 22 L 34 28 Z" fill="#FFAA01" />
+            {/* Exact Silhouette Taxi Body */}
+            <g className="car-main-body">
+              {/* Main Yellow Body Outer Path */}
+              <path d="
+                M 35 44
+                L 35 28
+                L 44 28
+                C 47 28, 50 24, 55 19
+                C 65 10, 88 10, 102 19
+                L 122 28
+                C 134 32, 146 39, 154 45
+                C 157 48, 156 54, 150 56
+                L 138 56
+                A 12 12 0 0 0 114 56
+                L 72 56
+                A 12 12 0 0 0 48 56
+                L 38 56
+                C 35 56, 35 50, 35 44 Z
+              " fill="#FFAA01" />
 
-              {/* Sleek Aerodynamic Body */}
-              <path d="M 24 35 C 24 35, 34 18, 52 18 L 94 18 C 108 18, 120 28, 134 35 L 142 37 C 146 39, 146 44, 140 46 L 26 46 C 22 46, 22 38, 24 35 Z" fill="url(#taxiBodyGrad)" />
-
-              {/* White Glass Window Cutout */}
-              <path d="M 52 21 L 88 21 C 98 21, 106 28, 114 34 L 52 34 Z" fill="#FFFFFF" />
-
-              {/* Window Pillar Divider */}
-              <line x1="73" y1="21" x2="73" y2="34" stroke="#FFAA01" strokeWidth="2.5" />
+              {/* Exact White Glass Window */}
+              <path d="
+                M 73 19
+                L 98 19
+                C 106 19, 115 24, 121 29
+                L 67 29
+                C 67 24, 70 19, 73 19 Z
+              " fill="#FFFFFF" />
 
               {/* Rear Wheel Assembly */}
-              <g className="svg-wheel-group" transform="translate(42, 46)">
-                <circle cx="0" cy="0" r="10" fill="#1E293B" stroke="#FFAA01" strokeWidth="1.5" />
-                <circle cx="0" cy="0" r="4" fill="#FFAA01" />
-                <path d="M -8 0 L 8 0 M 0 -8 L 0 8 M -6 -6 L 6 6 M -6 6 L 6 -6" stroke="#FFAA01" strokeWidth="1.5" className="spinning-spokes" />
+              <g className="car-wheel rear-wheel" transform="translate(60, 56)">
+                <circle cx="0" cy="0" r="11" fill="#2E3440" stroke="#FFAA01" strokeWidth="1.5" />
+                <circle cx="0" cy="0" r="8" fill="none" stroke="#FFAA01" strokeWidth="1.5" strokeDasharray="5, 3" className="spinning-wheel-rim" />
+                <circle cx="0" cy="0" r="3.5" fill="#FFAA01" />
               </g>
 
               {/* Front Wheel Assembly */}
-              <g className="svg-wheel-group" transform="translate(110, 46)">
-                <circle cx="0" cy="0" r="10" fill="#1E293B" stroke="#FFAA01" strokeWidth="1.5" />
-                <circle cx="0" cy="0" r="4" fill="#FFAA01" />
-                <path d="M -8 0 L 8 0 M 0 -8 L 0 8 M -6 -6 L 6 6 M -6 6 L 6 -6" stroke="#FFAA01" strokeWidth="1.5" className="spinning-spokes" />
+              <g className="car-wheel front-wheel" transform="translate(126, 56)">
+                <circle cx="0" cy="0" r="11" fill="#2E3440" stroke="#FFAA01" strokeWidth="1.5" />
+                <circle cx="0" cy="0" r="8" fill="none" stroke="#FFAA01" strokeWidth="1.5" strokeDasharray="5, 3" className="spinning-wheel-rim" />
+                <circle cx="0" cy="0" r="3.5" fill="#FFAA01" />
               </g>
             </g>
           </svg>

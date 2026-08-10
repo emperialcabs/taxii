@@ -97,37 +97,43 @@ body, html {
   justify-content: center;
 }
 
-.preloader-car-svg {
+.taxigo-exact-car-svg {
   width: 100%;
   height: auto;
   overflow: visible;
 }
 
-.svg-car-body {
-  animation: svgCarBounce 0.4s ease-in-out infinite alternate;
+.car-main-body {
+  animation: exactCarBounce 0.4s ease-in-out infinite alternate;
 }
 
-.spinning-spokes {
+.spinning-wheel-rim {
   transform-origin: center;
-  animation: spin 0.35s linear infinite;
+  transform-box: fill-box;
+  animation: spinWheel 0.3s linear infinite;
 }
 
-.svg-strike {
-  animation: svgStrikes 0.3s linear infinite;
+.dash {
+  animation: exactDashAnim 0.3s linear infinite;
 }
 
-.svg-strike.s2 { animation-delay: 0.07s; }
-.svg-strike.s3 { animation-delay: 0.14s; }
-.svg-strike.s4 { animation-delay: 0.21s; }
+.dash.dash2 { animation-delay: 0.08s; }
+.dash.dash3 { animation-delay: 0.16s; }
+.dash.dash4 { animation-delay: 0.24s; }
 
-@keyframes svgCarBounce {
+@keyframes exactCarBounce {
   0% { transform: translateY(0); }
   100% { transform: translateY(-1.5px); }
 }
 
-@keyframes svgStrikes {
-  0% { transform: translateX(40px); opacity: 1; }
-  100% { transform: translateX(-30px); opacity: 0; }
+@keyframes spinWheel {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes exactDashAnim {
+  0% { transform: translateX(35px); opacity: 1; }
+  100% { transform: translateX(-35px); opacity: 0; }
 }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
