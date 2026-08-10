@@ -180,8 +180,12 @@ export default function MobileAppView() {
           setSelectedGoogleAccount={setSelectedGoogleAccount}
           phoneNumber={phoneNumber}
           setPhoneNumber={setPhoneNumber}
-          onContinue={() => setAppStage('OTP_VERIFY')}
-          onSkip={completeOnboarding}
+          onNext={() => setAppStage('OTP_VERIFY')}
+          onGoogleSignIn={(acc) => {
+            if (acc) setSelectedGoogleAccount(acc);
+            setAppStage('OTP_VERIFY');
+          }}
+          onBack={() => setAppStage('ONBOARDING')}
         />
       );
 
@@ -191,34 +195,34 @@ export default function MobileAppView() {
           phoneNumber={phoneNumber}
           otpCode={otpCode}
           setOtpCode={setOtpCode}
-          onVerify={() => setAppStage('NOTIFICATION_OPT')}
+          onNext={() => setAppStage('NOTIFICATION_OPT')}
+          onBack={() => setAppStage('LETS_YOU_IN')}
         />
       );
 
     case 'NOTIFICATION_OPT':
-      return <NotificationOptScreen onAllow={() => setAppStage('PREFERRED_LANG')} onSkip={() => setAppStage('PREFERRED_LANG')} />;
+      return (
+        <NotificationOptScreen 
+          onNext={() => setAppStage('PREFERRED_LANG')} 
+          onBack={() => setAppStage('OTP_VERIFY')} 
+        />
+      );
 
     case 'PREFERRED_LANG':
       return (
         <PreferredLangScreen 
           selectedLang={selectedLang}
           setSelectedLang={setSelectedLang}
-          onContinue={() => setAppStage('LOCATION_PERM')}
+          onNext={() => setAppStage('LOCATION_PERM')}
+          onBack={() => setAppStage('NOTIFICATION_OPT')}
         />
       );
 
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen 
-          onAllow={() => {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(pos => {
-                setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-              });
-            }
-            completeOnboarding();
-          }} 
-          onManual={completeOnboarding} 
+          onNext={() => completeOnboarding()} 
+          onBack={() => setAppStage('PREFERRED_LANG')} 
         />
       );
 
