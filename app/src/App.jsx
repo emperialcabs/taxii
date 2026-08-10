@@ -32,10 +32,10 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
     return <AdminPortal />;
   }
 
-  // App Mode Environment Flag (Supports 3 separate Vercel deployments: website, android, ios)
-  const appMode = import.meta.env.VITE_APP_MODE || 'mobile';
+  // App Mode Environment Flag (Defaults to 'website' so Vercel deployments serve full website)
+  const appMode = import.meta.env.VITE_APP_MODE || 'website';
 
-  // Force Website mode if VITE_APP_MODE === 'website' and not on /admin or /mobile
+  // Force Website mode if VITE_APP_MODE === 'website' and not explicitly on /app or /mobile
   if (appMode === 'website' && !isMobileRoute) {
     return (
       <div className="app-container">
@@ -63,7 +63,7 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
 
   // Native Mobile App View (Default for Mobile Apps / Android / iOS Vercel Deployments)
   const isCapacitorNative = window.Capacitor !== undefined || window.location.protocol === 'file:';
-  const isMobilePath = location.pathname === '/' || location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.endsWith('/index.html');
+  const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile';
 
   if (!isWebSite && (isMobilePath || isCapacitorNative)) {
     return <MobileAppView />;
