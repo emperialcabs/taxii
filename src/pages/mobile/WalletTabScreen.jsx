@@ -9,14 +9,14 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         <h2 className="white-header-title">My Wallet & Balance</h2>
       </div>
 
-      <div style={{ padding: '20px 20px 100px 20px', overflowY: 'auto' }}>
+      <div className="app-scroll-content" style={{ padding: '20px 20px 100px 20px' }}>
         {/* Wallet Balance Card */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', 
+          background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', 
           borderRadius: '24px', 
           padding: '24px', 
           color: '#FFFFFF',
-          boxShadow: '0 12px 28px rgba(255, 170, 1, 0.35)',
+          boxShadow: '0 12px 28px rgba(52, 211, 153, 0.35)',
           marginBottom: '24px',
           position: 'relative',
           overflow: 'hidden'
@@ -29,7 +29,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
             <button style={{ 
               flex: 1, 
               background: '#FFFFFF', 
-              color: '#D97706', 
+              color: '#059669', 
               border: 'none', 
               padding: '12px', 
               borderRadius: '16px', 

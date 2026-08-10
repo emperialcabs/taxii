@@ -23,6 +23,10 @@ body, html {
   padding: 0;
   width: 100%;
   height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
   background-color: #F1F5F9;
   font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--taxigo-dark);
@@ -32,7 +36,9 @@ body, html {
 
 .real-mobile-app {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   max-width: 600px;
   margin: 0 auto;
   background: #F8FAFC;
@@ -40,10 +46,20 @@ body, html {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden; /* Fixed screen container - zero window scroll */
   box-shadow: 0 0 40px rgba(0,0,0,0.08);
   animation: fadeInApp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+}
+
+.app-scroll-content, .mobile-screen-body {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  padding-bottom: 76px; /* Room for fixed bottom nav bar */
 }
 
 @keyframes fadeInApp {
@@ -565,7 +581,7 @@ body, html {
 
 /* 5. BOTTOM NAVIGATION TABS */
 .taxigo-bottom-nav {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
@@ -578,6 +594,7 @@ body, html {
   padding: 10px 0 14px 0;
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
 .nav-tab-item {
@@ -597,7 +614,6 @@ body, html {
 
 .nav-tab-item.active { color: #0F172A; }
 .nav-tab-item.active .nav-tab-icon { transform: translateY(-2px); color: #10B981; }
-.nav-tab-item.active .nav-tab-icon { transform: translateY(-2px); color: #FFAA01; }
 .nav-tab-icon { font-size: 20px; transition: transform 0.2s ease; }
 
 /* LEAFLET OVERRIDES */

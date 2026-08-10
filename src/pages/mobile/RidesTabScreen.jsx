@@ -154,7 +154,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
         </h2>
       </div>
 
-      <div style={{ padding: '16px 20px 90px 20px', overflowY: 'auto' }}>
+      <div className="app-scroll-content" style={{ padding: '16px 20px 90px 20px' }}>
         {/* 3 FILTER TABS: ALL | SUCCESS | REJECT */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {[

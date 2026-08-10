@@ -48,14 +48,14 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
         <h2 className="white-header-title">My Account & Profile</h2>
       </div>
 
-      <div style={{ padding: '20px 20px 100px 20px', overflowY: 'auto' }}>
+      <div className="app-scroll-content" style={{ padding: '20px 20px 100px 20px' }}>
         {/* Profile Card Header */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', 
+          background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', 
           borderRadius: '24px', 
           padding: '20px', 
           color: '#FFFFFF',
-          boxShadow: '0 12px 28px rgba(255, 170, 1, 0.35)',
+          boxShadow: '0 12px 28px rgba(52, 211, 153, 0.35)',
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
