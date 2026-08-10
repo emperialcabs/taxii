@@ -107,7 +107,7 @@ body, html {
   position: absolute;
   width: 11px;
   height: 1px;
-  background: #34D399;
+  background: #FFAA01;
   animation: strikes 0.2s linear infinite;
 }
 
@@ -119,7 +119,7 @@ body, html {
 .car-detail {
   position: absolute;
   display: block;
-  background: #34D399;
+  background: #FFAA01;
   animation: speed 0.5s linear infinite;
 }
 
@@ -129,7 +129,7 @@ body, html {
   top: 7px;
   background: none;
   border: 5px solid transparent;
-  border-right-color: #34D399;
+  border-right-color: #FFAA01;
 }
 
 .car-detail.back { top: 15px; width: 92px; height: 15px; border-radius: 5px 8px 0 0; }
@@ -138,7 +138,7 @@ body, html {
 .car-detail.front { top: 20px; left: 92px; width: 25px; height: 10px; border-radius: 0 8px 4px 0; }
 .car-detail.wheel {
   top: 20px; left: 12px; width: 22px; height: 22px; border-radius: 50%;
-  background: linear-gradient(45deg, transparent 45%, #34D399 46%, #34D399 54%, transparent 55%), radial-gradient(#34D399 29%, transparent 30%, transparent 50%, #34D399 51%), #1E293B;
+  background: linear-gradient(45deg, transparent 45%, #FFAA01 46%, #FFAA01 54%, transparent 55%), radial-gradient(#FFAA01 29%, transparent 30%, transparent 50%, #FFAA01 51%), #1E293B;
   animation: spin 0.4s linear infinite;
 }
 
