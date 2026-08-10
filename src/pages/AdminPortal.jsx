@@ -220,6 +220,44 @@ export default function AdminPortal() {
     localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
   }, [inquiries]);
 
+  // Real-time synchronization with incoming mobile app booking inquiries
+  useEffect(() => {
+    const handleSyncStorage = () => {
+      try {
+        const saved = localStorage.getItem('cabsy_inquiries');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setInquiries(parsed);
+        }
+      } catch (e) {}
+    };
+
+    const handleCustomRideBooked = (e) => {
+      const newInq = e.detail;
+      if (newInq) {
+        setNotifications(prev => [
+          {
+            id: `notif-${Date.now()}`,
+            title: 'New Ride Booking Inquiry',
+            desc: `Inquiry ${newInq.id} from ${newInq.customerName} (${newInq.pickup} ➔ ${newInq.dropoff})`,
+            time: 'Just now',
+            type: 'inquiry',
+            read: false
+          },
+          ...prev
+        ]);
+        handleSyncStorage();
+      }
+    };
+
+    window.addEventListener('storage', handleSyncStorage);
+    window.addEventListener('taxigo_ride_booked', handleCustomRideBooked);
+    return () => {
+      window.removeEventListener('storage', handleSyncStorage);
+      window.removeEventListener('taxigo_ride_booked', handleCustomRideBooked);
+    };
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('cabsy_drivers', JSON.stringify(drivers));
   }, [drivers]);

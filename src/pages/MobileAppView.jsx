@@ -24,6 +24,7 @@ import ProcessingScreen from './mobile/ProcessingScreen';
 import DriverFoundScreen from './mobile/DriverFoundScreen';
 import TripTrackingScreen from './mobile/TripTrackingScreen';
 import TripReceiptScreen from './mobile/TripReceiptScreen';
+import InquirySubmittedScreen from './mobile/InquirySubmittedScreen';
 
 export default function MobileAppView() {
   // Navigation Flow State Machine
@@ -44,13 +45,15 @@ export default function MobileAppView() {
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [pickupLoc, setPickupLoc] = useState('Bhavnagar, Gujarat');
   const [dropoffLoc, setDropoffLoc] = useState('Ahmedabad Airport (AMD)');
-  const [selectedSeat, setSelectedSeat] = useState(3);
+  const [tripType, setTripType] = useState('one-way'); // 'one-way' | 'round-trip'
   const [scheduledDate, setScheduledDate] = useState('Today, 10 Aug 2026');
-  const [scheduledTime, setScheduledTime] = useState('3:30 PM');
-  const [selectedCar, setSelectedCar] = useState(2); // Car 2 (Sedan)
+  const [scheduledTime, setScheduledTime] = useState('03:30 PM');
+  const [returnDate, setReturnDate] = useState('Tomorrow, 11 Aug 2026');
+  const [selectedCar, setSelectedCar] = useState('CAR-101');
   const [selectedPayment, setSelectedPayment] = useState('wallet');
   const [promoCode, setPromoCode] = useState('');
   const [activeTab, setActiveTab] = useState('home');
+  const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
   // Helper to complete onboarding & store in localStorage
   const completeOnboarding = () => {
@@ -60,38 +63,57 @@ export default function MobileAppView() {
     setAppStage('APP_HOME');
   };
 
-  // Indian Rupee Vehicle Fleet
-  const vehicleList = [
-    { id: 1, name: "Economy", img: "/assets/images/map/car1.png", dist: "18 KM", time: "25 Min", price: "₹180" },
-    { id: 2, name: "Sedan Comfort", img: "/assets/images/map/car2.png", dist: "18 KM", time: "25 Min", price: "₹270" },
-    { id: 3, name: "Luxury Executive", img: "/assets/images/map/car3.png", dist: "18 KM", time: "25 Min", price: "₹450" },
-    { id: 4, name: "EV Green SUV", img: "/assets/images/map/car4.png", dist: "18 KM", time: "25 Min", price: "₹675" },
-  ];
-
   // Dispatch Admin Notification & Save to Central DB when Ride is Requested
-  const handleRequestRide = () => {
-    const inquiryData = {
-      customerName: phoneNumber ? ('User ' + phoneNumber.slice(-4)) : 'Mobile Passenger',
-      customerPhone: phoneNumber ? ('+91 ' + phoneNumber) : '+91 9876543210',
-      pickup: pickupLoc,
-      dropoff: dropoffLoc,
-      vehicle: selectedCar === 4 ? 'EV Green SUV' : (selectedCar === 2 ? 'Sedan Comfort' : 'Standard Taxi'),
-      fare: '₹270',
-      seats: selectedSeat,
+  const handleRequestRide = (carObj) => {
+    let userProf = { name: 'Dhruvil Patel', phone: '+91 98765 43210' };
+    try {
+      const savedProf = localStorage.getItem('cabsy_user_profile');
+      if (savedProf) {
+        const p = JSON.parse(savedProf);
+        if (p.name) userProf.name = p.name;
+        if (p.phone) userProf.phone = p.phone;
+      }
+    } catch (e) {}
+
+    const selectedVehicleName = carObj?.name || 'SWIFT';
+    const totalFareNum = carObj?.totalFareNum || 770;
+
+    const newInquiryId = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newInquiry = {
+      id: newInquiryId,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      customerName: userProf.name,
+      customerPhone: userProf.phone,
+      pickup: pickupLoc || 'Bhavnagar, Gujarat',
+      dropoff: dropoffLoc || 'Ahmedabad Airport (AMD)',
+      vehicle: selectedVehicleName,
+      fare: totalFareNum,
+      tripType: tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way',
       scheduledDate,
       scheduledTime,
+      driver: 'Unassigned',
       status: 'Pending',
-      driver: '-'
+      timestamp: new Date().toISOString()
     };
 
-    db.saveInquiry(inquiryData);
+    // 1. Save directly into cabsy_inquiries for Admin Portal
+    try {
+      const existingInquiries = JSON.parse(localStorage.getItem('cabsy_inquiries') || '[]');
+      const updatedInquiries = [newInquiry, ...existingInquiries];
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
+    } catch (err) {
+      console.error("Error saving inquiry:", err);
+    }
 
-    const rideEvent = new CustomEvent('taxigo_ride_booked', {
-      detail: inquiryData
-    });
-    window.dispatchEvent(rideEvent);
+    // 2. Save into dbService for local history
+    db.saveInquiry(newInquiry);
 
-    setAppStage('RADAR');
+    // 3. Dispatch events to notify Admin Portal in real time
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('taxigo_ride_booked', { detail: newInquiry }));
+
+    setLastCreatedInquiry(newInquiry);
+    setAppStage('INQUIRY_SUBMITTED');
   };
 
   // Tab Switcher Router in App Home
@@ -149,44 +171,17 @@ export default function MobileAppView() {
       return <SplashScreen onNext={() => setAppStage('ONBOARDING')} />;
 
     case 'ONBOARDING':
-      return <OnboardingScreen onFinish={() => setAppStage('LETS_YOU_IN')} />;
+      return <OnboardingScreen onSkip={() => setAppStage('LETS_YOU_IN')} onFinish={() => setAppStage('LETS_YOU_IN')} />;
 
     case 'LETS_YOU_IN':
       return (
         <LetsYouInScreen 
+          selectedGoogleAccount={selectedGoogleAccount}
+          setSelectedGoogleAccount={setSelectedGoogleAccount}
           phoneNumber={phoneNumber}
           setPhoneNumber={setPhoneNumber}
-          onNext={() => setAppStage('OTP_VERIFY')}
-          onGoogleSignIn={(acc) => {
-            setSelectedGoogleAccount(acc);
-            try {
-              const saved = localStorage.getItem('cabsy_user_profile');
-              if (saved) {
-                completeOnboarding();
-                return;
-              }
-            } catch(e) {}
-            setAppStage('ACCOUNT_DETAILS');
-          }}
-          onBack={() => setAppStage('ONBOARDING')}
-        />
-      );
-
-    case 'ACCOUNT_DETAILS':
-      return (
-        <AccountDetailScreen 
-          googleAccount={selectedGoogleAccount}
-          onCompleteProfile={() => completeOnboarding()}
-          onBack={() => {
-            try {
-              const isOnboarded = localStorage.getItem('taxigo_onboarded');
-              if (isOnboarded === 'true') {
-                setAppStage('APP_HOME');
-                return;
-              }
-            } catch(e) {}
-            setAppStage('LETS_YOU_IN');
-          }}
+          onContinue={() => setAppStage('OTP_VERIFY')}
+          onSkip={completeOnboarding}
         />
       );
 
@@ -196,39 +191,42 @@ export default function MobileAppView() {
           phoneNumber={phoneNumber}
           otpCode={otpCode}
           setOtpCode={setOtpCode}
-          onNext={() => setAppStage('NOTIFICATION_OPT')}
-          onBack={() => setAppStage('LETS_YOU_IN')}
+          onVerify={() => setAppStage('NOTIFICATION_OPT')}
         />
       );
 
     case 'NOTIFICATION_OPT':
-      return (
-        <NotificationOptScreen 
-          onNext={() => setAppStage('PREFERRED_LANG')}
-          onBack={() => setAppStage('OTP_VERIFY')}
-        />
-      );
+      return <NotificationOptScreen onAllow={() => setAppStage('PREFERRED_LANG')} onSkip={() => setAppStage('PREFERRED_LANG')} />;
 
     case 'PREFERRED_LANG':
       return (
         <PreferredLangScreen 
           selectedLang={selectedLang}
           setSelectedLang={setSelectedLang}
-          onNext={() => setAppStage('LOCATION_PERMISSION')}
-          onBack={() => setAppStage('NOTIFICATION_OPT')}
+          onContinue={() => setAppStage('LOCATION_PERM')}
         />
       );
 
-    case 'LOCATION_PERMISSION':
+    case 'LOCATION_PERM':
       return (
         <LocationPermScreen 
-          onNext={completeOnboarding}
-          onBack={() => setAppStage('PREFERRED_LANG')}
+          onAllow={() => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(pos => {
+                setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+              });
+            }
+            completeOnboarding();
+          }} 
+          onManual={completeOnboarding} 
         />
       );
 
     case 'APP_HOME':
       return renderTabContent();
+
+    case 'ACCOUNT_DETAILS':
+      return <AccountDetailScreen onBack={() => setAppStage('APP_HOME')} onSave={() => setAppStage('APP_HOME')} />;
 
     case 'SELECT_LOCATION_LIST':
       return (
@@ -248,12 +246,14 @@ export default function MobileAppView() {
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
-          selectedSeat={selectedSeat}
-          setSelectedSeat={setSelectedSeat}
+          tripType={tripType}
+          setTripType={setTripType}
           scheduledDate={scheduledDate}
           setScheduledDate={setScheduledDate}
           scheduledTime={scheduledTime}
           setScheduledTime={setScheduledTime}
+          returnDate={returnDate}
+          setReturnDate={setReturnDate}
           onNext={() => setAppStage('SELECT_CAR')}
           onBack={() => setAppStage('SELECT_LOCATION_LIST')}
         />
@@ -265,12 +265,23 @@ export default function MobileAppView() {
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
-          selectedSeat={selectedSeat}
+          tripType={tripType}
           selectedCar={selectedCar}
           setSelectedCar={setSelectedCar}
-          vehicleList={vehicleList}
-          onNext={() => setAppStage('SELECT_PAYMENT')}
+          onNext={(carObj) => handleRequestRide(carObj)}
           onBack={() => setAppStage('GOING_SEAT_SCHEDULE')}
+        />
+      );
+
+    case 'INQUIRY_SUBMITTED':
+      return (
+        <InquirySubmittedScreen 
+          inquiry={lastCreatedInquiry}
+          onGoHome={() => setAppStage('APP_HOME')}
+          onViewRides={() => {
+            setActiveTab('rides');
+            setAppStage('APP_HOME');
+          }}
         />
       );
 

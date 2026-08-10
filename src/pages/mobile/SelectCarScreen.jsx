@@ -3,13 +3,20 @@ import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 
-export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, selectedSeat = 3, selectedCar, setSelectedCar, vehicleList, onNext, onBack }) {
-  // Compute real map start, end, and route polyline from selected locations
+export default function SelectCarScreen({ 
+  userCoords, 
+  pickupLoc, 
+  dropoffLoc, 
+  tripType = 'one-way',
+  selectedCar, 
+  setSelectedCar, 
+  onNext, 
+  onBack 
+}) {
   const pickupPos = getCoordsForPlace(pickupLoc || "Bhavnagar, Gujarat", userCoords);
   const destPos = getCoordsForPlace(dropoffLoc || "Ahmedabad Airport (AMD)", userCoords);
   const routePolyline = generateRoutePolyline(pickupPos, destPos);
 
-  // Helper to find configured route distance in KM from Admin Panel (cabsy_destinations)
   const getRouteDistanceKm = () => {
     try {
       const savedDest = localStorage.getItem('cabsy_destinations') || localStorage.getItem('cabsy_routes');
@@ -24,23 +31,12 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
         }
       }
     } catch (e) {}
-
-    // Fallback: Haversine distance calculation
-    if (pickupPos && destPos && typeof pickupPos.lat === 'number' && typeof destPos.lat === 'number') {
-      const R = 6371;
-      const dLat = (destPos.lat - pickupPos.lat) * Math.PI / 180;
-      const dLon = (destPos.lng - pickupPos.lng) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(pickupPos.lat * Math.PI / 180) * Math.cos(destPos.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      const dist = Math.round(R * c);
-      return dist > 0 ? dist : 18;
-    }
-    return 18;
+    return 154;
   };
 
-  const distanceKm = getRouteDistanceKm();
+  const baseDistanceKm = getRouteDistanceKm();
+  const effectiveDistanceKm = tripType === 'round-trip' ? baseDistanceKm * 2 : baseDistanceKm;
 
-  // Read owner-configured vehicles directly from Admin Portal (cabsy_vehicles in localStorage)
   const getAdminVehicles = () => {
     let rawVehicles = [];
     try {
@@ -59,14 +55,14 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
 
     return rawVehicles.map((v, idx) => {
       const ratePerKm = Number(v.rate || 15);
-      const totalFare = Math.round(distanceKm * ratePerKm);
+      const totalFare = Math.round(effectiveDistanceKm * ratePerKm);
       return {
         id: v.id || idx + 1,
         name: v.name,
         passengers: v.passengers || '4 Persons',
         img: v.image || `/assets/images/map/car${(idx % 4) + 1}.png`,
-        dist: `${distanceKm} km`,
-        time: `${Math.round(distanceKm * 1.4)} min`,
+        dist: `${effectiveDistanceKm} km`,
+        time: `${Math.round(effectiveDistanceKm * 1.4)} min`,
         ratePerKm,
         totalFareNum: totalFare,
         price: `₹${totalFare.toLocaleString('en-IN')}`
@@ -111,15 +107,15 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                 <span>←</span> Back
               </button>
               <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' }}>
-                <span>●</span> {selectedSeat} Seats • {distanceKm} KM Route
+                <span>●</span> {tripType === 'round-trip' ? `Round Trip • ${effectiveDistanceKm} KM` : `One-Way • ${effectiveDistanceKm} KM`}
               </div>
             </div>
 
             <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-              Select Admin Fleet Vehicle
+              SELECT FLEET VEHICLE (RATE / KM)
             </p>
             
-            {/* Scrollable Admin Car Cards */}
+            {/* Scrollable Car Selection Cards */}
             <div style={{ 
               display: 'flex', 
               gap: '12px', 
@@ -165,14 +161,14 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
               })}
             </div>
 
-            {/* Selected Car Breakdown Box */}
+            {/* Selected Car Details */}
             <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>
                   {currentCarObj.name} ({currentCarObj.passengers})
                 </h4>
                 <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
-                  Rate: ₹{currentCarObj.ratePerKm}/km × {distanceKm} KM
+                  Rate: ₹{currentCarObj.ratePerKm}/km × {effectiveDistanceKm} KM ({tripType === 'round-trip' ? 'Round Trip' : 'One-Way'})
                 </p>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -183,20 +179,20 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
               </div>
             </div>
 
-            {/* Trip Stats Pills */}
+            {/* Summary Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
-                Distance: {distanceKm} KM
+                {tripType === 'round-trip' ? `Distance: ${effectiveDistanceKm} KM (2×)` : `Distance: ${effectiveDistanceKm} KM`}
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
-                Est. Time: ~{Math.round(distanceKm * 1.4)} Min
+                Trip: {tripType === 'round-trip' ? 'Round Trip' : 'One-Way'}
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#22C55E' }}>
                 Rate: ₹{currentCarObj.ratePerKm}/km
               </div>
             </div>
 
-            <button className="taxigo-btn-primary" onClick={onNext}>
+            <button className="taxigo-btn-primary" onClick={() => onNext && onNext(currentCarObj)}>
               Confirm {currentCarObj.name} ({currentCarObj.price}) →
             </button>
           </div>

@@ -245,27 +245,27 @@ export default function InteractiveMap({
             </Marker>
           )}
 
-          {/* High-Contrast Route Line (Start -> End Map Route) */}
+          {/* Google Maps Style Royal Blue Navigation Route Line */}
           {Array.isArray(routePolyline) && routePolyline.length > 0 ? (
             <>
               <Polyline 
                 positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
-                pathOptions={{ color: '#1E293B', weight: 7, opacity: 0.9 }} 
+                pathOptions={{ color: '#1E40AF', weight: 9, opacity: 0.7, lineCap: 'round', lineJoin: 'round' }} 
               />
               <Polyline 
                 positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
-                pathOptions={{ color: '#FFAA01', weight: 4, opacity: 1.0 }} 
+                pathOptions={{ color: '#2563EB', weight: 6, opacity: 1.0, lineCap: 'round', lineJoin: 'round' }} 
               />
             </>
           ) : (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' ? (
             <>
               <Polyline
                 positions={[[safeLat, safeLng], [destination.lat, destination.lng]]}
-                pathOptions={{ color: '#1E293B', weight: 7, opacity: 0.9 }}
+                pathOptions={{ color: '#1E40AF', weight: 9, opacity: 0.7, lineCap: 'round', lineJoin: 'round' }}
               />
               <Polyline
                 positions={[[safeLat, safeLng], [destination.lat, destination.lng]]}
-                pathOptions={{ color: '#FFAA01', weight: 4, opacity: 1.0 }}
+                pathOptions={{ color: '#2563EB', weight: 6, opacity: 1.0, lineCap: 'round', lineJoin: 'round' }}
               />
             </>
           ) : null)}
