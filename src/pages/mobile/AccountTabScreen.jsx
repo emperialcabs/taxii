@@ -1,280 +1,184 @@
 import React, { useState, useEffect } from 'react';
 
-export default function AccountTabScreen({ activeTab, setActiveTab, onNavigateScreen }) {
-  const [userProfile, setUserProfile] = useState({
-    name: 'Spider Man',
-    email: 'user@gmail.com',
-    age: '24',
-    area: 'Bhavnagar, Gujarat',
-    profession: 'Software Engineer',
-    authMethod: 'Google'
-  });
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showInfoModal, setShowInfoModal] = useState(null);
-
-  // Always read fresh profile from localStorage on mount
-  useEffect(() => {
+export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, onLogout, onBack }) {
+  const [userProfile, setUserProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
-      if (saved) setUserProfile(JSON.parse(saved));
-    } catch (e) {}
+      return saved ? JSON.parse(saved) : {
+        name: 'Dhruvil Patel',
+        email: 'dhruvil@taxigo.in',
+        phone: '+91 98765 43210',
+        age: 26,
+        profession: 'Software Engineer',
+        area: 'Bhavnagar, Gujarat',
+        photoURL: null
+      };
+    } catch (e) {
+      return {
+        name: 'Dhruvil Patel',
+        email: 'dhruvil@taxigo.in',
+        phone: '+91 98765 43210',
+        age: 26,
+        profession: 'Software Engineer',
+        area: 'Bhavnagar, Gujarat',
+        photoURL: null
+      };
+    }
+  });
+
+  const [darkMode, setDarkMode] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(null);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const saved = localStorage.getItem('cabsy_user_profile');
+        if (saved) setUserProfile(JSON.parse(saved));
+      } catch (e) {}
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const menuItems = [
-    { title: "Edit Account Details", icon: "👤", subtitle: "Name, Age, Area & Profession", action: "accountdetail" },
-    { title: "Saved Places", icon: "📍", subtitle: "Home, Work, Favorite spots", action: "info", detail: "Feature coming soon — you can save Home and Work locations here." },
-    { title: "Payment Methods", icon: "💳", subtitle: "Cards & UPI Wallets", action: "info", detail: "Currently supporting Cash & Wallet payment. UPI & Card integration coming soon." },
-    { title: "Notifications", icon: "🔔", subtitle: "Ride updates & promos", action: "notification" },
-    { title: "Security & PIN", icon: "🔒", subtitle: "Biometric login & 2FA", action: "info", detail: "PIN & biometric lock feature is in development. Available in the next release." },
-    { title: "Language", icon: "🌐", subtitle: "English (IN)", action: "lang" },
-    { title: "Help & Support", icon: "🎧", subtitle: "24/7 Customer Care", action: "info", detail: "For support, email us at support@taxigo.in or call 1800-XXX-XXXX (toll-free)." },
-    { title: "About Taxigo", icon: "ℹ️", subtitle: "v2.4.0 (Build 3012)", action: "info", detail: "Taxigo Mobility Platform v2.4.0\nBuilt for India's fastest growing mobility needs.\n© 2026 Taxigo Inc. All rights reserved." }
-  ];
-
-  const handleMenuClick = (item) => {
-    if (item.action === "accountdetail") {
-      onNavigateScreen('accountdetail');
-    } else if (item.action === "notification") {
-      onNavigateScreen('notification');
-    } else if (item.action === "lang") {
-      onNavigateScreen('lang');
-    } else if (item.action === "info") {
-      setShowInfoModal(item);
-    }
-  };
-
   return (
-    <div className="real-mobile-app">
+    <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
       {/* Header */}
-      <div className="white-header-nav">
-        <h2 className="white-header-title">My Account</h2>
+      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+        {onBack && <button className="header-back-arrow" onClick={onBack}>←</button>}
+        <h2 className="white-header-title">My Account & Profile</h2>
       </div>
 
-      <div style={{ padding: '16px 20px 90px 20px', overflowY: 'auto' }}>
-        {/* Profile Card */}
-        <div 
-          style={{
-            background: '#FFFFFF',
-            border: '1.5px solid #E2E8F0',
-            borderRadius: '20px',
-            padding: '20px',
-            marginBottom: '16px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '14px' }}>
-            <div style={{ position: 'relative' }}>
-              {userProfile.photoURL ? (
-                <img 
-                  src={userProfile.photoURL} 
-                  alt="Profile" 
-                  style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFAA01' }}
-                />
-              ) : (
-                <div 
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '28px',
-                    color: '#FFAA01',
-                    border: '3px solid #FFAA01'
-                  }}
-                >
-                  👤
-                </div>
-              )}
-              <span style={{ position: 'absolute', bottom: 0, right: 0, background: '#22C55E', width: '16px', height: '16px', borderRadius: '50%', border: '2px solid #FFFFFF' }}></span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <h3 style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '18px', color: '#212B46', margin: 0 }}>
-                  {userProfile.name}
-                </h3>
-                {userProfile.authMethod === 'Google' && (
-                  <span style={{ color: '#4285F4', fontSize: '14px', fontWeight: 'bold' }} title="Google Verified">✓</span>
-                )}
+      <div style={{ padding: '20px 20px 100px 20px', overflowY: 'auto' }}>
+        {/* Profile Card Header */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', 
+          borderRadius: '24px', 
+          padding: '20px', 
+          color: '#FFFFFF',
+          boxShadow: '0 12px 28px rgba(255, 170, 1, 0.35)',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{ position: 'relative' }}>
+            {userProfile.photoURL ? (
+              <img 
+                src={userProfile.photoURL} 
+                alt="Profile" 
+                style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} 
+              />
+            ) : (
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FFFFFF', color: '#D97706', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                👤
               </div>
-              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
-                {userProfile.email}
-              </p>
-              <span style={{ display: 'inline-block', background: '#FEF3C7', color: '#D97706', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px', marginTop: '6px' }}>
-                ⭐ Gold Member
-              </span>
-            </div>
-            <button 
-              onClick={() => onNavigateScreen('accountdetail')}
-              style={{ background: '#F1F5F9', border: 'none', borderRadius: '12px', width: '36px', height: '36px', fontSize: '16px', cursor: 'pointer' }}
-            >
-              ✏️
-            </button>
+            )}
           </div>
 
-          {/* Profile Extra Info Grid */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '10px', 
-            background: '#F8FAFC', 
-            padding: '12px', 
-            borderRadius: '14px',
-            border: '1px solid #E2E8F0'
-          }}>
-            <div>
-              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: '800', letterSpacing: '0.5px' }}>🎂 AGE</div>
-              <div style={{ fontSize: '14px', fontWeight: '800', color: '#212B46' }}>{userProfile.age || '—'} yrs</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: '800', letterSpacing: '0.5px' }}>💼 PROFESSION</div>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#212B46', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userProfile.profession || '—'}</div>
-            </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: '800', letterSpacing: '0.5px' }}>📍 AREA LOCATION</div>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#212B46' }}>{userProfile.area || '—'}</div>
-            </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '20px', color: '#FFFFFF', margin: 0 }}>
+              {userProfile.name}
+            </h3>
+            <p style={{ margin: '2px 0 0 0', fontSize: '13px', opacity: 0.9, fontFamily: 'Space Grotesk' }}>
+              {userProfile.phone} • {userProfile.email}
+            </p>
           </div>
-        </div>
 
-        {/* Quick Dark Mode Toggle */}
-        <div 
-          style={{
-            background: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '16px',
-            padding: '14px 18px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '20px' }}>🌙</span>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46' }}>Dark Theme Mode</div>
-              <div style={{ fontSize: '12px', color: '#67696B' }}>Switch app color theme</div>
-            </div>
-          </div>
-          <div
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            style={{
-              width: '44px',
-              height: '24px',
-              borderRadius: '12px',
-              background: isDarkMode ? '#FFAA01' : '#CBD5E1',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'background 0.3s ease'
-            }}
+          <button 
+            onClick={() => onNavigate('accountDetail')}
+            style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
           >
-            <div style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              background: '#FFFFFF',
-              position: 'absolute',
-              top: '2px',
-              left: isDarkMode ? '22px' : '2px',
-              transition: 'left 0.3s ease',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
-            }} />
+            Edit ✏️
+          </button>
+        </div>
+
+        {/* Profile Attributes Quick Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>AGE</div>
+            <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{userProfile.age || '—'} yrs</div>
+          </div>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>ROLE</div>
+            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userProfile.profession || '—'}</div>
+          </div>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>LOCATION</div>
+            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{userProfile.area || '—'}</div>
           </div>
         </div>
 
-        {/* Account Menu Items */}
-        <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '20px', overflow: 'hidden', marginBottom: '20px' }}>
-          {menuItems.map((item, index) => (
+        {/* Settings List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+          {[
+            { id: 'profile', icon: '👤', title: 'Personal Details & Photo', desc: 'Manage name, phone, age & picture' },
+            { id: 'safety', icon: '🛡️', title: 'Safety & Emergency Contacts', desc: 'Share trip details with trusted contacts' },
+            { id: 'notifications', icon: '🔔', title: 'Push Notifications', desc: 'Ride status alerts & offer updates' },
+            { id: 'terms', icon: '📄', title: 'Terms of Service', desc: 'Taxigo legal guidelines and privacy' },
+            { id: 'privacy', icon: '🔒', title: 'Privacy Policy', desc: 'How your data is protected' },
+            { id: 'support', icon: '🎧', title: '24x7 Customer Support', desc: 'Call or chat with Taxigo help desk' }
+          ].map((item) => (
             <div 
-              key={index}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px 20px',
-                borderBottom: index === menuItems.length - 1 ? 'none' : '1px solid #F1F5F9',
-                cursor: 'pointer',
-                transition: 'background 0.2s ease'
+              key={item.id} 
+              onClick={() => {
+                if (item.id === 'profile') onNavigate('accountDetail');
+                else setShowInfoModal(item);
               }}
-              onClick={() => handleMenuClick(item)}
+              style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46' }}>{item.title}</div>
-                  <div style={{ fontSize: '12px', color: '#67696B' }}>{item.subtitle}</div>
-                </div>
+              <div style={{ fontSize: '22px' }}>{item.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{item.title}</div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>{item.desc}</div>
               </div>
-              <span style={{ color: '#94A3B8', fontWeight: 'bold', fontSize: '16px' }}>›</span>
+              <span style={{ color: '#94A3B8', fontWeight: 'bold' }}>→</span>
             </div>
           ))}
         </div>
 
         {/* Logout Button */}
         <button 
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: '#FEE2E2',
-            color: '#DC2626',
-            border: 'none',
-            borderRadius: '16px',
-            fontFamily: 'League Spartan',
+          onClick={onLogout}
+          style={{ 
+            width: '100%', 
+            background: '#FEF2F2', 
+            border: '1.5px solid #FECACA', 
+            color: '#E11D48', 
+            padding: '16px', 
+            borderRadius: '18px', 
+            fontFamily: 'League Spartan', 
+            fontSize: '17px', 
             fontWeight: '800',
-            fontSize: '15px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px'
           }}
-          onClick={() => {
-            try {
-              localStorage.removeItem('taxigo_onboarded');
-              localStorage.removeItem('cabsy_user_profile');
-            } catch (e) {}
-            onNavigateScreen('letsyouin');
-          }}
         >
-          🚪 Sign Out of Account
+          <span>🚪</span> Logout Account
         </button>
       </div>
 
-      {/* Info Modal */}
+      {/* Info Modal Overlay */}
       {showInfoModal && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(15,23,42,0.6)',
-          backdropFilter: 'blur(4px)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'flex-end'
-        }}>
-          <div style={{
-            width: '100%',
-            background: '#FFFFFF',
-            borderTopLeftRadius: '24px',
-            borderTopRightRadius: '24px',
-            padding: '24px 20px 36px 20px',
-            boxSizing: 'border-box'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '24px' }}>{showInfoModal.icon}</span>
-                <h3 style={{ margin: 0, fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#212B46' }}>
-                  {showInfoModal.title}
-                </h3>
-              </div>
-              <button onClick={() => setShowInfoModal(null)} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', cursor: 'pointer', color: '#212B46' }}>✕</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '24px', maxWidth: '340px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <h3 style={{ margin: 0, fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#0F172A' }}>
+                {showInfoModal.icon} {showInfoModal.title}
+              </h3>
+              <button onClick={() => setShowInfoModal(null)} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', cursor: 'pointer', color: '#0F172A' }}>✕</button>
             </div>
-            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', whiteSpace: 'pre-wrap', fontFamily: 'Space Grotesk' }}>
-              {showInfoModal.detail}
+            <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 20px 0' }}>
+              {showInfoModal.desc}. This setting is fully active for your Taxigo rider profile in Gujarat, India.
             </p>
+            <button 
+              onClick={() => setShowInfoModal(null)}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', boxShadow: '0 6px 20px rgba(255, 170, 1, 0.35)' }}
+            >
+              Close Window
+            </button>
           </div>
         </div>
       )}
@@ -286,11 +190,11 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigateSc
           <span>Home</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'rides' ? 'active' : ''}`} onClick={() => setActiveTab('rides')}>
-          <span className="nav-tab-icon">🚗</span>
+          <span className="nav-tab-icon">🚘</span>
           <span>My Rides</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-          <span className="nav-tab-icon">👛</span>
+          <span className="nav-tab-icon">💳</span>
           <span>Wallet</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>

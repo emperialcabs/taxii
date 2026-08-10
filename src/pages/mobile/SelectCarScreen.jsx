@@ -124,17 +124,17 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                   fontFamily: 'Space Grotesk, sans-serif',
                   fontWeight: '700',
                   fontSize: '14px',
-                  color: '#1E293B'
+                  color: '#0F172A'
                 }}
               >
                 <span>←</span> Back
               </button>
-              <div style={{ background: '#1E293B', color: '#FFAA01', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' }}>
                 <span>💺</span> {selectedSeat} Seats • {distanceKm} KM Route
               </div>
             </div>
 
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#1E293B', letterSpacing: '0.3px', margin: '0 0 10px 0' }}>
+            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0' }}>
               SELECT VEHICLE FLEET (RATE / KM)
             </p>
             
@@ -170,7 +170,7 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                     onClick={() => setSelectedCar(car.id)}
                   >
                     <img src={car.img} alt={car.name} style={{ height: '48px', objectFit: 'contain' }} />
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: isSelected ? '#1E293B' : '#64748B', marginTop: '6px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: isSelected ? '#0F172A' : '#64748B', marginTop: '6px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                       {car.name}
                     </span>
                     <span style={{ fontSize: '10px', color: '#64748B', fontWeight: '700', marginTop: '2px' }}>
@@ -187,7 +187,7 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
             {/* Selected Car Breakdown Box */}
             <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#1E293B', fontFamily: 'League Spartan' }}>
+                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>
                   {currentCarObj.name}
                 </h4>
                 <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
@@ -204,10 +204,10 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
 
             {/* Trip Stats Pills */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
-              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#1E293B' }}>
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
                 🚩 {distanceKm} KM
               </div>
-              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#1E293B' }}>
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
                 ⏱️ ~{Math.round(distanceKm * 1.4)} Min
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#22C55E' }}>

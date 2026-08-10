@@ -195,13 +195,13 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             >
               🎯
             </div>
-            <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#22C55E' }}>●</span> GPS Live
             </div>
             {userPhoto ? (
               <img className="floating-user-avatar" src={userPhoto} alt="User" />
             ) : (
-              <div className="floating-user-avatar" style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#FFAA01' }}>👤</div>
+              <div className="floating-user-avatar" style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#D97706' }}>👤</div>
             )}
           </div>
 
@@ -210,7 +210,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
             <div className="drag-handle-bar" />
             <div style={{ marginBottom: '14px' }}>
               <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
-              <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#1E293B', margin: '2px 0 0 0' }}>
+              <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: '2px 0 0 0' }}>
                 Welcome back, {userName} ✨
               </p>
             </div>
@@ -230,12 +230,12 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               }}
               onClick={() => setIsSearchOpen(true)}
             >
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#FFFBEB', border: '1px solid #FCD34D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
                 📍
               </div>
               <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <div style={{ fontSize: '11px', color: '#22C55E', fontWeight: '800', letterSpacing: '0.5px' }}>CURRENT PICKUP LOCATION</div>
-                <div style={{ fontFamily: 'Space Grotesk', color: '#1E293B', fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontFamily: 'Space Grotesk', color: '#0F172A', fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {customerAddress}
                 </div>
               </div>
@@ -259,8 +259,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FFFFFF', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', padding: '24px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#1E293B', margin: 0 }}>📍 Select Pickup Location</h2>
-              <button onClick={() => setIsSearchOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#1E293B' }}>✕</button>
+              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0 }}>📍 Select Pickup Location</h2>
+              <button onClick={() => setIsSearchOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#0F172A' }}>✕</button>
             </div>
 
             <input 
@@ -283,7 +283,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
                   }}
                   style={{ padding: '14px 16px', borderRadius: '14px', background: '#F8FAFC', cursor: 'pointer', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                 >
-                  <span style={{ fontFamily: 'Space Grotesk', fontWeight: '700', color: '#1E293B', fontSize: '14px' }}>{loc.name}</span>
+                  <span style={{ fontFamily: 'Space Grotesk', fontWeight: '700', color: '#0F172A', fontSize: '14px' }}>{loc.name}</span>
                   <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '800' }}>Select →</span>
                 </div>
               ))}
@@ -291,7 +291,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
             <button 
               onClick={() => { setIsSearchOpen(false); onStartBooking(); }}
-              style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: '#FFAA01', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px' }}
+              style={{ background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(255, 170, 1, 0.4)' }}
             >
               Confirm Location & Continue →
             </button>

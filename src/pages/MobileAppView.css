@@ -406,10 +406,10 @@ body, html {
 }
 
 .lang-pill-item.selected {
-  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-  color: #FFAA01;
-  border-color: #1E293B;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  background: linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%);
+  color: #FFFFFF;
+  border-color: #FFAA01;
+  box-shadow: 0 4px 14px rgba(255, 170, 1, 0.35);
 }
 
 /* 4. MAP & HOMESCREEN INTERFACE */
@@ -517,10 +517,10 @@ body, html {
 }
 
 .seat-box-btn.active {
-  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-  color: #FFAA01;
-  border-color: #1E293B;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  background: linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%);
+  color: #FFFFFF;
+  border-color: #FFAA01;
+  box-shadow: 0 4px 14px rgba(255, 170, 1, 0.35);
 }
 
 /* SCHEDULE INPUTS */

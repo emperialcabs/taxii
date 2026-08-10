@@ -138,7 +138,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 fontFamily: 'Space Grotesk, sans-serif', 
                 fontSize: '15px', 
                 fontWeight: '600', 
-                color: '#1E293B', 
+                color: '#0F172A', 
                 background: '#F8FAFC',
                 boxSizing: 'border-box'
               }} 
@@ -157,7 +157,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#1E293B', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setPickupLoc(place);
                       setActiveDropdown(null);
@@ -179,7 +179,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>WHERE TO?</span>
               </div>
               {currentDistance && (
-                <span style={{ background: '#1E293B', color: '#FFAA01', padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
+                <span style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(217, 119, 6, 0.12)' }}>
                   🛣️ {currentDistance}
                 </span>
               )}
@@ -194,7 +194,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 fontFamily: 'Space Grotesk, sans-serif', 
                 fontSize: '15px', 
                 fontWeight: '600', 
-                color: '#1E293B', 
+                color: '#0F172A', 
                 background: '#F8FAFC',
                 boxSizing: 'border-box'
               }} 
@@ -213,7 +213,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#1E293B', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setDropoffLoc(place);
                       setActiveDropdown(null);
@@ -231,7 +231,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
         {/* DIRECT ROUTES SECTION */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: 0 }}>
+            <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
               Available Direct Routes
             </h3>
             <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>
@@ -265,8 +265,9 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                     <span style={{ 
                       fontSize: '11px', 
                       fontWeight: '800', 
-                      background: isSelected ? '#1E293B' : '#F1F5F9', 
-                      color: isSelected ? '#FFAA01' : '#475569', 
+                      background: isSelected ? '#FEF3C7' : '#F1F5F9', 
+                      color: isSelected ? '#D97706' : '#475569', 
+                      border: isSelected ? '1px solid #FCD34D' : 'none',
                       padding: '4px 10px', 
                       borderRadius: '12px',
                       letterSpacing: '0.3px'
@@ -291,10 +292,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       <span style={{ fontSize: '12px' }}>📍</span>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>
                         {route.pickup}
                       </div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>
                         {route.dropoff}
                       </div>
                     </div>
@@ -322,9 +323,9 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           style={{
             width: '100%',
             background: isBothLocationsEntered 
-              ? 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)' 
-              : '#CBD5E1',
-            color: isBothLocationsEntered ? '#FFAA01' : '#64748B',
+              ? 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)' 
+              : '#E2E8F0',
+            color: isBothLocationsEntered ? '#FFFFFF' : '#94A3B8',
             border: 'none',
             padding: '16px',
             borderRadius: '18px',
@@ -332,7 +333,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             fontSize: '18px',
             fontWeight: '800',
             cursor: isBothLocationsEntered ? 'pointer' : 'not-allowed',
-            boxShadow: isBothLocationsEntered ? '0 6px 20px rgba(30, 41, 59, 0.3)' : 'none',
+            boxShadow: isBothLocationsEntered ? '0 8px 24px rgba(255, 170, 1, 0.4)' : 'none',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',

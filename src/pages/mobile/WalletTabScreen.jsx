@@ -1,159 +1,101 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-export default function WalletTabScreen({ activeTab, setActiveTab }) {
-  const [balance, setBalance] = useState(500.00);
-  const [transactions, setTransactions] = useState([
-    { id: "TXN-8812", title: "Trip Fare Paid", date: "Today, 3:30 PM", amount: "-₹250.00", type: "debit" },
-    { id: "TXN-7734", title: "Added Money via GPay", date: "07 Nov, 10:00 AM", amount: "+₹1000.00", type: "credit" },
-    { id: "TXN-6612", title: "Trip Fare Paid", date: "05 Nov, 5:15 PM", amount: "-₹180.50", type: "debit" },
-    { id: "TXN-5501", title: "Promo Reward Added", date: "01 Nov, 12:00 PM", amount: "+₹100.00", type: "credit" }
-  ]);
-
-  const handleAddFunds = () => {
-    setBalance(prev => prev + 500.00);
-    setTransactions(prev => [
-      { id: "TXN-" + Math.floor(1000 + Math.random() * 9000), title: "Top-up Added", date: "Just now", amount: "+₹500.00", type: "credit" },
-      ...prev
-    ]);
-  };
-
+export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
   return (
-    <div className="real-mobile-app">
+    <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
       {/* Header */}
-      <div className="white-header-nav">
-        <h2 className="white-header-title">Wallet & Payment</h2>
+      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+        {onBack && <button className="header-back-arrow" onClick={onBack}>←</button>}
+        <h2 className="white-header-title">My Wallet & Balance</h2>
       </div>
 
-      <div style={{ padding: '16px 20px 90px 20px', overflowY: 'auto' }}>
+      <div style={{ padding: '20px 20px 100px 20px', overflowY: 'auto' }}>
         {/* Wallet Balance Card */}
-        <div 
-          style={{
-            background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)',
-            borderRadius: '20px',
-            padding: '24px',
-            color: '#FFFFFF',
-            boxShadow: '0 8px 24px rgba(33,43,70,0.25)',
-            marginBottom: '24px',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '100px', opacity: 0.1, pointerEvents: 'none' }}>👛</div>
-          <div style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'League Spartan', fontWeight: '700', letterSpacing: '1px' }}>TOTAL BALANCE</div>
-          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '6px 0 16px 0', color: '#FFAA01' }}>
-            ₹{balance.toFixed(2)}
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button 
-              style={{
-                flex: 1,
-                background: '#FFAA01',
-                color: '#212B46',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '12px',
-                fontWeight: '800',
-                fontFamily: 'League Spartan',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-              onClick={handleAddFunds}
-            >
-              + Add ₹500 Money
+        <div style={{ 
+          background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', 
+          borderRadius: '24px', 
+          padding: '24px', 
+          color: '#FFFFFF',
+          boxShadow: '0 12px 28px rgba(255, 170, 1, 0.35)',
+          marginBottom: '24px',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', right: '-10px', top: '-10px', fontSize: '100px', opacity: 0.15, pointerEvents: 'none' }}>💳</div>
+          <div style={{ fontSize: '12px', fontWeight: '800', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>Available Taxi Wallet Balance</div>
+          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 16px 0' }}>₹1,450.00</div>
+          
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button style={{ 
+              flex: 1, 
+              background: '#FFFFFF', 
+              color: '#D97706', 
+              border: 'none', 
+              padding: '12px', 
+              borderRadius: '16px', 
+              fontFamily: 'League Spartan', 
+              fontWeight: '800', 
+              fontSize: '15px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              + Add Funds
             </button>
-            <button 
-              style={{
-                flex: 1,
-                background: 'rgba(255,255,255,0.12)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '12px',
-                padding: '12px',
-                fontWeight: '700',
-                fontFamily: 'League Spartan',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              💳 Manage Cards
+            <button style={{ 
+              flex: 1, 
+              background: 'rgba(255, 255, 255, 0.25)', 
+              color: '#FFFFFF', 
+              border: '1.5px solid rgba(255, 255, 255, 0.5)', 
+              padding: '12px', 
+              borderRadius: '16px', 
+              fontFamily: 'League Spartan', 
+              fontWeight: '800', 
+              fontSize: '15px',
+              cursor: 'pointer'
+            }}>
+              🎁 Rewards
             </button>
           </div>
         </div>
 
-        {/* Payment Methods Section */}
-        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#212B46', marginBottom: '12px' }}>Saved Payment Options</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
+        {/* Saved Payment Methods */}
+        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Saved Payment Options</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
           {[
-            { name: "Taxigo Pay Wallet", type: "Default", icon: "👛" },
-            { name: "Google Pay", type: "Linked", icon: "🌐" },
-            { name: "Apple Pay", type: "Linked", icon: "🍎" },
-            { name: "Visa **** 4920", type: "Card", icon: "💳" }
+            { name: 'UPI / Google Pay / PhonePe', icon: '📱', desc: 'Instant 1-Click Payment' },
+            { name: 'Credit / Debit Cards', icon: '💳', desc: 'HDFC, ICICI, SBI Cards' },
+            { name: 'Cash on Arrival', icon: '💵', desc: 'Pay Driver directly after trip' }
           ].map((item, idx) => (
-            <div 
-              key={idx}
-              style={{
-                background: '#FFFFFF',
-                border: '1.5px solid #E2E8F0',
-                borderRadius: '16px',
-                padding: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}
-            >
-              <span style={{ fontSize: '24px' }}>{item.icon}</span>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#212B46' }}>{item.name}</div>
-                <div style={{ fontSize: '11px', color: '#22C55E', fontWeight: '600' }}>{item.type}</div>
+            <div key={idx} style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '24px' }}>{item.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{item.name}</div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>{item.desc}</div>
               </div>
+              <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '800' }}>Active ✓</span>
             </div>
           ))}
         </div>
 
-        {/* Recent Transactions List */}
-        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#212B46', marginBottom: '12px' }}>Recent Transactions</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {transactions.map((txn) => (
-            <div 
-              key={txn.id}
-              style={{
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
-                borderRadius: '14px',
-                padding: '14px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div 
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
-                    background: txn.type === 'credit' ? '#DCFCE7' : '#FEE2E2',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '18px'
-                  }}
-                >
-                  {txn.type === 'credit' ? '⬇️' : '⬆️'}
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46' }}>{txn.title}</div>
-                  <div style={{ fontSize: '12px', color: '#67696B' }}>{txn.date}</div>
-                </div>
+        {/* Recent Wallet Activity */}
+        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Transactions</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[
+            { title: 'Trip Payment - Bhavnagar Railway Station', date: 'Today, 10:15 AM', amount: '-₹270.00', type: 'debit' },
+            { title: 'Wallet Top Up via UPI', date: 'Yesterday, 04:30 PM', amount: '+₹1,000.00', type: 'credit' },
+            { title: 'Trip Payment - Ahmedabad Airport', date: '08 Aug 2026', amount: '-₹2,625.00', type: 'debit' }
+          ].map((txn, idx) => (
+            <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn.title}</div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>{txn.date}</div>
               </div>
-              <div 
-                style={{
-                  fontFamily: 'League Spartan',
-                  fontWeight: '800',
-                  fontSize: '16px',
-                  color: txn.type === 'credit' ? '#22C55E' : '#212B46'
-                }}
-              >
+              <div style={{ 
+                fontFamily: 'League Spartan', 
+                fontWeight: '800', 
+                fontSize: '16px', 
+                color: txn.type === 'credit' ? '#22C55E' : '#E11D48' 
+              }}>
                 {txn.amount}
               </div>
             </div>
@@ -168,11 +110,11 @@ export default function WalletTabScreen({ activeTab, setActiveTab }) {
           <span>Home</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'rides' ? 'active' : ''}`} onClick={() => setActiveTab('rides')}>
-          <span className="nav-tab-icon">🚗</span>
+          <span className="nav-tab-icon">🚘</span>
           <span>My Rides</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-          <span className="nav-tab-icon">👛</span>
+          <span className="nav-tab-icon">💳</span>
           <span>Wallet</span>
         </button>
         <button className={`nav-tab-item ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>
