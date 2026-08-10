@@ -11,6 +11,7 @@ import OtpVerifyScreen from './mobile/OtpVerifyScreen';
 import NotificationOptScreen from './mobile/NotificationOptScreen';
 import PreferredLangScreen from './mobile/PreferredLangScreen';
 import LocationPermScreen from './mobile/LocationPermScreen';
+import AccountCreatedScreen from './mobile/AccountCreatedScreen';
 import HomeScreen from './mobile/HomeScreen';
 import RidesTabScreen from './mobile/RidesTabScreen';
 import WalletTabScreen from './mobile/WalletTabScreen';
@@ -221,8 +222,16 @@ export default function MobileAppView() {
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen 
-          onNext={() => completeOnboarding()} 
+          onNext={() => setAppStage('ACCOUNT_CREATED')} 
           onBack={() => setAppStage('PREFERRED_LANG')} 
+        />
+      );
+
+    case 'ACCOUNT_CREATED':
+      return (
+        <AccountCreatedScreen 
+          onNext={() => completeOnboarding()}
+          onBack={() => setAppStage('LOCATION_PERM')}
         />
       );
 
@@ -230,7 +239,7 @@ export default function MobileAppView() {
       return renderTabContent();
 
     case 'ACCOUNT_DETAILS':
-      return <AccountDetailScreen onBack={() => setAppStage('APP_HOME')} onSave={() => setAppStage('APP_HOME')} />;
+      return <AccountDetailScreen onBack={() => setAppStage('APP_HOME')} onSave={() => setAppStage('ACCOUNT_CREATED')} />;
 
     case 'SELECT_LOCATION_LIST':
       return (
