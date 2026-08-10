@@ -92,16 +92,6 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
 
   const isBothLocationsEntered = pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '';
 
-  const getPlaceIcon = (placeName) => {
-    const p = placeName.toLowerCase();
-    if (p.includes('station') || p.includes('rail')) return '🚉';
-    if (p.includes('airport') || p.includes('amd') || p.includes('bom')) return '✈️';
-    if (p.includes('beach') || p.includes('circle')) return '🏖️';
-    if (p.includes('park') || p.includes('it') || p.includes('highway')) return '🏢';
-    if (p.includes('hub') || p.includes('alkapuri')) return '🏬';
-    return '📍';
-  };
-
   return (
     <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
       {/* Premium Header */}
@@ -152,7 +142,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             {activeDropdown === 'pickup' && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  ADMIN PLACES & LOCATIONS
+                  ADMIN CONFINED PLACES & LOCATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
@@ -163,7 +153,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       setActiveDropdown(null);
                     }}
                   >
-                    <span>{getPlaceIcon(place)}</span>
+                    <span style={{ color: '#FFAA01', fontWeight: 'bold' }}>📍</span>
                     <span>{place}</span>
                   </div>
                 ))}
@@ -175,12 +165,12 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           <div style={{ position: 'relative', borderTop: '1px dashed #E2E8F0', paddingTop: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '14px' }}>📍</span>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>WHERE TO?</span>
+                <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
               </div>
               {currentDistance && (
                 <span style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(217, 119, 6, 0.12)' }}>
-                  🛣️ {currentDistance}
+                  Distance: {currentDistance}
                 </span>
               )}
             </div>
@@ -208,7 +198,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             {activeDropdown === 'dropoff' && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  ADMIN PLACES & LOCATIONS
+                  ADMIN CONFINED PLACES & LOCATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
@@ -219,7 +209,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       setActiveDropdown(null);
                     }}
                   >
-                    <span>{getPlaceIcon(place)}</span>
+                    <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
                     <span>{place}</span>
                   </div>
                 ))}
@@ -235,7 +225,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
               Available Direct Routes
             </h3>
             <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>
-              Tap route to auto-select
+              Tap route to select
             </span>
           </div>
 
@@ -272,11 +262,11 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       borderRadius: '12px',
                       letterSpacing: '0.3px'
                     }}>
-                      ⚡ DIRECT ROUTE
+                      DIRECT ROUTE
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B' }}>
-                        🛣️ {route.distanceKm} km
+                        {route.distanceKm} km
                       </span>
                       <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>
                         ₹{estFare}
@@ -289,7 +279,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                       <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}></span>
                       <div style={{ width: '2px', height: '18px', background: '#CBD5E1' }}></div>
-                      <span style={{ fontSize: '12px' }}>📍</span>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444' }}></span>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
+import { INITIAL_VEHICLES } from '../AdminPortal';
 
 export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, selectedSeat = 3, selectedCar, setSelectedCar, vehicleList, onNext, onBack }) {
   // Compute real map start, end, and route polyline from selected locations
@@ -39,39 +40,31 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
 
   const distanceKm = getRouteDistanceKm();
 
-  // Read owner-configured vehicles from Admin Portal (cabsy_vehicles in localStorage)
+  // Read owner-configured vehicles directly from Admin Portal (cabsy_vehicles in localStorage)
   const getAdminVehicles = () => {
-    const defaultRates = { 1: 15, 2: 20, 3: 35, 4: 25 };
+    let rawVehicles = [];
     try {
       const saved = localStorage.getItem('cabsy_vehicles');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((v, idx) => {
-            const ratePerKm = Number(v.rate || defaultRates[idx + 1] || 15);
-            const totalFare = Math.round(distanceKm * ratePerKm);
-            return {
-              id: v.id || idx + 1,
-              name: v.name,
-              passengers: v.passengers || '1 - 4 Passenger',
-              img: v.image || `/assets/images/map/car${(idx % 4) + 1}.png`,
-              dist: `${distanceKm} km`,
-              time: `${Math.round(distanceKm * 1.4)} min`,
-              ratePerKm,
-              totalFareNum: totalFare,
-              price: `₹${totalFare.toLocaleString('en-IN')}`
-            };
-          });
+          rawVehicles = parsed;
         }
       }
     } catch (e) {}
 
-    // Default Fleet if no custom vehicles
-    return vehicleList.map((v, idx) => {
-      const ratePerKm = defaultRates[v.id] || 15;
+    if (rawVehicles.length === 0) {
+      rawVehicles = INITIAL_VEHICLES;
+    }
+
+    return rawVehicles.map((v, idx) => {
+      const ratePerKm = Number(v.rate || 15);
       const totalFare = Math.round(distanceKm * ratePerKm);
       return {
-        ...v,
+        id: v.id || idx + 1,
+        name: v.name,
+        passengers: v.passengers || '4 Persons',
+        img: v.image || `/assets/images/map/car${(idx % 4) + 1}.png`,
         dist: `${distanceKm} km`,
         time: `${Math.round(distanceKm * 1.4)} min`,
         ratePerKm,
@@ -82,19 +75,7 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
   };
 
   const allVehicles = getAdminVehicles();
-  const isBiggerCarNeeded = selectedSeat > 4;
-
-  const filteredVehicles = allVehicles.filter(car => {
-    const pStr = (car.passengers || '').toLowerCase();
-    if (isBiggerCarNeeded) {
-      return pStr.includes('6') || pStr.includes('7') || pStr.includes('xl') || car.name.toLowerCase().includes('xl') || car.name.toLowerCase().includes('suv');
-    } else {
-      return pStr.includes('4') || !pStr.includes('6');
-    }
-  });
-
-  const activeCars = filteredVehicles.length > 0 ? filteredVehicles : allVehicles;
-  const currentCarObj = activeCars.find(c => c.id === selectedCar) || activeCars[0] || allVehicles[0];
+  const currentCarObj = allVehicles.find(c => c.id === selectedCar) || allVehicles[0];
 
   return (
     <div className="real-mobile-app">
@@ -130,15 +111,15 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                 <span>←</span> Back
               </button>
               <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' }}>
-                <span>💺</span> {selectedSeat} Seats • {distanceKm} KM Route
+                <span>●</span> {selectedSeat} Seats • {distanceKm} KM Route
               </div>
             </div>
 
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0' }}>
-              SELECT VEHICLE FLEET (RATE / KM)
+            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+              Select Admin Fleet Vehicle
             </p>
             
-            {/* Scrollable Car Cards */}
+            {/* Scrollable Admin Car Cards */}
             <div style={{ 
               display: 'flex', 
               gap: '12px', 
@@ -153,8 +134,8 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                   <div 
                     key={car.id} 
                     style={{
-                      flex: '0 0 calc(30% - 8px)',
-                      minWidth: '105px',
+                      flex: '0 0 calc(32% - 8px)',
+                      minWidth: '110px',
                       background: isSelected ? '#FFFBEB' : '#FFFFFF',
                       border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0',
                       borderRadius: '18px',
@@ -169,14 +150,14 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                     }}
                     onClick={() => setSelectedCar(car.id)}
                   >
-                    <img src={car.img} alt={car.name} style={{ height: '48px', objectFit: 'contain' }} />
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: isSelected ? '#0F172A' : '#64748B', marginTop: '6px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                    <img src={car.img} alt={car.name} style={{ height: '48px', width: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: isSelected ? '#0F172A' : '#475569', marginTop: '6px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                       {car.name}
                     </span>
-                    <span style={{ fontSize: '10px', color: '#64748B', fontWeight: '700', marginTop: '2px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', marginTop: '2px' }}>
                       ₹{car.ratePerKm}/km
                     </span>
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#22C55E', marginTop: '2px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: '#22C55E', marginTop: '2px' }}>
                       {car.price}
                     </span>
                   </div>
@@ -188,7 +169,7 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
             <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>
-                  {currentCarObj.name}
+                  {currentCarObj.name} ({currentCarObj.passengers})
                 </h4>
                 <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
                   Rate: ₹{currentCarObj.ratePerKm}/km × {distanceKm} KM
@@ -198,20 +179,20 @@ export default function SelectCarScreen({ userCoords, pickupLoc, dropoffLoc, sel
                 <span style={{ fontSize: '20px', fontWeight: '800', color: '#22C55E', fontFamily: 'League Spartan', display: 'block' }}>
                   {currentCarObj.price}
                 </span>
-                <span style={{ fontSize: '11px', color: '#15803D', fontWeight: '700' }}>✓ All Tolls Included</span>
+                <span style={{ fontSize: '11px', color: '#15803D', fontWeight: '700' }}>✓ Taxes & Tolls Included</span>
               </div>
             </div>
 
             {/* Trip Stats Pills */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
-                🚩 {distanceKm} KM
+                Distance: {distanceKm} KM
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>
-                ⏱️ ~{Math.round(distanceKm * 1.4)} Min
+                Est. Time: ~{Math.round(distanceKm * 1.4)} Min
               </div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', fontFamily: 'Space Grotesk', fontWeight: '700', fontSize: '13px', color: '#22C55E' }}>
-                🏷️ ₹{currentCarObj.ratePerKm}/km
+                Rate: ₹{currentCarObj.ratePerKm}/km
               </div>
             </div>
 

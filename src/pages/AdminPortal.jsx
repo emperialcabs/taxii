@@ -34,39 +34,39 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-const INITIAL_VEHICLES = [
+export const INITIAL_VEHICLES = [
   {
     id: 'CAR-101',
-    name: 'Cabsy Reguler',
+    name: 'SWIFT',
     passengers: '4 Persons',
-    rate: '15.00',
+    rate: '5.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
     description: 'Comfortable executive sedan for daily commute and airport transfers.'
   },
   {
     id: 'CAR-102',
-    name: 'Cabsy XL',
-    passengers: '6 Persons',
-    rate: '22.00',
+    name: 'AURA (CNG)',
+    passengers: '4 Persons',
+    rate: '3.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
-    description: 'Spacious 6-seater SUV for family trips and heavy luggage.'
+    description: 'Spacious 4-seater for family trips and heavy luggage.'
   },
   {
     id: 'CAR-103',
-    name: 'Cabsy Luxury',
-    passengers: '4 Persons',
-    rate: '35.00',
+    name: 'EARTICE (PETROL)',
+    passengers: '7 Persons',
+    rate: '10.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
-    description: 'Premium BMW & Mercedes luxury class for VIP mobility.'
+    description: 'Premium class for VIP mobility.'
   },
   {
     id: 'CAR-104',
-    name: 'Cabsy Electric',
-    passengers: '4 Persons',
-    rate: '18.00',
+    name: 'Electric',
+    passengers: '7 Persons',
+    rate: '3.00',
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     description: 'Zero-emission eco-friendly electric ride experience.'
