@@ -72,8 +72,8 @@ export default function SelectPaymentScreen({
                   <div 
                     key={item.id}
                     style={{
-                      background: isSelected ? '#FFFBEB' : '#FFFFFF',
-                      border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0',
+                      background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                      border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                       borderRadius: '18px',
                       padding: '12px 6px',
                       display: 'flex',
@@ -81,7 +81,7 @@ export default function SelectPaymentScreen({
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 14px rgba(255,170,1,0.25)' : '0 2px 6px rgba(0,0,0,0.02)',
+                      boxShadow: isSelected ? '0 4px 14px rgba(52, 211, 153, 0.25)' : '0 2px 6px rgba(0,0,0,0.02)',
                       transition: 'all 0.2s ease'
                     }}
                     onClick={() => setSelectedPayment(item.id)}

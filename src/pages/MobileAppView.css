@@ -2,8 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --taxigo-yellow: #FFAA01;
-  --taxigo-orange: #FF8C00;
+  --taxigo-yellow: #34D399;
+  --taxigo-orange: #10B981;
   --taxigo-dark: #1E293B;
   --taxigo-navy: #0F172A;
   --taxigo-gray: #64748B;
@@ -15,7 +15,7 @@
   --taxigo-shadow-sm: 0 2px 8px rgba(0,0,0,0.03);
   --taxigo-shadow-md: 0 6px 20px rgba(0,0,0,0.06);
   --taxigo-shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
-  --taxigo-glow-yellow: 0 6px 20px rgba(255, 170, 1, 0.35);
+  --taxigo-glow-yellow: 0 6px 20px rgba(52, 211, 153, 0.35);
 }
 
 body, html {
@@ -107,7 +107,7 @@ body, html {
   position: absolute;
   width: 11px;
   height: 1px;
-  background: #FFAA01;
+  background: #34D399;
   animation: strikes 0.2s linear infinite;
 }
 
@@ -119,7 +119,7 @@ body, html {
 .car-detail {
   position: absolute;
   display: block;
-  background: #FFAA01;
+  background: #34D399;
   animation: speed 0.5s linear infinite;
 }
 
@@ -129,7 +129,7 @@ body, html {
   top: 7px;
   background: none;
   border: 5px solid transparent;
-  border-right-color: #FFAA01;
+  border-right-color: #34D399;
 }
 
 .car-detail.back { top: 15px; width: 92px; height: 15px; border-radius: 5px 8px 0 0; }
@@ -138,7 +138,7 @@ body, html {
 .car-detail.front { top: 20px; left: 92px; width: 25px; height: 10px; border-radius: 0 8px 4px 0; }
 .car-detail.wheel {
   top: 20px; left: 12px; width: 22px; height: 22px; border-radius: 50%;
-  background: linear-gradient(45deg, transparent 45%, #FFAA01 46%, #FFAA01 54%, transparent 55%), radial-gradient(#FFAA01 29%, transparent 30%, transparent 50%, #FFAA01 51%), #1E293B;
+  background: linear-gradient(45deg, transparent 45%, #34D399 46%, #34D399 54%, transparent 55%), radial-gradient(#34D399 29%, transparent 30%, transparent 50%, #34D399 51%), #1E293B;
   animation: spin 0.4s linear infinite;
 }
 
@@ -159,8 +159,8 @@ body, html {
 .taxigo-spinner-dots {
   width: 54px;
   height: 54px;
-  border: 5px solid rgba(255, 170, 1, 0.2);
-  border-top-color: #FFAA01;
+  border: 5px solid rgba(52, 211, 153, 0.2);
+  border-top-color: #10B981;
   border-radius: 50%;
   animation: spinDots 0.8s linear infinite;
 }
@@ -260,12 +260,12 @@ body, html {
 .onboarding-desc { font-size: 15px; color: #64748B; line-height: 1.5; margin: 0; }
 .onboarding-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
 .dot-item { width: 8px; height: 8px; border-radius: 50%; background: #E2E8F0; transition: all 0.3s ease; }
-.dot-item.active { width: 24px; border-radius: 12px; background: #FFAA01; }
+.dot-item.active { width: 24px; border-radius: 12px; background: #34D399; }
 
 .onboarding-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; margin-top: 20px; }
 .btn-skip { background: none; border: none; font-size: 16px; font-weight: 700; color: #64748B; cursor: pointer; }
 .btn-next-finish {
-  background: linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%);
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
   border: none;
   font-family: 'League Spartan', sans-serif;
@@ -274,7 +274,7 @@ body, html {
   padding: 14px 32px;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: var(--taxigo-glow-yellow);
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
   transition: transform 0.15s ease;
 }
 .btn-next-finish:active { transform: scale(0.96); }
@@ -305,13 +305,13 @@ body, html {
   transition: border-color 0.2s ease;
 }
 
-.phone-input-wrapper:focus-within { border-color: #FFAA01; background: #FFFFFF; boxShadow: 0 0 0 3px rgba(255,170,1,0.15); }
+.phone-input-wrapper:focus-within { border-color: #34D399; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15); }
 .flag-icon-span { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #1E293B; margin-right: 12px; }
 .phone-input-field { width: 100%; border: none; background: transparent; outline: none; padding: 14px 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #1E293B; }
 
 .let-you-signin-btn, .taxigo-btn-primary {
   width: 100%;
-  background: linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%);
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
   border: none;
   font-family: 'League Spartan', sans-serif;
@@ -320,7 +320,7 @@ body, html {
   padding: 16px;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: var(--taxigo-glow-yellow);
+  box-shadow: 0 6px 20px rgba(52, 211, 153, 0.35);
   text-align: center;
   box-sizing: border-box;
   transition: transform 0.15s ease, opacity 0.2s ease;

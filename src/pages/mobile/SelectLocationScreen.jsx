@@ -153,7 +153,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       setActiveDropdown(null);
                     }}
                   >
-                    <span style={{ color: '#FFAA01', fontWeight: 'bold' }}>📍</span>
+                    <span style={{ color: '#10B981', fontWeight: 'bold' }}>📍</span>
                     <span>{place}</span>
                   </div>
                 ))}
@@ -169,7 +169,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
               </div>
               {currentDistance && (
-                <span style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', color: '#D97706', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(217, 119, 6, 0.12)' }}>
+                <span style={{ background: '#F0FDF4', border: '1.5px solid #6EE7B7', color: '#059669', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(5, 150, 105, 0.12)' }}>
                   Distance: {currentDistance}
                 </span>
               )}
@@ -239,10 +239,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                   key={route.id || idx} 
                   style={{ 
                     padding: '16px', 
-                    background: isSelected ? '#FFFBEB' : '#FFFFFF', 
+                    background: isSelected ? '#F0FDF4' : '#FFFFFF', 
                     borderRadius: '20px', 
-                    border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0', 
-                    boxShadow: isSelected ? '0 6px 18px rgba(255,170,1,0.25)' : '0 2px 10px rgba(0,0,0,0.03)', 
+                    border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0', 
+                    boxShadow: isSelected ? '0 6px 18px rgba(52, 211, 153, 0.25)' : '0 2px 10px rgba(0,0,0,0.03)', 
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     position: 'relative',
@@ -255,9 +255,9 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                     <span style={{ 
                       fontSize: '11px', 
                       fontWeight: '800', 
-                      background: isSelected ? '#FEF3C7' : '#F1F5F9', 
-                      color: isSelected ? '#D97706' : '#475569', 
-                      border: isSelected ? '1px solid #FCD34D' : 'none',
+                      background: isSelected ? '#D1FAE5' : '#F1F5F9', 
+                      color: isSelected ? '#059669' : '#475569', 
+                      border: isSelected ? '1px solid #6EE7B7' : 'none',
                       padding: '4px 10px', 
                       borderRadius: '12px',
                       letterSpacing: '0.3px'
