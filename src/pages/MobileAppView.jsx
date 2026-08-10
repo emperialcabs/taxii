@@ -64,6 +64,17 @@ export default function MobileAppView() {
     setAppStage('APP_HOME');
   };
 
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('cabsy_user_profile');
+      localStorage.removeItem('taxigo_onboarded');
+    } catch (e) {}
+    setSelectedGoogleAccount(null);
+    setPhoneNumber('');
+    setActiveTab('home');
+    setAppStage('LETS_YOU_IN');
+  };
+
   // Dispatch Admin Notification & Save to Central DB when Ride is Requested
   const handleRequestRide = (carObj) => {
     let userProf = { name: 'Dhruvil Patel', phone: '+91 98765 43210' };
@@ -143,6 +154,7 @@ export default function MobileAppView() {
           <AccountTabScreen 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
+            onLogout={handleLogout}
             onNavigateScreen={(target) => {
               if (target === 'letsyouin') setAppStage('LETS_YOU_IN');
               if (target === 'accountdetail') setAppStage('ACCOUNT_DETAILS');
@@ -239,7 +251,7 @@ export default function MobileAppView() {
       return renderTabContent();
 
     case 'ACCOUNT_DETAILS':
-      return <AccountDetailScreen onBack={() => setAppStage('APP_HOME')} onSave={() => setAppStage('ACCOUNT_CREATED')} />;
+      return <AccountDetailScreen onBack={() => setAppStage('APP_HOME')} onSave={() => setAppStage('APP_HOME')} />;
 
     case 'SELECT_LOCATION_LIST':
       return (

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 
-export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, onLogout, onBack }) {
+export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, onNavigateScreen, onLogout, onBack }) {
+  const handleOpenEdit = () => {
+    if (onNavigateScreen) onNavigateScreen('accountdetail');
+    else if (onNavigate) onNavigate('accountdetail');
+  };
+
   const [userProfile, setUserProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
@@ -51,17 +56,21 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
 
       <div className="app-scroll-content" style={{ padding: '20px 20px 100px 20px' }}>
         {/* Profile Card Header */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', 
-          borderRadius: '24px', 
-          padding: '20px', 
-          color: '#FFFFFF',
-          boxShadow: '0 12px 28px rgba(52, 211, 153, 0.35)',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
+        <div 
+          onClick={handleOpenEdit}
+          style={{ 
+            background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', 
+            borderRadius: '24px', 
+            padding: '20px', 
+            color: '#FFFFFF',
+            boxShadow: '0 12px 28px rgba(52, 211, 153, 0.35)',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ position: 'relative' }}>
             {userProfile.photoURL ? (
               <img 
@@ -86,7 +95,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
           </div>
 
           <button 
-            onClick={() => onNavigate('accountDetail')}
+            onClick={(e) => { e.stopPropagation(); handleOpenEdit(); }}
             style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
           >
             Edit ✏️
@@ -122,7 +131,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
             <div 
               key={item.id} 
               onClick={() => {
-                if (item.id === 'profile') onNavigate('accountDetail');
+                if (item.id === 'profile') handleOpenEdit();
                 else setShowInfoModal(item);
               }}
               style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
