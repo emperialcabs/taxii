@@ -26,30 +26,24 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
   const [routes, setRoutes] = useState(DEFAULT_ROUTES);
   const [activeDropdown, setActiveDropdown] = useState(null); // 'pickup' | 'dropoff' | null
 
-  // Fetch live Admin Panel configuration from localStorage
+  // Sync with Admin Panel configuration from localStorage
   useEffect(() => {
     try {
       const savedPlaces = localStorage.getItem('cabsy_places');
       if (savedPlaces) {
         const parsedP = JSON.parse(savedPlaces);
-        if (Array.isArray(parsedP) && parsedP.length > 0) {
-          setPlaces(parsedP);
-        }
+        if (Array.isArray(parsedP) && parsedP.length > 0) setPlaces(parsedP);
       }
 
       const savedDestinations = localStorage.getItem('cabsy_destinations');
       if (savedDestinations) {
         const parsedD = JSON.parse(savedDestinations);
-        if (Array.isArray(parsedD) && parsedD.length > 0) {
-          setRoutes(parsedD);
-        }
+        if (Array.isArray(parsedD) && parsedD.length > 0) setRoutes(parsedD);
       }
-    } catch (e) {
-      console.warn("Failed to load admin routes:", e);
-    }
+    } catch (e) {}
   }, []);
 
-  // Calculate distance display for selected route
+  // Calculate distance for selected route
   const currentMatchedRoute = routes.find(r => 
     (pickupLoc && (r.pickup.toLowerCase().includes(pickupLoc.toLowerCase()) || pickupLoc.toLowerCase().includes(r.pickup.toLowerCase()))) &&
     (dropoffLoc && (r.dropoff.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc.toLowerCase().includes(r.dropoff.toLowerCase())))
@@ -59,7 +53,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
     ? `${currentMatchedRoute.distanceKm} km`
     : (dropoffLoc ? '18 km' : '');
 
-  const handleSelectAdminRoute = (route) => {
+  const handleSelectRoute = (route) => {
     setPickupLoc(route.pickup);
     setDropoffLoc(route.dropoff);
     setActiveDropdown(null);
@@ -67,92 +61,135 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
 
   const isBothLocationsEntered = pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '';
 
+  const getPlaceIcon = (placeName) => {
+    const p = placeName.toLowerCase();
+    if (p.includes('station') || p.includes('rail')) return '🚉';
+    if (p.includes('airport') || p.includes('amd') || p.includes('bom')) return '✈️';
+    if (p.includes('beach') || p.includes('circle')) return '🏖️';
+    if (p.includes('park') || p.includes('it') || p.includes('highway')) return '🏢';
+    if (p.includes('hub') || p.includes('alkapuri')) return '🏬';
+    return '📍';
+  };
+
   return (
-    <div className="real-mobile-app">
-      <div className="white-header-nav">
-        <button className="header-back-arrow" onClick={onBack}>‹</button>
+    <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
+      {/* Premium Header */}
+      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+        <button className="header-back-arrow" onClick={onBack}>←</button>
         <h2 className="white-header-title">Select Destination</h2>
       </div>
 
-      <div style={{ padding: '16px 20px', paddingBottom: '100px', overflowY: 'auto' }}>
-        {/* Pickup & Dropoff Selection Card */}
-        <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '16px', border: '1.5px solid #E2E8F0', marginBottom: '16px', position: 'relative' }}>
-          
-          {/* Pickup Location Selector */}
-          <div style={{ position: 'relative', marginBottom: '12px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '800', color: '#22C55E', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>●</span> PICK-UP LOCATION (FROM ADMIN PLACES)
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input 
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#212B46', background: '#FFFFFF' }} 
-                value={pickupLoc} 
-                onChange={(e) => setPickupLoc(e.target.value)} 
-                onFocus={() => setActiveDropdown('pickup')}
-                placeholder="Select or type Pick-up Location"
-              />
+      <div style={{ padding: '16px 20px 100px 20px', overflowY: 'auto' }}>
+        
+        {/* Pickup & Dropoff Input Card */}
+        <div style={{ 
+          background: '#FFFFFF', 
+          borderRadius: '20px', 
+          padding: '16px', 
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+          border: '1px solid #E2E8F0',
+          marginBottom: '20px',
+          position: 'relative'
+        }}>
+          {/* Pickup Input */}
+          <div style={{ position: 'relative', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px rgba(34,197,94,0.4)', display: 'inline-block' }}></span>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>PICKUP LOCATION</span>
             </div>
+            <input 
+              style={{ 
+                width: '100%', 
+                padding: '12px 14px', 
+                borderRadius: '14px', 
+                border: '1.5px solid #CBD5E1', 
+                outline: 'none', 
+                fontFamily: 'Space Grotesk, sans-serif', 
+                fontSize: '15px', 
+                fontWeight: '600', 
+                color: '#212B46', 
+                background: '#F8FAFC',
+                boxSizing: 'border-box'
+              }} 
+              value={pickupLoc} 
+              onChange={(e) => setPickupLoc(e.target.value)} 
+              onFocus={() => setActiveDropdown('pickup')}
+              placeholder="Search pickup spot or city..."
+            />
 
             {/* Dropdown Options for Pickup */}
             {activeDropdown === 'pickup' && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', maxHeight: '180px', overflowY: 'auto', marginTop: '4px' }}>
-                <div style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
-                  ADMIN PLACES ({places.length})
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
+                <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  AVAILABLE LOCATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '10px 14px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setPickupLoc(place);
                       setActiveDropdown(null);
                     }}
                   >
-                    🟢 {place}
+                    <span>{getPlaceIcon(place)}</span>
+                    <span>{place}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Dropoff Location Selector */}
-          <div style={{ position: 'relative', borderTop: '1px dashed #CBD5E1', paddingTop: '12px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '800', color: '#FB4945', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>📍</span> DROP-OFF DESTINATION (TO ADMIN PLACES)
-              </span>
+          {/* Dropoff Input */}
+          <div style={{ position: 'relative', borderTop: '1px dashed #E2E8F0', paddingTop: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '14px' }}>📍</span>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>WHERE TO?</span>
+              </div>
               {currentDistance && (
-                <span style={{ background: '#212B46', color: '#FFAA01', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '700' }}>
+                <span style={{ background: 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)', color: '#FFAA01', padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
                   🛣️ {currentDistance}
                 </span>
               )}
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input 
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '600', color: '#212B46', background: '#FFFFFF' }} 
-                value={dropoffLoc} 
-                onChange={(e) => setDropoffLoc(e.target.value)} 
-                onFocus={() => setActiveDropdown('dropoff')}
-                placeholder="Select or type Dropoff Destination"
-              />
             </div>
+            <input 
+              style={{ 
+                width: '100%', 
+                padding: '12px 14px', 
+                borderRadius: '14px', 
+                border: '1.5px solid #CBD5E1', 
+                outline: 'none', 
+                fontFamily: 'Space Grotesk, sans-serif', 
+                fontSize: '15px', 
+                fontWeight: '600', 
+                color: '#212B46', 
+                background: '#F8FAFC',
+                boxSizing: 'border-box'
+              }} 
+              value={dropoffLoc} 
+              onChange={(e) => setDropoffLoc(e.target.value)} 
+              onFocus={() => setActiveDropdown('dropoff')}
+              placeholder="Search destination spot..."
+            />
 
             {/* Dropdown Options for Dropoff */}
             {activeDropdown === 'dropoff' && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', maxHeight: '180px', overflowY: 'auto', marginTop: '4px' }}>
-                <div style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
-                  ADMIN DESTINATIONS ({places.length})
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
+                <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  POPULAR DESTINATIONS
                 </div>
                 {places.map((place, i) => (
                   <div 
                     key={i}
-                    style={{ padding: '10px 14px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                    style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#212B46', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     onClick={() => {
                       setDropoffLoc(place);
                       setActiveDropdown(null);
                     }}
                   >
-                    🔴 {place}
+                    <span>{getPlaceIcon(place)}</span>
+                    <span>{place}</span>
                   </div>
                 ))}
               </div>
@@ -160,39 +197,60 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           </div>
         </div>
 
-        {/* Admin Places Badges Bar */}
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '800', color: '#212B46', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>📍 ADMIN LOCATION PLACES ({places.length})</span>
-            <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Tap to select</span>
-          </div>
+        {/* Quick Location Chips Bar */}
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#212B46', margin: '0 0 10px 0', letterSpacing: '0.3px' }}>
+            Popular Destinations
+          </h3>
           <div className="location-chips-bar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
-            {places.map((place, i) => (
-              <button 
-                key={i} 
-                className={`location-chip-btn ${dropoffLoc === place ? 'active' : ''}`}
-                style={{ whiteSpace: 'nowrap', padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
-                onClick={() => {
-                  if (!pickupLoc || pickupLoc.trim() === '') {
-                    setPickupLoc("Bhavnagar, Gujarat");
-                  }
-                  setDropoffLoc(place);
-                }}
-              >
-                📍 {place}
-              </button>
-            ))}
+            {places.map((place, i) => {
+              const isSelected = dropoffLoc === place;
+              return (
+                <button 
+                  key={i} 
+                  style={{ 
+                    whiteSpace: 'nowrap', 
+                    padding: '8px 14px', 
+                    borderRadius: '20px', 
+                    fontSize: '13px', 
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontWeight: '700', 
+                    cursor: 'pointer',
+                    background: isSelected ? 'linear-gradient(135deg, #212B46 0%, #1A2238 100%)' : '#FFFFFF',
+                    color: isSelected ? '#FFAA01' : '#475569',
+                    border: isSelected ? '1.5px solid #212B46' : '1.5px solid #E2E8F0',
+                    boxShadow: isSelected ? '0 4px 12px rgba(33,43,70,0.2)' : '0 2px 6px rgba(0,0,0,0.02)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                  onClick={() => {
+                    if (!pickupLoc || pickupLoc.trim() === '') {
+                      setPickupLoc("Bhavnagar, Gujarat");
+                    }
+                    setDropoffLoc(place);
+                  }}
+                >
+                  <span>{getPlaceIcon(place)}</span>
+                  <span>{place}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* ADMIN CREATED ROUTES SECTION ONLY */}
+        {/* DIRECT ROUTES SECTION */}
         <div>
-          <div style={{ fontSize: '13px', fontWeight: '800', color: '#212B46', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>🛣️ ADMIN CONFIGURED ROUTES ({routes.length})</span>
-            <span style={{ fontSize: '11px', color: '#22C55E', fontWeight: '700' }}>Tap route to auto-fill</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#212B46', margin: 0 }}>
+              Available Direct Routes
+            </h3>
+            <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>
+              Tap route to auto-select
+            </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {routes.map((route, idx) => {
               const isSelected = (pickupLoc === route.pickup && dropoffLoc === route.dropoff);
               const estFare = Math.round((route.distanceKm || 15) * 15);
@@ -201,37 +259,55 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <div 
                   key={route.id || idx} 
                   style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    gap: '8px',
-                    padding: '14px', 
-                    background: isSelected ? '#FEF3C7' : '#FFFFFF', 
-                    borderRadius: '16px', 
+                    padding: '16px', 
+                    background: isSelected ? 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)' : '#FFFFFF', 
+                    borderRadius: '20px', 
                     border: isSelected ? '2px solid #FFAA01' : '1.5px solid #E2E8F0', 
-                    boxShadow: isSelected ? '0 4px 12px rgba(255,170,1,0.2)' : '0 2px 8px rgba(0,0,0,0.03)', 
+                    boxShadow: isSelected ? '0 6px 18px rgba(255,170,1,0.25)' : '0 2px 10px rgba(0,0,0,0.03)', 
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
-                  onClick={() => handleSelectAdminRoute(route)}
+                  onClick={() => handleSelectRoute(route)}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '800', background: '#212B46', color: '#FFAA01', padding: '3px 8px', borderRadius: '8px' }}>
-                      {route.id || `ROUTE-${idx + 1}`}
+                  {/* Top Bar: Route Type & Price */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ 
+                      fontSize: '11px', 
+                      fontWeight: '800', 
+                      background: isSelected ? '#212B46' : '#F1F5F9', 
+                      color: isSelected ? '#FFAA01' : '#475569', 
+                      padding: '4px 10px', 
+                      borderRadius: '12px',
+                      letterSpacing: '0.3px'
+                    }}>
+                      ⚡ DIRECT ROUTE
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#212B46' }}>🛣️ {route.distanceKm} KM</span>
-                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#22C55E' }}>₹{estFare}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B' }}>
+                        🛣️ {route.distanceKm} km
+                      </span>
+                      <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>
+                        ₹{estFare}
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#212B46' }}>
-                      <span style={{ color: '#22C55E', fontWeight: 'bold' }}>●</span>
-                      <span>From: {route.pickup}</span>
+                  {/* Route Timeline (From ➔ To) */}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}></span>
+                      <div style={{ width: '2px', height: '18px', background: '#CBD5E1' }}></div>
+                      <span style={{ fontSize: '12px' }}>📍</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#212B46' }}>
-                      <span style={{ color: '#FB4945', fontWeight: 'bold' }}>📍</span>
-                      <span>To: {route.dropoff}</span>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46', fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {route.pickup}
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#212B46', fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {route.dropoff}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -242,21 +318,37 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
       </div>
 
       {/* Bottom Sticky Action Button */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)', zIndex: 100 }}>
+      <div style={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        left: 0, 
+        right: 0, 
+        padding: '16px 20px', 
+        background: '#FFFFFF', 
+        borderTop: '1px solid #E2E8F0', 
+        boxShadow: '0 -6px 20px rgba(0,0,0,0.06)', 
+        zIndex: 100 
+      }}>
         <button 
           style={{
             width: '100%',
-            background: isBothLocationsEntered ? '#212B46' : '#94A3B8',
-            color: isBothLocationsEntered ? '#FFAA01' : '#FFFFFF',
+            background: isBothLocationsEntered 
+              ? 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)' 
+              : '#CBD5E1',
+            color: isBothLocationsEntered ? '#FFFFFF' : '#64748B',
             border: 'none',
             padding: '16px',
-            borderRadius: '16px',
-            fontFamily: 'Space Grotesk, sans-serif',
-            fontSize: '16px',
+            borderRadius: '18px',
+            fontFamily: 'League Spartan, sans-serif',
+            fontSize: '18px',
             fontWeight: '800',
             cursor: isBothLocationsEntered ? 'pointer' : 'not-allowed',
-            boxShadow: isBothLocationsEntered ? '0 4px 14px rgba(33,43,70,0.3)' : 'none',
-            transition: 'all 0.2s ease'
+            boxShadow: isBothLocationsEntered ? '0 6px 20px rgba(255, 170, 1, 0.4)' : 'none',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
           }}
           disabled={!isBothLocationsEntered}
           onClick={() => {
@@ -265,7 +357,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             }
           }}
         >
-          {isBothLocationsEntered ? 'Confirm Admin Route & Proceed →' : 'Select Pickup & Dropoff Location'}
+          {isBothLocationsEntered ? 'Confirm Route & Choose Car →' : 'Select Pickup & Destination'}
         </button>
       </div>
     </div>
