@@ -285,7 +285,7 @@ export default function SeatScheduleScreen({
               className="taxigo-btn-primary" 
               style={{
                 width: '100%',
-                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '16px',
@@ -294,7 +294,7 @@ export default function SeatScheduleScreen({
                 fontSize: '17px',
                 fontWeight: '800',
                 cursor: 'pointer',
-                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)',
+                boxShadow: '0 6px 20px rgba(52, 211, 153, 0.4)',
                 transition: 'all 0.2s ease'
               }}
               onClick={() => onNext && onNext(activeCarObj)}

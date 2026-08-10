@@ -276,7 +276,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
             <button 
               onClick={() => { setIsSearchOpen(false); onStartBooking(); }}
-              style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)' }}
+              style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(52, 211, 153, 0.4)' }}
             >
               Confirm Location & Continue →
             </button>

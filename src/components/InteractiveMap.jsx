@@ -111,6 +111,8 @@ class MapErrorBoundary extends React.Component {
   }
 }
 
+import { fetchRoadPolyline } from '../utils/locationCoords';
+
 export default function InteractiveMap({
   center = { lat: 21.7645, lng: 72.1519 },
   zoom = 15,
@@ -126,6 +128,22 @@ export default function InteractiveMap({
   const safeLat = (center && typeof center.lat === 'number' && !isNaN(center.lat)) ? center.lat : 21.7645;
   const safeLng = (center && typeof center.lng === 'number' && !isNaN(center.lng)) ? center.lng : 72.1519;
   const mapCenter = [safeLat, safeLng];
+
+  const [liveRoadLine, setLiveRoadLine] = React.useState(null);
+
+  useEffect(() => {
+    if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number') {
+      let isMounted = true;
+      fetchRoadPolyline({ lat: safeLat, lng: safeLng }, destination).then(pts => {
+        if (isMounted && Array.isArray(pts) && pts.length > 0) {
+          setLiveRoadLine(pts);
+        }
+      });
+      return () => { isMounted = false; };
+    } else {
+      setLiveRoadLine(null);
+    }
+  }, [safeLat, safeLng, destination?.lat, destination?.lng]);
 
   // Calculate distance in KM between pickup and destination
   const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
@@ -144,6 +162,8 @@ export default function InteractiveMap({
 
   const distKm = destination && typeof destination.lat === 'number' ? calculateDistanceKm(safeLat, safeLng, destination.lat, destination.lng) : null;
   const estMins = distKm ? Math.max(12, Math.round(distKm * 1.5)) : null;
+
+  const activePolyline = liveRoadLine || routePolyline;
 
   return (
     <div className="interactive-google-map-container" style={{ ...style, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' }}>
@@ -246,14 +266,14 @@ export default function InteractiveMap({
           )}
 
           {/* Google Maps Style Royal Blue Navigation Route Line */}
-          {Array.isArray(routePolyline) && routePolyline.length > 0 ? (
+          {Array.isArray(activePolyline) && activePolyline.length > 0 ? (
             <>
               <Polyline 
-                positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
+                positions={activePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
                 pathOptions={{ color: '#1E40AF', weight: 9, opacity: 0.7, lineCap: 'round', lineJoin: 'round' }} 
               />
               <Polyline 
-                positions={routePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
+                positions={activePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
                 pathOptions={{ color: '#2563EB', weight: 6, opacity: 1.0, lineCap: 'round', lineJoin: 'round' }} 
               />
             </>

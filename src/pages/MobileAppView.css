@@ -406,10 +406,10 @@ body, html {
 }
 
 .lang-pill-item.selected {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
-  border-color: #10B981;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  border-color: #34D399;
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
 }
 
 /* 4. MAP & HOMESCREEN INTERFACE */
@@ -464,7 +464,7 @@ body, html {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 2px solid #FFAA01;
+  border: 2px solid #34D399;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   cursor: pointer;
   object-fit: cover;
@@ -497,6 +497,29 @@ body, html {
 
 .home-greeting-txt { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #64748B; margin: 0; }
 
+.taxigo-btn-primary {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
+  transition: all 0.2s ease;
+}
+
+.taxigo-btn-primary:active {
+  transform: translateY(1px);
+}
+
 /* SEAT SELECTION GRID */
 .seat-selection-grid { display: flex; align-items: center; gap: 10px; margin: 12px 0 20px 0; }
 .seat-box-btn {
@@ -517,10 +540,10 @@ body, html {
 }
 
 .seat-box-btn.active {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
-  border-color: #10B981;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  border-color: #34D399;
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
 }
 
 /* SCHEDULE INPUTS */
@@ -572,7 +595,8 @@ body, html {
   transition: color 0.2s ease;
 }
 
-.nav-tab-item.active { color: #1E293B; }
+.nav-tab-item.active { color: #0F172A; }
+.nav-tab-item.active .nav-tab-icon { transform: translateY(-2px); color: #10B981; }
 .nav-tab-item.active .nav-tab-icon { transform: translateY(-2px); color: #FFAA01; }
 .nav-tab-icon { font-size: 20px; transition: transform 0.2s ease; }
 
