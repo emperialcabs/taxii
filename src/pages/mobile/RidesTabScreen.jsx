@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { INITIAL_VEHICLES } from '../AdminPortal';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -6,6 +7,18 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
   const [selectedInquiry, setSelectedInquiry] = useState(null); // Modal state for viewing/editing receipt
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
+
+  // Helper to load available fleet vehicles from Admin
+  const getAvailableVehicles = () => {
+    try {
+      const saved = localStorage.getItem('cabsy_vehicles');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return INITIAL_VEHICLES;
+  };
 
   // Load real user inquiries from localStorage ONLY (NO DEMO DATA)
   const loadInquiries = () => {
@@ -299,10 +312,10 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
                     <div>
                       <div style={{ fontWeight: '800', color: '#0F172A', fontSize: '15px', fontFamily: 'League Spartan' }}>
-                        {inq.carName || inq.selectedCar || 'Swift Dzire'}
+                        {inq.vehicle || inq.carName || inq.selectedCar || 'SWIFT'}
                       </div>
                       <div style={{ fontSize: '12px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
-                        {inq.price || inq.fare || '₹1,694'}
+                        {typeof inq.price === 'string' ? inq.price : (inq.fare ? `₹${inq.fare.toLocaleString('en-IN')}` : '₹0')}
                       </div>
                     </div>
 
@@ -418,11 +431,11 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '14px', borderRadius: '16px', marginBottom: '20px' }}>
                   <div>
                     <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>VEHICLE</span>
-                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.carName || selectedInquiry.selectedCar || 'Swift Dzire'}</span>
+                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.vehicle || selectedInquiry.carName || selectedInquiry.selectedCar || 'SWIFT'}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>TOTAL FARE</span>
-                    <span style={{ fontSize: '22px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>{selectedInquiry.price || selectedInquiry.fare || '₹1,694'}</span>
+                    <span style={{ fontSize: '22px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>{typeof selectedInquiry.price === 'string' ? selectedInquiry.price : (selectedInquiry.fare ? `₹${selectedInquiry.fare.toLocaleString('en-IN')}` : '₹0')}</span>
                   </div>
                 </div>
 
@@ -494,25 +507,65 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                {/* DATE & TIME DROPDOWNS */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>DATE</label>
-                    <input 
-                      type="text"
-                      value={editForm.scheduledDate || ''}
+                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>SCHEDULED DATE</label>
+                    <select
+                      value={editForm.scheduledDate || 'Today, 10 Aug 2026'}
                       onChange={(e) => setEditForm(prev => ({ ...prev, scheduledDate: e.target.value }))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
-                    />
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', background: '#FFFFFF', color: '#0F172A', boxSizing: 'border-box' }}
+                    >
+                      {["Today, 10 Aug 2026", "Tomorrow, 11 Aug 2026", "Wed, 12 Aug 2026", "Thu, 13 Aug 2026", "Fri, 14 Aug 2026", "Sat, 15 Aug 2026"].map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>TIME</label>
-                    <input 
-                      type="text"
-                      value={editForm.scheduledTime || ''}
+                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>PICKUP TIME</label>
+                    <select
+                      value={editForm.scheduledTime || '04:30 PM'}
                       onChange={(e) => setEditForm(prev => ({ ...prev, scheduledTime: e.target.value }))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', boxSizing: 'border-box' }}
-                    />
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', background: '#FFFFFF', color: '#0F172A', boxSizing: 'border-box' }}
+                    >
+                      {[
+                        "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+                        "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+                        "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM", "08:30 PM", "09:00 PM"
+                      ].map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
                   </div>
+                </div>
+
+                {/* VEHICLE / FLEET CAR DROPDOWN */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px' }}>FLEET VEHICLE CAR</label>
+                  <select
+                    value={editForm.vehicle || editForm.carName || ''}
+                    onChange={(e) => {
+                      const selName = e.target.value;
+                      const vehicles = getAvailableVehicles();
+                      const matched = vehicles.find(v => v.name === selName);
+                      const rate = Number(matched?.ratePerKm || matched?.pricePerKm || matched?.rate) || 5;
+                      const newFare = Math.round(rate * 154); // default route distance
+                      setEditForm(prev => ({
+                        ...prev,
+                        vehicle: selName,
+                        carName: selName,
+                        fare: newFare,
+                        price: `₹${newFare.toLocaleString('en-IN')}`
+                      }));
+                    }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontWeight: '700', background: '#FFFFFF', color: '#0F172A', boxSizing: 'border-box' }}
+                  >
+                    {getAvailableVehicles().map(v => (
+                      <option key={v.id || v.name} value={v.name}>
+                        🚗 {v.name} — ₹{v.ratePerKm || v.rate || 5}/km
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>

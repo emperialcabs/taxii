@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
+import { INITIAL_VEHICLES } from '../AdminPortal';
 
 export default function SeatScheduleScreen({ 
   userCoords,
@@ -44,36 +45,38 @@ export default function SeatScheduleScreen({
   const baseDistance = getRouteDistanceKm();
   const effectiveDistance = tripType === 'round-trip' ? baseDistance * 2 : baseDistance;
 
-  // Load configured vehicles from Admin Portal
+  // Load configured vehicles from Admin Portal (Zero demo/hardcoded fallback cars)
   const getFleetVehicles = () => {
+    let rawList = [];
     try {
       const savedV = localStorage.getItem('cabsy_vehicles');
       if (savedV) {
         const parsed = JSON.parse(savedV);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(v => {
-            const r = Number(v.ratePerKm || v.pricePerKm || v.rate) || 12;
-            const fare = Math.round(r * effectiveDistance);
-            return {
-              id: v.id || v.name,
-              name: v.name || 'Swift Dzire',
-              type: v.type || 'Sedan',
-              ratePerKm: r,
-              totalFareNum: fare,
-              price: `₹${fare}`,
-              tag: v.tag || 'Popular'
-            };
-          });
+          rawList = parsed;
         }
       }
     } catch (e) {}
 
-    return [
-      { id: 'CAR-101', name: 'SWIFT DZIRE', type: 'Sedan', ratePerKm: 11, totalFareNum: Math.round(11 * effectiveDistance), price: `₹${Math.round(11 * effectiveDistance)}`, tag: 'AC Sedan' },
-      { id: 'CAR-102', name: 'HYUNDAI AURA', type: 'Executive', ratePerKm: 12, totalFareNum: Math.round(12 * effectiveDistance), price: `₹${Math.round(12 * effectiveDistance)}`, tag: 'Top Choice' },
-      { id: 'CAR-103', name: 'MARUTI ERTIGA', type: 'SUV (6+1)', ratePerKm: 16, totalFareNum: Math.round(16 * effectiveDistance), price: `₹${Math.round(16 * effectiveDistance)}`, tag: 'Family SUV' },
-      { id: 'CAR-104', name: 'TATA TIGOR EV', type: 'Electric', ratePerKm: 14, totalFareNum: Math.round(14 * effectiveDistance), price: `₹${Math.round(14 * effectiveDistance)}`, tag: 'Eco Green' }
-    ];
+    if (rawList.length === 0) {
+      rawList = INITIAL_VEHICLES;
+    }
+
+    return rawList
+      .filter(v => (v.status || 'Active').toLowerCase() === 'active')
+      .map((v, idx) => {
+        const r = Number(v.ratePerKm || v.pricePerKm || v.rate) || 5;
+        const fare = Math.round(r * effectiveDistance);
+        return {
+          id: v.id || `CAR-${101 + idx}`,
+          name: v.name,
+          type: v.passengers || v.type || '4 Persons',
+          ratePerKm: r,
+          totalFareNum: fare,
+          price: `₹${fare.toLocaleString('en-IN')}`,
+          tag: v.status || 'Active'
+        };
+      });
   };
 
   const fleet = getFleetVehicles();
