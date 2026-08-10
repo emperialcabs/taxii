@@ -742,8 +742,15 @@ body, html {
   transition: color 0.2s ease;
 }
 
+.nav-tab-svg {
+  width: 22px;
+  height: 22px;
+  stroke: #64748B;
+  transition: transform 0.2s ease, stroke 0.2s ease;
+}
+
 .nav-tab-item.active { color: #0F172A; }
-.nav-tab-item.active .nav-tab-icon { transform: translateY(-2px); color: #10B981; }
+.nav-tab-item.active .nav-tab-svg { stroke: #10B981; transform: translateY(-2px); }
 .nav-tab-icon { font-size: 20px; transition: transform 0.2s ease; }
 
 /* LEAFLET OVERRIDES */

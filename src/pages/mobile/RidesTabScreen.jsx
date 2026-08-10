@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import BottomNavBar from '../../components/BottomNavBar';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
@@ -591,24 +592,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
       )}
 
       {/* Bottom Navigation Toolbar */}
-      <div className="taxigo-bottom-nav">
-        <button className={`nav-tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-          <span className="nav-tab-icon">🏠</span>
-          <span>Home</span>
-        </button>
-        <button className={`nav-tab-item ${activeTab === 'rides' ? 'active' : ''}`} onClick={() => setActiveTab('rides')}>
-          <span className="nav-tab-icon">🚕</span>
-          <span>My Rides</span>
-        </button>
-        <button className={`nav-tab-item ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-          <span className="nav-tab-icon">💳</span>
-          <span>Wallet</span>
-        </button>
-        <button className={`nav-tab-item ${activeTab === 'account' ? 'active' : ''}`} onClick={() => setActiveTab('account')}>
-          <span className="nav-tab-icon">👤</span>
-          <span>Account</span>
-        </button>
-      </div>
+      <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 }

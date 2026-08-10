@@ -1622,21 +1622,41 @@ export default function AdminPortal() {
             <h3>Create Manual Ride Inquiry</h3>
             <form onSubmit={handleAddInquirySubmit}>
               <div className="input-group">
-                <label>Customer Name</label>
+                <label>Select or Enter Customer Name</label>
                 <input 
                   type="text" 
-                  placeholder="Customer Name"
+                  list="registered-customers-list"
+                  placeholder="Type name or select existing customer..."
                   value={newInquiryForm.customerName} 
-                  onChange={e => setNewInquiryForm({ ...newInquiryForm, customerName: e.target.value })}
+                  onChange={e => {
+                    const val = e.target.value;
+                    const matched = customers.find(c => c.name.toLowerCase() === val.toLowerCase() || `${c.name} (${c.phone})` === val);
+                    if (matched) {
+                      setNewInquiryForm({
+                        ...newInquiryForm,
+                        customerName: matched.name,
+                        customerPhone: matched.phone
+                      });
+                    } else {
+                      setNewInquiryForm({ ...newInquiryForm, customerName: val });
+                    }
+                  }}
                   required 
                 />
+                <datalist id="registered-customers-list">
+                  {customers.map(c => (
+                    <option key={c.id} value={`${c.name} (${c.phone})`}>
+                      {c.email ? `${c.email}` : 'Registered Rider'}
+                    </option>
+                  ))}
+                </datalist>
               </div>
 
               <div className="input-group">
-                <label>Customer Phone</label>
+                <label>Customer Phone Number</label>
                 <input 
                   type="text" 
-                  placeholder="Phone number"
+                  placeholder="Phone number (+91 ...)"
                   value={newInquiryForm.customerPhone} 
                   onChange={e => setNewInquiryForm({ ...newInquiryForm, customerPhone: e.target.value })}
                 />

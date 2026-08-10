@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import db from '../../services/dbService';
 import { signInWithGoogle } from '../../services/firebaseService';
 
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
@@ -22,6 +23,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
+        db.saveCustomer(realProfile);
       } catch(e) {}
 
       if (onGoogleSignIn) {

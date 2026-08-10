@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import db from '../../services/dbService';
 
 export default function AccountDetailScreen({ onBack, onSave }) {
   const [profile, setProfile] = useState(() => {
@@ -44,6 +45,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
     try {
       localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
       localStorage.setItem('taxigo_onboarded', 'true');
+      db.saveCustomer(profile);
     } catch (err) {}
     setSavedSuccess(true);
     setTimeout(() => {
