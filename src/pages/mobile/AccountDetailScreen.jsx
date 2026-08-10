@@ -69,11 +69,11 @@ export default function AccountDetailScreen({ onBack, onSave }) {
               <img 
                 src={profile.photoURL} 
                 alt="Avatar" 
-                style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFAA01', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }} 
+                style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #10B981', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }} 
               />
             ) : (
-              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '38px', boxShadow: '0 6px 18px rgba(255,170,1,0.35)' }}>
-                👤
+              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', boxShadow: '0 6px 18px rgba(16,185,129,0.35)' }}>
+                {profile.name ? profile.name.charAt(0) : 'R'}
               </div>
             )}
             <label 
@@ -82,7 +82,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                background: '#FFAA01',
+                background: '#10B981',
                 color: '#FFFFFF',
                 width: '32px',
                 height: '32px',

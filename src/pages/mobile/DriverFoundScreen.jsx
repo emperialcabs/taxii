@@ -27,12 +27,12 @@ export default function DriverFoundScreen({ pickupLoc, dropoffLoc, onNext }) {
 
             {/* Driver Profile Card */}
             <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '20px', padding: '16px', marginBottom: '16px', boxShadow: '0 4px 14px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#FFFBEB', border: '2px solid #FCD34D', color: '#D97706', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
-                👴
+              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#F0FDF4', border: '2px solid #BBF7D0', color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                R
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '18px', color: '#0F172A' }}>
-                  Rajesh Sharma ⭐ 4.9
+                  Rajesh Sharma (★ 4.9)
                 </div>
                 <div style={{ fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk', fontWeight: '600', marginTop: '2px' }}>
                   White Dzire • GJ-04-AX-8921

@@ -254,7 +254,9 @@ export default function MobileAppView() {
           setScheduledTime={setScheduledTime}
           returnDate={returnDate}
           setReturnDate={setReturnDate}
-          onNext={() => setAppStage('SELECT_CAR')}
+          selectedCar={selectedCar}
+          setSelectedCar={setSelectedCar}
+          onNext={(carObj) => handleRequestRide(carObj)}
           onBack={() => setAppStage('SELECT_LOCATION_LIST')}
         />
       );

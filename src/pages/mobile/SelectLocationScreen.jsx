@@ -313,7 +313,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           style={{
             width: '100%',
             background: isBothLocationsEntered 
-              ? 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)' 
+              ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' 
               : '#E2E8F0',
             color: isBothLocationsEntered ? '#FFFFFF' : '#94A3B8',
             border: 'none',
@@ -323,7 +323,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             fontSize: '18px',
             fontWeight: '800',
             cursor: isBothLocationsEntered ? 'pointer' : 'not-allowed',
-            boxShadow: isBothLocationsEntered ? '0 8px 24px rgba(255, 170, 1, 0.4)' : 'none',
+            boxShadow: isBothLocationsEntered ? '0 8px 24px rgba(16, 185, 129, 0.4)' : 'none',
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
@@ -337,7 +337,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
             }
           }}
         >
-          {isBothLocationsEntered ? 'Confirm Route & Choose Car →' : 'Select Pickup & Destination'}
+          {isBothLocationsEntered ? 'Confirm Route & Schedule Trip →' : 'Select Pickup & Destination'}
         </button>
       </div>
     </div>

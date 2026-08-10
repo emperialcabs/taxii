@@ -175,7 +175,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
             </p>
             <button 
               onClick={() => setShowInfoModal(null)}
-              style={{ width: '100%', background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', boxShadow: '0 6px 20px rgba(255, 170, 1, 0.35)' }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
             >
               Close Window
             </button>

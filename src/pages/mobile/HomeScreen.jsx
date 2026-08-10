@@ -217,8 +217,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               }}
               onClick={() => setIsSearchOpen(true)}
             >
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#FFFBEB', border: '1px solid #FCD34D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                📍
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                ●
               </div>
               <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <div style={{ fontSize: '11px', color: '#22C55E', fontWeight: '800', letterSpacing: '0.5px' }}>CURRENT PICKUP LOCATION</div>
@@ -235,7 +235,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               style={{ width: '100%', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
               onClick={onStartBooking}
             >
-              <span>🚕</span> Where do you want to go?
+              Where do you want to go?
             </button>
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FFFFFF', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', padding: '24px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0 }}>📍 Select Pickup Location</h2>
+              <h2 style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0 }}>Select Pickup Location</h2>
               <button onClick={() => setIsSearchOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#0F172A' }}>✕</button>
             </div>
 
@@ -255,18 +255,16 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
               placeholder="Search street, locality or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#F8FAFC' }}
-              autoFocus
+              style={{ padding: '14px 16px', borderRadius: '14px', border: '1.5px solid #CBD5E1', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '600' }}
             />
 
-            <div style={{ overflowY: 'auto', maxHeight: '45vh', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {filteredLocations.map((loc, idx) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', maxHeight: '300px' }}>
+              {filteredLocations.map((loc, i) => (
                 <div 
-                  key={idx}
+                  key={i}
                   onClick={() => {
-                    updateLocation({ lat: loc.lat, lng: loc.lng }, loc.name.replace('📍 ', ''));
+                    updateLocation({ lat: loc.lat, lng: loc.lng }, loc.name);
                     setIsSearchOpen(false);
-                    setSearchQuery('');
                   }}
                   style={{ padding: '14px 16px', borderRadius: '14px', background: '#F8FAFC', cursor: 'pointer', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                 >
@@ -278,7 +276,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
             <button 
               onClick={() => { setIsSearchOpen(false); onStartBooking(); }}
-              style={{ background: 'linear-gradient(135deg, #FFAA01 0%, #FF8C00 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(255, 170, 1, 0.4)' }}
+              style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)' }}
             >
               Confirm Location & Continue →
             </button>

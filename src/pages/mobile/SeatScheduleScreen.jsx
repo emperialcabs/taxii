@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 
@@ -14,6 +14,8 @@ export default function SeatScheduleScreen({
   setScheduledTime,
   returnDate,
   setReturnDate,
+  selectedCar,
+  setSelectedCar,
   onNext, 
   onBack 
 }) {
@@ -42,6 +44,42 @@ export default function SeatScheduleScreen({
   const baseDistance = getRouteDistanceKm();
   const effectiveDistance = tripType === 'round-trip' ? baseDistance * 2 : baseDistance;
 
+  // Load configured vehicles from Admin Portal
+  const getFleetVehicles = () => {
+    try {
+      const savedV = localStorage.getItem('cabsy_vehicles');
+      if (savedV) {
+        const parsed = JSON.parse(savedV);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(v => {
+            const r = Number(v.ratePerKm || v.pricePerKm || v.rate) || 12;
+            const fare = Math.round(r * effectiveDistance);
+            return {
+              id: v.id || v.name,
+              name: v.name || 'Swift Dzire',
+              type: v.type || 'Sedan',
+              ratePerKm: r,
+              totalFareNum: fare,
+              price: `₹${fare}`,
+              tag: v.tag || 'Popular'
+            };
+          });
+        }
+      }
+    } catch (e) {}
+
+    return [
+      { id: 'CAR-101', name: 'SWIFT DZIRE', type: 'Sedan', ratePerKm: 11, totalFareNum: Math.round(11 * effectiveDistance), price: `₹${Math.round(11 * effectiveDistance)}`, tag: 'AC Sedan' },
+      { id: 'CAR-102', name: 'HYUNDAI AURA', type: 'Executive', ratePerKm: 12, totalFareNum: Math.round(12 * effectiveDistance), price: `₹${Math.round(12 * effectiveDistance)}`, tag: 'Top Choice' },
+      { id: 'CAR-103', name: 'MARUTI ERTIGA', type: 'SUV (6+1)', ratePerKm: 16, totalFareNum: Math.round(16 * effectiveDistance), price: `₹${Math.round(16 * effectiveDistance)}`, tag: 'Family SUV' },
+      { id: 'CAR-104', name: 'TATA TIGOR EV', type: 'Electric', ratePerKm: 14, totalFareNum: Math.round(14 * effectiveDistance), price: `₹${Math.round(14 * effectiveDistance)}`, tag: 'Eco Green' }
+    ];
+  };
+
+  const fleet = getFleetVehicles();
+  const [currentCarId, setCurrentCarId] = useState(selectedCar || fleet[0]?.id);
+  const activeCarObj = fleet.find(c => c.id === currentCarId) || fleet[0];
+
   return (
     <div className="real-mobile-app">
       <div className="full-homescreen-map-wrapper">
@@ -54,9 +92,9 @@ export default function SeatScheduleScreen({
             routePolyline={routePolyline}
           />
 
-          {/* Bottom Card for Trip Type & Schedule */}
-          <div className="homescreen-bottom-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          {/* Bottom Card for Trip Type, Schedule & Vehicle Selection */}
+          <div className="homescreen-bottom-card" style={{ maxHeight: '82vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <button 
                 onClick={onBack}
                 style={{
@@ -82,22 +120,22 @@ export default function SeatScheduleScreen({
             </div>
 
             {/* 1. TRIP TYPE SELECTOR (ONE-WAY VS ROUND TRIP) */}
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-              SELECT TRIP TYPE
+            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+              1. SELECT TRIP TYPE
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <button
                 type="button"
                 onClick={() => setTripType('one-way')}
                 style={{
-                  padding: '14px',
+                  padding: '12px',
                   borderRadius: '16px',
                   border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'one-way' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
@@ -105,7 +143,7 @@ export default function SeatScheduleScreen({
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '2px'
                 }}
               >
                 <span>One-Way Trip</span>
@@ -116,13 +154,13 @@ export default function SeatScheduleScreen({
                 type="button"
                 onClick={() => setTripType('round-trip')}
                 style={{
-                  padding: '14px',
+                  padding: '12px',
                   borderRadius: '16px',
                   border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
@@ -130,7 +168,7 @@ export default function SeatScheduleScreen({
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '2px'
                 }}
               >
                 <span>Round Trip (Return)</span>
@@ -139,11 +177,11 @@ export default function SeatScheduleScreen({
             </div>
 
             {/* 2. SCHEDULE DATE & TIME */}
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-              SCHEDULE PICKUP DATE & TIME
+            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+              2. SCHEDULE PICKUP DATE & TIME
             </p>
 
-            <div className="schedule-inputs-row" style={{ marginBottom: tripType === 'round-trip' ? '12px' : '20px' }}>
+            <div className="schedule-inputs-row" style={{ marginBottom: tripType === 'round-trip' ? '10px' : '16px' }}>
               <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <select 
                   value={scheduledDate} 
@@ -178,8 +216,8 @@ export default function SeatScheduleScreen({
 
             {/* Optional Return Date if Round Trip */}
             {tripType === 'round-trip' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>
                   RETURN DATE (OPTIONAL)
                 </label>
                 <div className="schedule-input-box">
@@ -198,8 +236,70 @@ export default function SeatScheduleScreen({
               </div>
             )}
 
-            <button className="taxigo-btn-primary" onClick={onNext}>
-              Continue to Choose Car ({effectiveDistance} KM) →
+            {/* 3. CHOOSE FLEET CAR ON THIS SCREEN */}
+            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+              3. SELECT FLEET CAR (PRICE PER KM)
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
+              {fleet.map((car) => {
+                const isSelected = currentCarId === car.id;
+                return (
+                  <div
+                    key={car.id}
+                    onClick={() => {
+                      setCurrentCarId(car.id);
+                      if (setSelectedCar) setSelectedCar(car.id);
+                    }}
+                    style={{
+                      background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                      border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                      borderRadius: '16px',
+                      padding: '12px',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>{car.name}</span>
+                      <span style={{ fontSize: '10px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#64748B', padding: '2px 6px', borderRadius: '8px' }}>
+                        ₹{car.ratePerKm}/km
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid #F1F5F9' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748B' }}>{car.type}</span>
+                      <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Direct Booking Submission Button */}
+            <button 
+              className="taxigo-btn-primary" 
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '16px',
+                borderRadius: '16px',
+                fontFamily: 'League Spartan, sans-serif',
+                fontSize: '17px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => onNext && onNext(activeCarObj)}
+            >
+              Confirm Booking Request ({activeCarObj.price}) →
             </button>
           </div>
         </div>
