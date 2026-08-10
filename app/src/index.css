@@ -1,0 +1,265 @@
+/* Empire Cab Design System - Modern Vanilla CSS */
+:root {
+  --primary-green: #00b87c;
+  --primary-green-hover: #009966;
+  --primary-green-light: #e6f7f0;
+  --primary-green-dark: #008055;
+  
+  --dark-heading: #0f172a;
+  --dark-subtext: #334155;
+  --body-text: #475569;
+  --muted-text: #64748b;
+  --light-border: #e2e8f0;
+  
+  --bg-mint: #eef9f4;
+  --bg-light: #f8fafc;
+  --bg-white: #ffffff;
+  
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 36px rgba(0, 184, 124, 0.12);
+  --shadow-dark: 0 20px 40px rgba(0, 0, 0, 0.25);
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-family);
+  color: var(--body-text);
+  background-color: var(--bg-white);
+  line-height: 1.6;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--dark-heading);
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); letter-spacing: -0.02em; }
+h2 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.015em; }
+h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
+h4 { font-size: 1.25rem; }
+
+p {
+  color: var(--body-text);
+  font-size: 1.05rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+/* Utility Containers */
+.container {
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0 1.75rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.85rem;
+  }
+}
+
+.section {
+  padding: clamp(1.25rem, 3vw, 2.5rem) 0;
+}
+
+.section-mint {
+  background-color: var(--bg-mint);
+  border-radius: var(--radius-lg);
+  margin: 0.75rem 0;
+  width: 100%;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 1.5rem auto;
+}
+
+.section-header p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Badge Pills */
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  background: var(--bg-white);
+  color: var(--dark-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.25rem;
+}
+
+.pill-badge .dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--primary-green);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background-color: var(--primary-green);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 184, 124, 0.35);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 184, 124, 0.45);
+}
+
+.btn-outline-white {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.btn-outline-white:hover {
+  background-color: #ffffff;
+  color: var(--dark-heading);
+  transform: translateY(-2px);
+}
+
+.btn-outline-green {
+  background-color: transparent;
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.btn-outline-green:hover {
+  background-color: var(--primary-green);
+  color: #ffffff;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-border);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(0, 184, 124, 0.3);
+}
+
+/* Icon Box */
+.icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-green-light);
+  color: var(--primary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+/* Dotted Map Decorative Line */
+.dotted-trail {
+  background-image: radial-gradient(var(--primary-green) 2px, transparent 2px);
+  background-size: 12px 12px;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* Accordion Styling */
+.accordion-item {
+  background: var(--bg-white);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  border: 1px solid var(--light-border);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.accordion-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--dark-heading);
+}
+
+.accordion-header:hover {
+  color: var(--primary-green);
+}
+
+.accordion-body {
+  padding: 0 1.5rem 1.25rem 1.5rem;
+  color: var(--body-text);
+  line-height: 1.7;
+}
