@@ -183,7 +183,7 @@ export default function MobileAppView() {
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoogleSignIn={(acc) => {
             if (acc) setSelectedGoogleAccount(acc);
-            setAppStage('OTP_VERIFY');
+            completeOnboarding();
           }}
           onBack={() => setAppStage('ONBOARDING')}
         />
