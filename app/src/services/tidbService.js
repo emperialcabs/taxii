@@ -33,18 +33,67 @@ mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
 emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----`;
 
-// Retrieve TiDB credentials from Environment or Local Config
+// Retrieve TiDB credentials from Local Storage, Environment, or Default
 export const getTiDBConnectionConfig = () => {
+  let localConfig = {};
+  try {
+    const saved = localStorage.getItem('tidb_config');
+    if (saved) localConfig = JSON.parse(saved);
+  } catch (e) {}
+
   return {
-    host: import.meta.env.VITE_TIDB_HOST || 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
-    username: import.meta.env.VITE_TIDB_USERNAME || '',
-    password: import.meta.env.VITE_TIDB_PASSWORD || '',
-    database: import.meta.env.VITE_TIDB_DATABASE || 'taxi',
+    host: localConfig.host || import.meta.env.VITE_TIDB_HOST || 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+    username: localConfig.username || import.meta.env.VITE_TIDB_USERNAME || '',
+    password: localConfig.password || import.meta.env.VITE_TIDB_PASSWORD || '',
+    database: localConfig.database || import.meta.env.VITE_TIDB_DATABASE || 'taxi',
     ssl: {
       minVersion: 'TLSv1.2',
       ca: TIDB_CA_CERT
     }
   };
+};
+
+/**
+ * Initialize TiDB Database Tables automatically
+ */
+export const initTiDBTables = async (customConfig) => {
+  const config = customConfig || getTiDBConnectionConfig();
+  if (!config.username || !config.password) return { success: false, error: 'Missing Username or Password' };
+  try {
+    const conn = connect(config);
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS inquiries (
+        id VARCHAR(64) PRIMARY KEY,
+        customerName VARCHAR(255),
+        customerPhone VARCHAR(64),
+        customerEmail VARCHAR(255),
+        pickup TEXT,
+        dropoff TEXT,
+        vehicle VARCHAR(100),
+        fare DECIMAL(10,2),
+        tripType VARCHAR(100),
+        scheduledDate VARCHAR(100),
+        scheduledTime VARCHAR(100),
+        driver VARCHAR(255) DEFAULT 'Unassigned',
+        status VARCHAR(64) DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255),
+        phone VARCHAR(64),
+        email VARCHAR(255),
+        profession VARCHAR(100),
+        area VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message || String(e) };
+  }
 };
 
 /**
