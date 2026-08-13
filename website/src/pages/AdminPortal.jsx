@@ -213,24 +213,62 @@ export default function AdminPortal() {
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
   // ── Load real data from Firestore on mount (cross-domain safe) ──
-  useEffect(() => {
-    const loadFromFirestore = async () => {
-      setFirestoreLoading(true);
+  const fetchCloudData = async () => {
+    setFirestoreLoading(true);
+    try {
+      const [fsInquiries, fsCustomers] = await Promise.all([
+        loadAllInquiriesFromFirestore(),
+        loadAllCustomersFromFirestore()
+      ]);
+
+      // Read local storage as fallback/supplement
+      let localInquiries = [];
+      let localCustomers = [];
       try {
-        const [fsInquiries, fsCustomers] = await Promise.all([
-          loadAllInquiriesFromFirestore(),
-          loadAllCustomersFromFirestore()
-        ]);
-        if (fsInquiries && fsInquiries.length > 0) setInquiries(fsInquiries);
-        if (fsCustomers && fsCustomers.length > 0) setCustomers(fsCustomers);
-      } catch (e) {
-        console.warn('Firestore load failed:', e);
-      } finally {
-        setFirestoreLoading(false);
-      }
-    };
-    loadFromFirestore();
-    const pollInterval = setInterval(loadFromFirestore, 15000);
+        const s = localStorage.getItem('cabsy_inquiries');
+        if (s) localInquiries = JSON.parse(s);
+        const c = localStorage.getItem('cabsy_customers');
+        if (c) localCustomers = JSON.parse(c);
+      } catch (err) {}
+
+      // Merge cloud + local inquiries (dedup by id)
+      const mergedInquiries = [...(fsInquiries || [])];
+      const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
+      
+      (localInquiries || []).forEach(localItem => {
+        if (localItem && (localItem.id || localItem.customerName)) {
+          const itemKey = localItem.id || localItem.firestoreId;
+          if (!itemKey || !existingIds.has(itemKey)) {
+            mergedInquiries.push(localItem);
+            if (itemKey) existingIds.add(itemKey);
+          }
+        }
+      });
+
+      setInquiries(mergedInquiries);
+
+      // Merge customers
+      const mergedCustomers = [...(fsCustomers || [])];
+      const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email).filter(Boolean));
+      (localCustomers || []).forEach(lc => {
+        const k = lc.phone || lc.email;
+        if (!k || !custKeys.has(k)) {
+          mergedCustomers.push(lc);
+          if (k) custKeys.add(k);
+        }
+      });
+
+      setCustomers(mergedCustomers);
+    } catch (e) {
+      console.warn('Firestore load error:', e);
+    } finally {
+      setFirestoreLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCloudData();
+    const pollInterval = setInterval(fetchCloudData, 10000);
     return () => clearInterval(pollInterval);
   }, []);
 
@@ -894,9 +932,14 @@ export default function AdminPortal() {
                 <h2>Ride Inquiries & Booking Studio</h2>
                 <p>Review incoming customer ride requests, assign drivers, confirm bookings, and manage fare revenue.</p>
               </div>
-              <button className="btn btn-primary btn-lg-action flex align-center gap-2" onClick={() => setAddInquiryModal(true)}>
-                <Plus size={18} /> Add Manual Booking
-              </button>
+              <div className="flex gap-2">
+                <button className="btn btn-outline flex align-center gap-1" onClick={fetchCloudData} title="Sync latest data from Cloud Database">
+                  <RefreshCw size={16} className={firestoreLoading ? 'spin' : ''} /> {firestoreLoading ? 'Syncing...' : 'Sync Cloud Data'}
+                </button>
+                <button className="btn btn-primary btn-lg-action flex align-center gap-2" onClick={() => setAddInquiryModal(true)}>
+                  <Plus size={18} /> Add Manual Booking
+                </button>
+              </div>
             </div>
 
             <div className="card admin-table-card">
@@ -916,53 +959,65 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.map(inq => (
-                      <tr key={inq.id}>
-                        <td><strong>{inq.id}</strong><br /><small className="text-muted">{inq.date}</small></td>
-                        <td>
-                          <strong>{inq.customerName}</strong>
-                          <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone}</div>
-                        </td>
-                        <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
-                        <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
-                        <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
-                        <td><strong className="text-green">${Number(inq.fare).toFixed(2)}</strong></td>
-                        <td>
-                          {inq.driver && inq.driver !== '-' ? (
-                            <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
-                          ) : (
-                            <span className="text-muted italic">Unassigned</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`status-tag status-${inq.status.toLowerCase()}`}>
-                            {inq.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="flex gap-1">
-                            {inq.status === 'Pending' && (
-                              <button 
-                                className="btn-icon btn-icon-success"
-                                title="Confirm & Assign Driver"
-                                onClick={() => setAssignModal({ open: true, inquiry: inq })}
-                              >
-                                <CheckCircle2 size={16} />
-                              </button>
-                            )}
-                            {inq.status !== 'Cancelled' && (
-                              <button 
-                                className="btn-icon btn-icon-danger"
-                                title="Cancel Booking"
-                                onClick={() => handleCancelInquiry(inq.id)}
-                              >
-                                <XCircle size={16} />
-                              </button>
-                            )}
-                          </div>
+                    {inquiries.length === 0 ? (
+                      <tr>
+                        <td colSpan="9" style={{ textAlign: 'center', padding: '50px 20px' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🚕</div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A' }}>No Customer Inquiries Yet</h4>
+                          <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+                            Bookings submitted by customers on the Android/iOS app will automatically show here in real-time.
+                          </p>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      inquiries.map((inq, idx) => (
+                        <tr key={inq.id || inq.firestoreId || idx}>
+                          <td><strong>{inq.id || `INQ-${idx + 1000}`}</strong><br /><small className="text-muted">{inq.date || inq.scheduledDate || 'Today'}</small></td>
+                          <td>
+                            <strong>{inq.customerName || 'Customer'}</strong>
+                            <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone || 'N/A'}</div>
+                          </td>
+                          <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup || inq.pickupLoc}</td>
+                          <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff || inq.dropoffLoc}</td>
+                          <td><span className="pill-badge-sm">{inq.vehicle || 'Standard'}</span></td>
+                          <td><strong className="text-green">{typeof inq.fare === 'number' ? `₹${inq.fare.toLocaleString('en-IN')}` : (inq.price || `₹${inq.fare || 0}`)}</strong></td>
+                          <td>
+                            {inq.driver && inq.driver !== '-' ? (
+                              <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
+                            ) : (
+                              <span className="text-muted italic">Unassigned</span>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`status-tag status-${(inq.status || 'pending').toLowerCase()}`}>
+                              {inq.status || 'Pending'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="flex gap-1">
+                              {(inq.status === 'Pending' || !inq.status) && (
+                                <button 
+                                  className="btn-icon btn-icon-success"
+                                  title="Confirm & Assign Driver"
+                                  onClick={() => setAssignModal({ open: true, inquiry: inq })}
+                                >
+                                  <CheckCircle2 size={16} />
+                                </button>
+                              )}
+                              {inq.status !== 'Cancelled' && (
+                                <button 
+                                  className="btn-icon btn-icon-danger"
+                                  title="Cancel Booking"
+                                  onClick={() => handleCancelInquiry(inq.id || inq.firestoreId)}
+                                >
+                                  <XCircle size={16} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

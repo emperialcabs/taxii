@@ -218,30 +218,62 @@ export default function AdminPortal() {
   };
 
   // ── Load real data from Firestore on mount (cross-domain safe) ──
-  useEffect(() => {
-    const loadFromFirestore = async () => {
-      setFirestoreLoading(true);
+  const fetchCloudData = async () => {
+    setFirestoreLoading(true);
+    try {
+      const [fsInquiries, fsCustomers] = await Promise.all([
+        loadAllInquiriesFromFirestore(),
+        loadAllCustomersFromFirestore()
+      ]);
+
+      // Read local storage as fallback/supplement
+      let localInquiries = [];
+      let localCustomers = [];
       try {
-        const [fsInquiries, fsCustomers] = await Promise.all([
-          loadAllInquiriesFromFirestore(),
-          loadAllCustomersFromFirestore()
-        ]);
-        if (fsInquiries && fsInquiries.length > 0) setInquiries(fsInquiries);
-        if (fsCustomers && fsCustomers.length > 0) setCustomers(fsCustomers);
-      } catch (e) {
-        console.warn('Firestore load failed, localStorage fallback:', e);
-        try {
-          const s = localStorage.getItem('cabsy_inquiries');
-          if (s && s !== '[]') setInquiries(JSON.parse(s));
-          const c = localStorage.getItem('cabsy_customers');
-          if (c && c !== '[]') setCustomers(JSON.parse(c));
-        } catch (_) {}
-      } finally {
-        setFirestoreLoading(false);
-      }
-    };
-    loadFromFirestore();
-    const pollInterval = setInterval(loadFromFirestore, 15000);
+        const s = localStorage.getItem('cabsy_inquiries');
+        if (s) localInquiries = JSON.parse(s);
+        const c = localStorage.getItem('cabsy_customers');
+        if (c) localCustomers = JSON.parse(c);
+      } catch (err) {}
+
+      // Merge cloud + local inquiries (dedup by id)
+      const mergedInquiries = [...(fsInquiries || [])];
+      const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
+      
+      (localInquiries || []).forEach(localItem => {
+        if (localItem && (localItem.id || localItem.customerName)) {
+          const itemKey = localItem.id || localItem.firestoreId;
+          if (!itemKey || !existingIds.has(itemKey)) {
+            mergedInquiries.push(localItem);
+            if (itemKey) existingIds.add(itemKey);
+          }
+        }
+      });
+
+      setInquiries(mergedInquiries);
+
+      // Merge customers
+      const mergedCustomers = [...(fsCustomers || [])];
+      const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email).filter(Boolean));
+      (localCustomers || []).forEach(lc => {
+        const k = lc.phone || lc.email;
+        if (!k || !custKeys.has(k)) {
+          mergedCustomers.push(lc);
+          if (k) custKeys.add(k);
+        }
+      });
+
+      setCustomers(mergedCustomers);
+    } catch (e) {
+      console.warn('Firestore load error:', e);
+    } finally {
+      setFirestoreLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCloudData();
+    const pollInterval = setInterval(fetchCloudData, 10000);
     return () => clearInterval(pollInterval);
   }, []);
 

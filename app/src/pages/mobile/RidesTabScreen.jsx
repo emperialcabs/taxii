@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import BottomNavBar from '../../components/BottomNavBar';
-import { INITIAL_VEHICLES } from '../AdminPortal';
+import { saveInquiryToFirestore } from '../../services/firebaseService';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -21,28 +19,32 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     return INITIAL_VEHICLES;
   };
 
-  // Load real user inquiries from localStorage ONLY (NO DEMO DATA)
+  // Load real user inquiries from localStorage & auto-sync to Firestore for Admin visibility
   const loadInquiries = () => {
     try {
       const saved = localStorage.getItem('cabsy_inquiries');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           setInquiries(parsed);
+          // ✅ Auto-sync local inquiries to Firestore in background
+          parsed.forEach(inq => {
+            if (inq && (inq.id || inq.pickup)) {
+              saveInquiryToFirestore(inq).catch(() => {});
+            }
+          });
           return;
         }
       }
     } catch (e) {
       console.error("Failed to parse cabsy_inquiries", e);
     }
-    // Clean empty state - NO DEMO/DUMMY DATA
     setInquiries([]);
   };
 
   useEffect(() => {
     loadInquiries();
 
-    // Listen for live updates from Admin Portal or booking submissions
     const handleStorageChange = () => loadInquiries();
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('taxigo_ride_booked', handleStorageChange);
