@@ -283,6 +283,7 @@ export default function AdminPortal() {
 
   useEffect(() => {
     localStorage.setItem('cabsy_vehicles', JSON.stringify(vehicles));
+    window.dispatchEvent(new CustomEvent('taxigo_vehicles_updated', { detail: vehicles }));
   }, [vehicles]);
 
   useEffect(() => {

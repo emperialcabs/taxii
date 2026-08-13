@@ -12,7 +12,7 @@ import {
   ShieldCheck, 
   ChevronRight
 } from 'lucide-react';
-import './Pages.css';
+import { INITIAL_VEHICLES } from './AdminPortal';
 
 const DEFAULT_PLACES = [
   'Downtown Terminal',
@@ -35,41 +35,6 @@ const DEFAULT_DESTINATIONS = [
   { id: 'DEST-105', name: 'Harbor Cruise Port → Beachside Luxury Resort', pickup: 'Harbor Cruise Port', dropoff: 'Beachside Luxury Resort', distanceKm: 34 },
 ];
 
-const DEFAULT_VEHICLES = [
-  {
-    id: 'CAR-101',
-    name: 'Standard Sedan',
-    passengers: '4 Seats',
-    rate: '15',
-    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
-    description: 'Comfortable sedan for daily rides'
-  },
-  {
-    id: 'CAR-102',
-    name: 'Executive SUV',
-    passengers: '6 Seats',
-    rate: '22',
-    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
-    description: 'Spacious family SUV with luggage space'
-  },
-  {
-    id: 'CAR-103',
-    name: 'Luxury Class',
-    passengers: '4 Seats',
-    rate: '35',
-    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
-    description: 'Premium BMW & Mercedes ride'
-  },
-  {
-    id: 'CAR-104',
-    name: 'Eco Electric',
-    passengers: '4 Seats',
-    rate: '20',
-    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
-    description: 'Quiet & clean Tesla electric vehicle'
-  }
-];
-
 export default function BookRide() {
   const [places, setPlaces] = useState([]);
   const [destinations, setDestinations] = useState([]);
@@ -89,27 +54,46 @@ export default function BookRide() {
 
   const [bookingSuccess, setBookingSuccess] = useState(null);
 
-  // Load places, destinations, and vehicles from localStorage
+  // Load places, destinations, and vehicles from Admin Portal storage
   useEffect(() => {
-    const savedPlaces = localStorage.getItem('cabsy_places');
-    const parsedPlaces = savedPlaces ? JSON.parse(savedPlaces) : DEFAULT_PLACES;
-    setPlaces(parsedPlaces);
-    
-    const initialFrom = parsedPlaces[0] || 'Downtown Terminal';
-    const initialTo = parsedPlaces[1] || 'International Airport T3';
-    setPickupLocation(initialFrom);
-    setDropoffDestination(initialTo);
+    const loadDynamicData = () => {
+      const savedPlaces = localStorage.getItem('cabsy_places');
+      const parsedPlaces = savedPlaces ? JSON.parse(savedPlaces) : DEFAULT_PLACES;
+      setPlaces(parsedPlaces);
+      
+      const initialFrom = parsedPlaces[0] || 'Downtown Terminal';
+      const initialTo = parsedPlaces[1] || 'International Airport T3';
+      setPickupLocation(prev => prev || initialFrom);
+      setDropoffDestination(prev => prev || initialTo);
 
-    const savedDest = localStorage.getItem('cabsy_destinations');
-    const parsedDest = savedDest ? JSON.parse(savedDest) : DEFAULT_DESTINATIONS;
-    setDestinations(parsedDest);
+      const savedDest = localStorage.getItem('cabsy_destinations');
+      const parsedDest = savedDest ? JSON.parse(savedDest) : DEFAULT_DESTINATIONS;
+      setDestinations(parsedDest);
 
-    const savedVehicles = localStorage.getItem('cabsy_vehicles');
-    const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : DEFAULT_VEHICLES;
-    setVehicles(parsedVehicles);
-    if (parsedVehicles.length > 0) {
-      setSelectedVehicleId(parsedVehicles[0].id);
-    }
+      const savedVehicles = localStorage.getItem('cabsy_vehicles');
+      const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : INITIAL_VEHICLES;
+      const activeVehicles = parsedVehicles.filter(v => v.status !== 'Inactive');
+      const finalVehicles = activeVehicles.length > 0 ? activeVehicles : INITIAL_VEHICLES;
+      setVehicles(finalVehicles);
+      
+      setSelectedVehicleId(prev => {
+        if (finalVehicles.some(v => v.id === prev)) return prev;
+        return finalVehicles[0]?.id || '';
+      });
+    };
+
+    loadDynamicData();
+
+    const handleStorageChange = () => {
+      loadDynamicData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('taxigo_vehicles_updated', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('taxigo_vehicles_updated', handleStorageChange);
+    };
   }, []);
 
   // Update KM whenever Pickup or Dropoff changes

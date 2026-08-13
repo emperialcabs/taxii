@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import db from '../services/dbService';
+import { INITIAL_VEHICLES } from '../pages/AdminPortal';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
 import './BookingModal.css';
 
 export default function BookingModal({ isOpen, onClose }) {
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
-  const [vehicle, setVehicle] = useState('Reguler');
-  const [passengerCount, setPassengerCount] = useState(1);
+  const [vehicles, setVehicles] = useState([]);
+  const [vehicleId, setVehicleId] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const loadVehicles = () => {
+      const savedVehicles = localStorage.getItem('cabsy_vehicles');
+      const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : INITIAL_VEHICLES;
+      const activeVehicles = parsedVehicles.filter(v => v.status !== 'Inactive');
+      const list = activeVehicles.length > 0 ? activeVehicles : INITIAL_VEHICLES;
+      setVehicles(list);
+      setVehicleId(prev => list.some(v => v.id === prev) ? prev : list[0]?.id || '');
+    };
+
+    loadVehicles();
+
+    window.addEventListener('storage', loadVehicles);
+    window.addEventListener('taxigo_vehicles_updated', loadVehicles);
+    return () => {
+      window.removeEventListener('storage', loadVehicles);
+      window.removeEventListener('taxigo_vehicles_updated', loadVehicles);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
-  const vehicles = [
-    { id: 'Reguler', name: 'Empire Regular', capacity: '1-4 Passenger', ratePerKm: 15.0, icon: '🚕' },
-    { id: 'XL', name: 'Empire XL', capacity: '1-6 Passenger', ratePerKm: 22.0, icon: '🚙' },
-    { id: 'Luxury', name: 'Empire Luxury', capacity: '1-4 Passenger', ratePerKm: 35.0, icon: '🚘' },
-    { id: 'Electric', name: 'Empire Electric', capacity: '1-4 Passenger', ratePerKm: 18.0, icon: '⚡' },
-  ];
-
-  const selectedVeh = vehicles.find(v => v.id === vehicle) || vehicles[0];
+  const selectedVeh = vehicles.find(v => v.id === vehicleId) || vehicles[0] || INITIAL_VEHICLES[0];
+  const ratePerKm = parseFloat(selectedVeh.rate || 15.0);
   const estimatedDist = pickup && dropoff ? 12.5 : 8.0; // km
-  const estimatedFare = (estimatedDist * selectedVeh.ratePerKm + 50.0).toFixed(2);
+  const estimatedFare = (estimatedDist * ratePerKm + 50.0).toFixed(2);
   const estimatedTime = Math.round(estimatedDist * 2.2);
 
   const handleSubmit = (e) => {
@@ -93,12 +108,16 @@ export default function BookingModal({ isOpen, onClose }) {
                   {vehicles.map((v) => (
                     <div 
                       key={v.id}
-                      className={`vehicle-card ${vehicle === v.id ? 'selected' : ''}`}
-                      onClick={() => setVehicle(v.id)}
+                      className={`vehicle-card ${vehicleId === v.id ? 'selected' : ''}`}
+                      onClick={() => setVehicleId(v.id)}
                     >
-                      <span className="veh-emoji">{v.icon}</span>
+                      {v.image ? (
+                        <img src={v.image} alt={v.name} style={{ width: '40px', height: '28px', objectFit: 'cover', borderRadius: '4px' }} />
+                      ) : (
+                        <span className="veh-emoji">🚕</span>
+                      )}
                       <span className="veh-name">{v.name}</span>
-                      <small className="veh-cap">{v.capacity}</small>
+                      <small className="veh-cap">{v.passengers || '4 Seats'}</small>
                     </div>
                   ))}
                 </div>
