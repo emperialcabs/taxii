@@ -179,10 +179,12 @@
     align-items: flex-start;
     clip-path: circle(0% at 100% 0);
     transition: clip-path 0.4s ease-in-out;
+    pointer-events: none;
   }
 
   .main-nav.mobile-open {
     clip-path: circle(140% at 100% 0);
+    pointer-events: auto;
   }
 
   .nav-list {
