@@ -71,13 +71,7 @@ body {
   overflow: visible;
 }
 
-/* ===== MOBILE APP MODE LOCK =====
-   When running as native iOS/Android app on /app or /mobile, lock the document body
-   so ONLY the internal .real-mobile-app container scrolls. */
-body.mobile-app-active {
-  overflow: hidden !important;
-  height: 100vh !important;
-}
+
 
 .app-container {
   width: 100%;
