@@ -37,8 +37,13 @@ import {
   loadAllInquiriesFromFirestore,
   loadAllCustomersFromFirestore,
   updateInquiryStatusInFirestore,
-  saveCustomerToFirestore
+  saveCustomerToFirestore,
+  saveInquiryToFirestore
 } from '../services/firebaseService';
+import {
+  saveInquiryToTiDB,
+  loadAllInquiriesFromTiDB
+} from '../services/tidbService';
 
 export const INITIAL_VEHICLES = [
   {
@@ -186,12 +191,8 @@ export default function AdminPortal() {
   const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
   const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
 
-  // Notification System State
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 ($65.00)', time: '2 mins ago', read: false },
-    { id: 2, type: 'driver', title: 'Fleet Driver Active', desc: 'Alex Morgan status changed to On Duty', time: '12 mins ago', read: false },
-    { id: 3, type: 'revenue', title: 'Daily Revenue Target', desc: 'Dispatch revenue crossed $1,450.00 today', time: '1 hour ago', read: true }
-  ]);
+  // Notification System State - Clean real-time notifications
+  const [notifications, setNotifications] = useState([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -212,13 +213,14 @@ export default function AdminPortal() {
   const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
-  // ── Load real data from Firestore on mount (cross-domain safe) ──
+  // ── Load real data from Firestore & TiDB Cloud (cross-domain safe) ──
   const fetchCloudData = async () => {
     setFirestoreLoading(true);
     try {
-      const [fsInquiries, fsCustomers] = await Promise.all([
+      const [fsInquiries, fsCustomers, tidbInquiries] = await Promise.all([
         loadAllInquiriesFromFirestore(),
-        loadAllCustomersFromFirestore()
+        loadAllCustomersFromFirestore(),
+        loadAllInquiriesFromTiDB().catch(() => [])
       ]);
 
       // Read local storage as fallback/supplement
@@ -231,8 +233,8 @@ export default function AdminPortal() {
         if (c) localCustomers = JSON.parse(c);
       } catch (err) {}
 
-      // Merge cloud + local inquiries (dedup by id)
-      const mergedInquiries = [...(fsInquiries || [])];
+      // Merge Firestore + TiDB + local inquiries (dedup by id)
+      const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
       const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
       
       (localInquiries || []).forEach(localItem => {
@@ -260,7 +262,7 @@ export default function AdminPortal() {
 
       setCustomers(mergedCustomers);
     } catch (e) {
-      console.warn('Firestore load error:', e);
+      console.warn('Cloud load error:', e);
     } finally {
       setFirestoreLoading(false);
     }
@@ -471,11 +473,30 @@ export default function AdminPortal() {
     }));
 
     autoSyncCustomer(assignModal.inquiry.customerName, assignModal.inquiry.customerPhone, assignModal.inquiry.fare);
+
+    // Sync status change to Firestore & TiDB
+    if (assignModal.inquiry.firestoreId) {
+      updateInquiryStatusInFirestore(assignModal.inquiry.firestoreId, 'Confirmed', driverObj.name);
+    }
+    saveInquiryToTiDB({
+      ...assignModal.inquiry,
+      status: 'Confirmed',
+      driver: driverObj.name
+    }).catch(() => {});
+
     setAssignModal({ open: false, inquiry: null });
   };
 
   const handleCancelInquiry = (inquiryId) => {
-    setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i));
+    const target = inquiries.find(i => i.id === inquiryId || i.firestoreId === inquiryId);
+    setInquiries(prev => prev.map(i => (i.id === inquiryId || i.firestoreId === inquiryId) ? { ...i, status: 'Cancelled' } : i));
+    
+    if (target) {
+      if (target.firestoreId) {
+        updateInquiryStatusInFirestore(target.firestoreId, 'Cancelled');
+      }
+      saveInquiryToTiDB({ ...target, status: 'Cancelled' }).catch(() => {});
+    }
   };
 
   // Add Driver
@@ -512,13 +533,14 @@ export default function AdminPortal() {
     const createdCustomer = {
       id: 'CUST-' + Math.floor(300 + Math.random() * 600),
       name: newCustomerForm.name,
-      phone: newCustomerForm.phone || '+1 (555) 000-1122',
+      phone: newCustomerForm.phone || '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
       email: newCustomerForm.email || newCustomerForm.name.toLowerCase().replace(/\s+/g, '.') + '@client.com',
       totalRides: 0,
       totalSpent: 0.00,
       joined: new Date().toISOString().split('T')[0]
     };
     setCustomers([createdCustomer, ...customers]);
+    saveCustomerToFirestore(createdCustomer).catch(() => {});
     setNewCustomerForm({ name: '', phone: '', email: '' });
     setAddCustomerModal(false);
   };
@@ -530,7 +552,7 @@ export default function AdminPortal() {
     const createdInquiry = {
       id: 'INQ-' + Math.floor(1000 + Math.random() * 8999),
       customerName: newInquiryForm.customerName,
-      customerPhone: newInquiryForm.customerPhone || '+1 (555) 777-0099',
+      customerPhone: newInquiryForm.customerPhone || '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
       pickup: newInquiryForm.pickup,
       dropoff: newInquiryForm.dropoff,
       vehicle: newInquiryForm.vehicle,
@@ -541,6 +563,11 @@ export default function AdminPortal() {
     };
     setInquiries([createdInquiry, ...inquiries]);
     autoSyncCustomer(createdInquiry.customerName, createdInquiry.customerPhone, 0);
+
+    // Save to Cloud Databases (Firestore & TiDB)
+    saveInquiryToFirestore(createdInquiry).catch(() => {});
+    saveInquiryToTiDB(createdInquiry).catch(() => {});
+
     setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Cabsy Reguler', fare: 35.00 });
     setAddInquiryModal(false);
   };

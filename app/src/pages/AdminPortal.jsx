@@ -3,43 +3,14 @@ import {
   loadAllInquiriesFromFirestore, 
   loadAllCustomersFromFirestore, 
   updateInquiryStatusInFirestore, 
-  saveCustomerToFirestore 
+  saveCustomerToFirestore,
+  saveInquiryToFirestore
 } from '../services/firebaseService';
+import {
+  saveInquiryToTiDB,
+  loadAllInquiriesFromTiDB
+} from '../services/tidbService';
 import db from '../services/dbService';
-import { 
-  LayoutDashboard, 
-  Inbox, 
-  Car, 
-  Users, 
-  BarChart3, 
-  Settings, 
-  Plus, 
-  CheckCircle2, 
-  XCircle, 
-  Trash2, 
-  Eye, 
-  Search, 
-  DollarSign, 
-  TrendingUp, 
-  UserPlus, 
-  UserCheck, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  ShieldAlert, 
-  Save, 
-  RefreshCw,
-  LogOut,
-  ChevronRight,
-  Lock,
-  KeyRound,
-  Bell,
-  Zap,
-  Activity,
-  Edit
-} from 'lucide-react';
-import './AdminPortal.css';
 
 export const INITIAL_VEHICLES = [
   {
@@ -217,13 +188,14 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // ── Load real data from Firestore on mount (cross-domain safe) ──
+  // ── Load real data from Firestore & TiDB Cloud (cross-domain safe) ──
   const fetchCloudData = async () => {
     setFirestoreLoading(true);
     try {
-      const [fsInquiries, fsCustomers] = await Promise.all([
+      const [fsInquiries, fsCustomers, tidbInquiries] = await Promise.all([
         loadAllInquiriesFromFirestore(),
-        loadAllCustomersFromFirestore()
+        loadAllCustomersFromFirestore(),
+        loadAllInquiriesFromTiDB().catch(() => [])
       ]);
 
       // Read local storage as fallback/supplement
@@ -236,8 +208,8 @@ export default function AdminPortal() {
         if (c) localCustomers = JSON.parse(c);
       } catch (err) {}
 
-      // Merge cloud + local inquiries (dedup by id)
-      const mergedInquiries = [...(fsInquiries || [])];
+      // Merge Firestore + TiDB + local inquiries (dedup by id)
+      const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
       const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
       
       (localInquiries || []).forEach(localItem => {
