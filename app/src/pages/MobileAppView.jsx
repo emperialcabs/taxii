@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
-import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
+import { saveInquiryToFirestore, saveCustomerToFirestore, loadCustomerFromFirestore } from '../services/firebaseService';
 import { saveInquiryToTiDB } from '../services/tidbService';
 
 // Import Modular Mobile Screen Components
@@ -60,9 +60,31 @@ export default function MobileAppView() {
   const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
   // Helper to complete onboarding & store in localStorage
-  const completeOnboarding = () => {
+  const completeOnboarding = async (userAcc = null) => {
     try {
       localStorage.setItem('taxigo_onboarded', 'true');
+      
+      const phoneVal = phoneNumber || userAcc?.phone || '';
+      const emailVal = userAcc?.email || selectedGoogleAccount || '';
+      const nameVal = userAcc?.name || (emailVal ? emailVal.split('@')[0] : 'Customer');
+
+      // Sync customer profile with Firestore on Sign In
+      let cloudCust = null;
+      if (phoneVal || emailVal) {
+        cloudCust = await loadCustomerFromFirestore(emailVal, phoneVal);
+      }
+
+      const activeProfile = {
+        name: cloudCust?.name || nameVal,
+        phone: cloudCust?.phone || phoneVal || '+91 98765 43210',
+        email: cloudCust?.email || emailVal || '',
+        joined: cloudCust?.joined || new Date().toISOString().split('T')[0]
+      };
+
+      localStorage.setItem('cabsy_user_profile', JSON.stringify(activeProfile));
+
+      // Save to Firestore if new or updated
+      saveCustomerToFirestore(activeProfile).catch(() => {});
     } catch (e) { }
     setAppStage('APP_HOME');
   };
