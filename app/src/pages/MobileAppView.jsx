@@ -29,6 +29,14 @@ import TripReceiptScreen from './mobile/TripReceiptScreen';
 import InquirySubmittedScreen from './mobile/InquirySubmittedScreen';
 
 export default function MobileAppView() {
+  // Lock body scroll when mobile app is active (prevents iOS/Android scroll bleed)
+  React.useEffect(() => {
+    document.body.classList.add('mobile-app-active');
+    return () => {
+      document.body.classList.remove('mobile-app-active');
+    };
+  }, []);
+
   // Navigation Flow State Machine
   const [appStage, setAppStage] = useState(() => {
     try {

@@ -21,7 +21,6 @@
 
 .real-mobile-app {
   width: 100%;
-  height: 100vh;
   height: 100dvh;
   max-height: 100dvh;
   max-width: 600px;
@@ -31,10 +30,13 @@
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  overflow: hidden; /* Fixed screen container */
+  overflow: hidden; /* Fixed screen container - the ONLY scroll container */
   box-shadow: 0 0 40px rgba(0,0,0,0.08);
   animation: fadeInApp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+  /* Prevent body scroll bleed-through on iOS */
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Ensure nested screen containers flex and scroll properly */
@@ -514,12 +516,13 @@
 .full-homescreen-map-wrapper {
   position: relative;
   width: 100%;
-  height: calc(100vh - 70px);
+  height: calc(100dvh - 70px); /* Use dvh for iOS Safari accuracy */
   min-height: 400px;
   background: #E2E8F0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto; /* Grow to fill available space */
 }
 
 .live-map-viewport {
@@ -577,12 +580,14 @@
   background: #FFFFFF;
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
-  padding: 20px 20px 28px 20px;
+  /* Extra bottom padding so content clears the fixed bottom nav + iOS safe area */
+  padding: 20px 20px calc(80px + env(safe-area-inset-bottom, 0px)) 20px;
   box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
   z-index: 30;
   transition: all 0.3s ease;
-  max-height: 85vh;
+  max-height: 85dvh; /* Use dvh for iOS Safari accuracy */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .drag-handle-bar {
@@ -663,17 +668,17 @@
 
 /* 5. BOTTOM NAVIGATION TABS */
 .taxigo-bottom-nav {
-  position: absolute;
+  position: fixed; /* Use fixed so it never gets lost on iOS/Android */
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
   max-width: 600px;
-  margin: 0 auto;
   background: #FFFFFF;
   border-top: 1px solid #E2E8F0;
   display: flex;
   justify-content: space-around;
-  padding: 10px 0 14px 0;
+  padding: 10px 0 env(safe-area-inset-bottom, 14px) 0; /* iOS notch safety */
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
   flex-shrink: 0;
