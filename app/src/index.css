@@ -37,21 +37,33 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html {
   width: 100%;
-  min-height: 100vh;
-  height: auto !important;
   margin: 0;
   padding: 0;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  position: relative !important;
+  overflow-x: hidden;
+  overflow-y: auto;
   scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
   font-family: var(--font-family);
   color: var(--body-text);
   background-color: var(--bg-white);
   line-height: 1.6;
   -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== MOBILE APP MODE LOCK =====
@@ -63,7 +75,7 @@ body.mobile-app-active html,
 body.mobile-app-active #root {
   height: 100% !important;
   max-height: 100% !important;
-  min-height: unset !important;
+  min-height: 100% !important;
   overflow: hidden !important;
   position: fixed !important;
   width: 100% !important;
@@ -83,17 +95,12 @@ body.mobile-app-active #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: visible !important;
+  flex: 1 0 auto;
 }
 
 .app-main-content {
   flex: 1 0 auto;
   width: 100%;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: visible !important;
 }
 
 /* Typography */
