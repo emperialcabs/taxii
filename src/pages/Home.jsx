@@ -39,7 +39,7 @@ export default function Home({ onOpenBooking }) {
                   <div className="app-map-header">
                     <div className="app-search-bar">
                       <MapPin size={16} className="text-green" />
-                      <span>San Francisco, CA</span>
+                      <span>Bhavnagar → Ahmedabad</span>
                     </div>
                   </div>
                   <div className="app-route-preview">
@@ -50,13 +50,13 @@ export default function Home({ onOpenBooking }) {
                   <div className="app-fare-bottom">
                     <div className="fare-info">
                       <small>TIME</small>
-                      <strong>24 min</strong>
+                      <strong>3 hr 15 min</strong>
                     </div>
                     <div className="fare-info">
                       <small>DISTANCE</small>
-                      <strong>5.25 km</strong>
+                      <strong>172.5 km</strong>
                     </div>
-                    <div className="fare-price-tag">₹350.00</div>
+                    <div className="fare-price-tag">₹2,450.00</div>
                   </div>
                 </div>
               </div>
