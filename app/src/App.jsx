@@ -26,7 +26,7 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const location = useLocation();
   const isAdmin = location.pathname === '/admin';
   const isWebSite = location.pathname === '/web';
-
+  const isMobileRoute = location.pathname === '/app' || location.pathname === '/mobile';
 
   if (isAdmin) {
     return <AdminPortal />;
