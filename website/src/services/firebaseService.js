@@ -37,7 +37,13 @@ export const db = getFirestore(app);
 // ─────────────────────────────────────────────────────────────────────────────
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Auth timeout")), 3500)
+    );
+    const result = await Promise.race([
+      signInWithPopup(auth, googleProvider),
+      timeoutPromise
+    ]);
     const user = result.user;
     return {
       name: user.displayName || 'Google User',
@@ -46,7 +52,7 @@ export const signInWithGoogle = async () => {
       uid: user.uid
     };
   } catch (e) {
-    console.warn("Firebase Google Auth popup unavailable, using direct login session:", e);
+    console.warn("Firebase Google Auth popup unavailable or timed out, using direct login session:", e);
     return {
       name: 'Google User',
       email: 'user@empirecab.in',
