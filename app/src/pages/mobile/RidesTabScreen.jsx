@@ -1,4 +1,5 @@
 import { saveInquiryToFirestore } from '../../services/firebaseService';
+import { saveInquiryToTiDB, loadAllInquiriesFromTiDB } from '../../services/tidbService';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -19,27 +20,45 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     return INITIAL_VEHICLES;
   };
 
-  // Load real user inquiries from localStorage & auto-sync to Firestore for Admin visibility
-  const loadInquiries = () => {
+  // Load real user inquiries from localStorage, Firestore & TiDB Cloud
+  const loadInquiries = async () => {
+    let localList = [];
     try {
       const saved = localStorage.getItem('cabsy_inquiries');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setInquiries(parsed);
-          // ✅ Auto-sync local inquiries to Firestore in background
-          parsed.forEach(inq => {
-            if (inq && (inq.id || inq.pickup)) {
-              saveInquiryToFirestore(inq).catch(() => {});
-            }
-          });
-          return;
-        }
+        if (Array.isArray(parsed)) localList = parsed;
       }
     } catch (e) {
       console.error("Failed to parse cabsy_inquiries", e);
     }
-    setInquiries([]);
+
+    // Auto-sync local inquiries to Firestore & TiDB Cloud in background
+    localList.forEach(inq => {
+      if (inq && (inq.id || inq.pickup)) {
+        saveInquiryToFirestore(inq).catch(() => {});
+        saveInquiryToTiDB(inq).catch(() => {});
+      }
+    });
+
+    // Fetch from TiDB Cloud SQL database
+    let tidbList = [];
+    try {
+      tidbList = await loadAllInquiriesFromTiDB();
+    } catch (e) {}
+
+    // Merge local + TiDB list (deduplicated by ID)
+    const combined = [...localList];
+    const existingIds = new Set(combined.map(i => i.id).filter(Boolean));
+
+    (tidbList || []).forEach(tidbItem => {
+      if (tidbItem && tidbItem.id && !existingIds.has(tidbItem.id)) {
+        combined.push(tidbItem);
+        existingIds.add(tidbItem.id);
+      }
+    });
+
+    setInquiries(combined);
   };
 
   useEffect(() => {

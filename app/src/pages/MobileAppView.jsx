@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
 import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
+import { saveInquiryToTiDB } from '../services/tidbService';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -122,8 +123,9 @@ export default function MobileAppView() {
     // 2. Save into dbService for local history
     db.saveInquiry(newInquiry);
 
-    // 3. ✅ Save to Firestore (persists across devices & re-logins)
+    // 3. ✅ Save to Firestore & TiDB Cloud (persists across devices & re-logins)
     saveInquiryToFirestore(newInquiry).catch(e => console.warn('Firestore inquiry save failed:', e));
+    saveInquiryToTiDB(newInquiry).catch(e => console.warn('TiDB inquiry save failed:', e));
 
     // 4. ✅ Update customer record in Firestore with latest login/trip info
     saveCustomerToFirestore({

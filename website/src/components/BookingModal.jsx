@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
 import './BookingModal.css';
+import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
+import { saveInquiryToTiDB } from '../services/tidbService';
 
 export default function BookingModal({ isOpen, onClose }) {
   const [pickup, setPickup] = useState('');
@@ -25,6 +27,37 @@ export default function BookingModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const createdInquiry = {
+      id: 'INQ-' + Math.floor(1000 + Math.random() * 8999),
+      customerName: 'Website Guest',
+      customerPhone: '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
+      pickup: pickup || 'City Center',
+      dropoff: dropoff || 'Airport T3',
+      vehicle: selectedVeh.name,
+      fare: Number(estimatedFare),
+      tripType: 'One-Way',
+      scheduledDate: 'Today',
+      scheduledTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      driver: 'Unassigned',
+      status: 'Pending',
+      date: new Date().toLocaleString().slice(0, 16)
+    };
+
+    // 1. Save to local storage for instant Admin tab sync
+    try {
+      const existing = JSON.parse(localStorage.getItem('cabsy_inquiries') || '[]');
+      localStorage.setItem('cabsy_inquiries', JSON.stringify([createdInquiry, ...existing]));
+    } catch (err) {}
+
+    // 2. Save to Cloud Databases (Firestore & TiDB)
+    saveInquiryToFirestore(createdInquiry).catch(() => {});
+    saveInquiryToTiDB(createdInquiry).catch(() => {});
+
+    // 3. Dispatch events to notify Admin Portal in real time
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('cabsy-new-inquiry', { detail: createdInquiry }));
+
     setSubmitted(true);
   };
 
