@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { loadAllInquiriesFromFirestore, loadAllCustomersFromFirestore } from '../services/firebaseService';
+import { 
+  loadAllInquiriesFromFirestore, 
+  loadAllCustomersFromFirestore, 
+  updateInquiryStatusInFirestore, 
+  saveCustomerToFirestore 
+} from '../services/firebaseService';
+import db from '../services/dbService';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -491,6 +497,12 @@ export default function AdminPortal() {
         return [newCust, ...prev];
       }
     });
+
+    // Persistent sync to TiDB & Firestore
+    try {
+      db.saveCustomer({ name, phone });
+      saveCustomerToFirestore({ name, phone });
+    } catch (e) {}
   };
 
   // Calculations
@@ -516,6 +528,15 @@ export default function AdminPortal() {
 
     setInquiries(updatedInquiries);
 
+    // Sync status to Firestore & TiDB
+    if (assignModal.inquiry.firestoreId || assignModal.inquiry.id) {
+      updateInquiryStatusInFirestore(
+        assignModal.inquiry.firestoreId || assignModal.inquiry.id,
+        'Confirmed',
+        driverObj.name
+      );
+    }
+
     // Update driver earnings and trip count
     setDrivers(prev => prev.map(d => {
       if (d.id === driverObj.id) {
@@ -534,7 +555,13 @@ export default function AdminPortal() {
   };
 
   const handleCancelInquiry = (inquiryId) => {
-    setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i));
+    setInquiries(prev => {
+      const target = prev.find(i => i.id === inquiryId);
+      if (target && (target.firestoreId || target.id)) {
+        updateInquiryStatusInFirestore(target.firestoreId || target.id, 'Cancelled');
+      }
+      return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
+    });
   };
 
   // Add Driver
