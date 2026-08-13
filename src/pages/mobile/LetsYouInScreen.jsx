@@ -1,21 +1,45 @@
 import React, { useState } from 'react';
 import db from '../../services/dbService';
-import { signInWithGoogle } from '../../services/firebaseService';
+import { signInWithGoogle, saveCustomerToFirestore, loadUserInquiriesFromFirestore } from '../../services/firebaseService';
 
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
+
+  // ── After login: save profile to Firestore AND restore past trips ──
+  const syncWithFirestore = async (profile) => {
+    try {
+      // 1. Save profile to Firestore (creates doc if new, merges if existing)
+      await saveCustomerToFirestore(profile);
+
+      // 2. Pull user's past trip history from Firestore
+      const firestoreInquiries = await loadUserInquiriesFromFirestore(profile.phone, profile.email);
+      if (firestoreInquiries && firestoreInquiries.length > 0) {
+        const localRaw = localStorage.getItem('cabsy_inquiries');
+        const localList = localRaw ? JSON.parse(localRaw) : [];
+        // Merge: avoid duplicates by id or firestoreId
+        const existingIds = new Set(localList.map(i => i.id || i.firestoreId).filter(Boolean));
+        const fresh = firestoreInquiries.filter(i => !existingIds.has(i.id) && !existingIds.has(i.firestoreId));
+        const merged = [...fresh, ...localList];
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
+        // Notify Admin Portal and RidesTabScreen of new data
+        window.dispatchEvent(new Event('storage'));
+      }
+    } catch (e) {
+      console.warn('Firestore sync on login failed (offline mode):', e);
+    }
+  };
 
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
       const googleUser = await signInWithGoogle();
-      setLoading(false);
-      
+
       const realProfile = {
         name: googleUser.name || 'Google User',
         email: googleUser.email || 'user@empirecab.in',
         phone: phoneNumber || '+91 98765 43210',
         photoURL: googleUser.photoURL || null,
+        uid: googleUser.uid || null,
         profession: 'Rider',
         area: 'Bhavnagar, Gujarat'
       };
@@ -24,8 +48,11 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
         localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
         db.saveCustomer(realProfile);
+        // ✅ Save to Firestore + restore past trips
+        await syncWithFirestore(realProfile);
       } catch(e) {}
 
+      setLoading(false);
       if (onGoogleSignIn) {
         onGoogleSignIn(realProfile);
       } else {
@@ -45,6 +72,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
+        await syncWithFirestore(fallbackProfile);
       } catch(e) {}
       if (onGoogleSignIn) {
         onGoogleSignIn(fallbackProfile);

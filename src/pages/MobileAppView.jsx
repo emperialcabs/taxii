@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
+import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -28,6 +29,7 @@ import TripReceiptScreen from './mobile/TripReceiptScreen';
 import InquirySubmittedScreen from './mobile/InquirySubmittedScreen';
 
 export default function MobileAppView() {
+
   // Navigation Flow State Machine
   const [appStage, setAppStage] = useState(() => {
     try {
@@ -108,19 +110,29 @@ export default function MobileAppView() {
       timestamp: new Date().toISOString()
     };
 
-    // 1. Save directly into cabsy_inquiries for Admin Portal
+    // 1. Save directly into cabsy_inquiries for Admin Portal (localStorage)
     try {
       const existingInquiries = JSON.parse(localStorage.getItem('cabsy_inquiries') || '[]');
       const updatedInquiries = [newInquiry, ...existingInquiries];
       localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
     } catch (err) {
-      console.error("Error saving inquiry:", err);
+      console.error("Error saving inquiry to localStorage:", err);
     }
 
     // 2. Save into dbService for local history
     db.saveInquiry(newInquiry);
 
-    // 3. Dispatch events to notify Admin Portal in real time
+    // 3. ✅ Save to Firestore (persists across devices & re-logins)
+    saveInquiryToFirestore(newInquiry).catch(e => console.warn('Firestore inquiry save failed:', e));
+
+    // 4. ✅ Update customer record in Firestore with latest login/trip info
+    saveCustomerToFirestore({
+      name: userProf.name,
+      phone: userProf.phone,
+      email: userProf.email || '',
+    }).catch(e => console.warn('Firestore customer save failed:', e));
+
+    // 5. Dispatch events to notify Admin Portal in real time
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('taxigo_ride_booked', { detail: newInquiry }));
 

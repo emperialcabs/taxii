@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
+  loadAllInquiriesFromFirestore, 
+  loadAllCustomersFromFirestore, 
+  updateInquiryStatusInFirestore, 
+  saveCustomerToFirestore 
+} from '../services/firebaseService';
+import db from '../services/dbService';
+import { 
   LayoutDashboard, 
   Inbox, 
   Car, 
@@ -228,6 +235,12 @@ export default function AdminPortal() {
         if (saved) {
           const parsed = JSON.parse(saved);
           setInquiries(parsed);
+          // ✅ Auto-sync customers from all inquiries in storage
+          parsed.forEach(inq => {
+            if (inq.customerName) {
+              autoSyncCustomer(inq.customerName, inq.customerPhone, inq.status === 'Confirmed' ? inq.fare : 0);
+            }
+          });
         }
       } catch (e) {}
     };
@@ -246,6 +259,8 @@ export default function AdminPortal() {
           },
           ...prev
         ]);
+        // ✅ Actually create the customer record when a mobile ride is booked
+        autoSyncCustomer(newInq.customerName, newInq.customerPhone, 0);
         handleSyncStorage();
       }
     };
@@ -374,6 +389,70 @@ export default function AdminPortal() {
     return () => window.removeEventListener('cabsy-new-inquiry', handleNewInquiry);
   }, []);
 
+  // ✅ On first mount: load from Firestore AND backfill customers from localStorage inquiries
+  useEffect(() => {
+    // 1. Backfill customers from localStorage inquiries (immediate, synchronous)
+    try {
+      const saved = localStorage.getItem('cabsy_inquiries');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.forEach(inq => {
+          if (inq.customerName) {
+            autoSyncCustomer(inq.customerName, inq.customerPhone, inq.status === 'Confirmed' ? inq.fare : 0);
+          }
+        });
+      }
+    } catch (e) {}
+
+    // 2. Load ALL inquiries from Firestore and merge with localStorage
+    loadAllInquiriesFromFirestore().then(firestoreInquiries => {
+      if (!firestoreInquiries || firestoreInquiries.length === 0) return;
+      try {
+        const localRaw = localStorage.getItem('cabsy_inquiries');
+        const localList = localRaw ? JSON.parse(localRaw) : [];
+        const existingIds = new Set(localList.map(i => i.id || i.firestoreId).filter(Boolean));
+        const fresh = firestoreInquiries.filter(i => !existingIds.has(i.id) && !existingIds.has(i.firestoreId));
+        if (fresh.length > 0) {
+          const merged = [...fresh, ...localList];
+          localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
+          setInquiries(merged);
+          // Auto-sync customer records from Firestore inquiries
+          merged.forEach(inq => {
+            if (inq.customerName) {
+              autoSyncCustomer(inq.customerName, inq.customerPhone, inq.status === 'Confirmed' ? inq.fare : 0);
+            }
+          });
+        }
+      } catch (e) { console.warn('Firestore merge error:', e); }
+    }).catch(e => console.warn('Firestore load failed (offline):', e));
+
+    // 3. Load ALL customers from Firestore and merge into Customer Directory
+    loadAllCustomersFromFirestore().then(firestoreCustomers => {
+      if (!firestoreCustomers || firestoreCustomers.length === 0) return;
+      setCustomers(prev => {
+        const existingIds = new Set(prev.map(c => c.email || c.phone).filter(Boolean));
+        const fresh = firestoreCustomers.filter(c => {
+          const key = (c.email || c.phone || '').toLowerCase().trim();
+          return key && !existingIds.has(key);
+        });
+        if (fresh.length === 0) return prev;
+        // Normalize Firestore customer shape to match Admin Portal's schema
+        const normalized = fresh.map(c => ({
+          id: c.id || c.firestoreId || ('CUST-' + Math.floor(10000 + Math.random() * 90000)),
+          name: c.name || 'Rider',
+          phone: c.phone || '-',
+          email: c.email || '-',
+          totalRides: c.totalRides || 0,
+          totalSpent: c.totalSpentNum || 0,
+          joined: c.registeredAt || c.joined || new Date().toISOString().split('T')[0],
+        }));
+        return [...normalized, ...prev];
+      });
+    }).catch(e => console.warn('Firestore customers load failed (offline):', e));
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Handle PIN submit
   const handlePinSubmit = (e) => {
     e.preventDefault();
@@ -418,6 +497,12 @@ export default function AdminPortal() {
         return [newCust, ...prev];
       }
     });
+
+    // Persistent sync to TiDB & Firestore
+    try {
+      db.saveCustomer({ name, phone });
+      saveCustomerToFirestore({ name, phone });
+    } catch (e) {}
   };
 
   // Calculations
@@ -443,6 +528,15 @@ export default function AdminPortal() {
 
     setInquiries(updatedInquiries);
 
+    // Sync status to Firestore & TiDB
+    if (assignModal.inquiry.firestoreId || assignModal.inquiry.id) {
+      updateInquiryStatusInFirestore(
+        assignModal.inquiry.firestoreId || assignModal.inquiry.id,
+        'Confirmed',
+        driverObj.name
+      );
+    }
+
     // Update driver earnings and trip count
     setDrivers(prev => prev.map(d => {
       if (d.id === driverObj.id) {
@@ -461,7 +555,13 @@ export default function AdminPortal() {
   };
 
   const handleCancelInquiry = (inquiryId) => {
-    setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i));
+    setInquiries(prev => {
+      const target = prev.find(i => i.id === inquiryId);
+      if (target && (target.firestoreId || target.id)) {
+        updateInquiryStatusInFirestore(target.firestoreId || target.id, 'Cancelled');
+      }
+      return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
+    });
   };
 
   // Add Driver
@@ -1274,7 +1374,7 @@ export default function AdminPortal() {
                     <tr>
                       <th>Customer ID</th>
                       <th>Name</th>
-                      <th>Phone Number</th>
+                <th>Phone Number</th>
                       <th>Email Address</th>
                       <th>Total Rides</th>
                       <th>Total Revenue Spent</th>
@@ -1283,7 +1383,15 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {customers.map(cust => (
+                    {customers.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '48px 24px', color: '#64748B' }}>
+                          <div style={{ fontSize: '36px', marginBottom: '12px' }}>👤</div>
+                          <strong style={{ display: 'block', marginBottom: '6px' }}>No Customers Yet</strong>
+                          <small>Customers are auto-created when a ride inquiry is submitted via the mobile app.<br />You can also add one manually using the <strong>Add Customer</strong> button above.</small>
+                        </td>
+                      </tr>
+                    ) : customers.map(cust => (
                       <tr key={cust.id}>
                         <td><strong>{cust.id}</strong></td>
                         <td><strong>{cust.name}</strong></td>
