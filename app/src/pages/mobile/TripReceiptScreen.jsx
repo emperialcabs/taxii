@@ -6,7 +6,7 @@ export default function TripReceiptScreen({ onDone }) {
       <div className="white-header-nav">
         <h2 className="white-header-title">Trip Receipt</h2>
       </div>
-      <div style={{ padding: '24px 20px', overflowY: 'auto' }}>
+      <div className="mobile-screen-body" style={{ padding: '24px 20px' }}>
         <div style={{
           background: '#FFFFFF',
           border: '1.5px solid #E2E8F0',

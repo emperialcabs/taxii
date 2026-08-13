@@ -75,6 +75,7 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
       
       <main className="app-main-content">
         <Routes>
+          <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
           <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
           <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
           <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />

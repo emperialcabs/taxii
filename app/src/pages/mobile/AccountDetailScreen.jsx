@@ -63,7 +63,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
         <h2 className="white-header-title">Edit Profile Details</h2>
       </div>
 
-      <div style={{ padding: '20px 20px 100px 20px', overflowY: 'auto' }}>
+      <div className="mobile-screen-body" style={{ padding: '20px 20px 100px 20px' }}>
         {/* Photo Upload Section */}
         <div style={{ textCenter: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
           <div style={{ position: 'relative' }}>

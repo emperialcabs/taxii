@@ -101,7 +101,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
         <h2 className="white-header-title">Select Destination</h2>
       </div>
 
-      <div style={{ padding: '16px 20px 100px 20px', overflowY: 'auto' }}>
+      <div className="mobile-screen-body" style={{ padding: '16px 20px 100px 20px' }}>
         
         {/* Pickup & Dropoff Input Card */}
         <div style={{ 
