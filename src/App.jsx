@@ -33,7 +33,7 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   }
 
   // App Mode Environment Flag (Supports 3 separate Vercel deployments: website, android, ios)
-  const appMode = import.meta.env.VITE_APP_MODE || 'mobile';
+  const appMode = import.meta.env.VITE_APP_MODE || 'website';
 
   // Force Website mode if VITE_APP_MODE === 'website' and not on /admin or /mobile
   if (appMode === 'website' && !isMobileRoute) {
@@ -75,6 +75,7 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
       
       <main className="app-main-content">
         <Routes>
+          <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
           <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
           <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
           <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
