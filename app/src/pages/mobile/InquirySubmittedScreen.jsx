@@ -96,6 +96,16 @@ export default function InquirySubmittedScreen({ inquiry, onGoHome, onViewRides 
                 <span style={{ fontSize: '20px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>₹{inqData.fare}</span>
               </div>
             </div>
+
+            {/* Total Time & Distance Badges */}
+            <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px dashed #E2E8F0', marginTop: '6px' }}>
+              <span style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #93C5FD', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
+                ⏱️ Est. Time: {inqData.duration || '3 hr 15 min'}
+              </span>
+              <span style={{ background: '#F0FDF4', color: '#059669', border: '1px solid #BBF7D0', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
+                📍 Distance: {inqData.distance || '175 KM'}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -32,7 +32,7 @@ class DatabaseService {
     this.initDatabase();
   }
 
-  // Initialize DB & ensure persistent inquiries
+  // Initialize DB & ensure persistent inquiries & customers
   initDatabase() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.INQUIRIES);
@@ -64,6 +64,37 @@ class DatabaseService {
           }
         ];
         localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(defaultInquiries));
+      }
+
+      const custData = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
+      if (!custData || custData === '[]') {
+        const defaultCustomers = [
+          {
+            id: 'CUST-1001',
+            name: 'Bhavin Patel',
+            phone: '+91 98250 12345',
+            email: 'bhavin.patel@gmail.com',
+            registeredAt: 'Aug 10, 2026',
+            joined: 'Aug 10, 2026',
+            totalRides: 4,
+            totalSpent: '₹2,625',
+            totalSpentNum: 2625,
+            status: 'Active'
+          },
+          {
+            id: 'CUST-1002',
+            name: 'Ankit Mehta',
+            phone: '+91 94262 67890',
+            email: 'ankit.mehta@yahoo.com',
+            registeredAt: 'Aug 11, 2026',
+            joined: 'Aug 11, 2026',
+            totalRides: 2,
+            totalSpent: '₹1,650',
+            totalSpentNum: 1650,
+            status: 'Active'
+          }
+        ];
+        localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(defaultCustomers));
       }
     } catch (e) {
       console.warn('DB Init notice:', e);

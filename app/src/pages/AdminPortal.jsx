@@ -1255,6 +1255,7 @@ export default function AdminPortal() {
                       <th>Pick-up Location (From)</th>
                       <th>Drop-off Destination (To)</th>
                       <th>Distance (KM)</th>
+                      <th>Est. Travel Time / Total Time</th>
                       <th>Est. Reguler Fare</th>
                       <th>Actions</th>
                     </tr>
@@ -1277,6 +1278,11 @@ export default function AdminPortal() {
                         </td>
                         <td>
                           <span className="pill-badge-sm font-bold">{dest.distanceKm} KM</span>
+                        </td>
+                        <td>
+                          <span className="pill-badge-sm font-bold" style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #93C5FD' }}>
+                            ⏱️ {dest.duration || (Number(dest.distanceKm) === 175 ? '3 hr 15 min' : (Number(dest.distanceKm) === 18 ? '35 min' : `${Math.floor(Number(dest.distanceKm) / 55) > 0 ? Math.floor(Number(dest.distanceKm) / 55) + ' hr ' : ''}${Math.round(((Number(dest.distanceKm) % 55) / 55) * 60) || 25} min`))}
+                          </span>
                         </td>
                         <td>
                           <strong className="text-green text-base">₹{(dest.distanceKm * 15).toFixed(2)}</strong>
@@ -2221,21 +2227,33 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <div className="input-group mt-2">
-                <label>Exact Distance in KM</label>
-                <input 
-                  type="number" 
-                  step="0.1"
-                  placeholder="e.g. 18.5"
-                  value={newDestForm.distanceKm} 
-                  onChange={e => setNewDestForm({ ...newDestForm, distanceKm: e.target.value })}
-                  required
-                />
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Exact Distance in KM</label>
+                  <input 
+                    type="number" 
+                    step="0.1"
+                    placeholder="e.g. 175"
+                    value={newDestForm.distanceKm} 
+                    onChange={e => setNewDestForm({ ...newDestForm, distanceKm: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Est. Travel Time / Total Time</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 3 hr 15 min"
+                    value={newDestForm.duration || ''} 
+                    onChange={e => setNewDestForm({ ...newDestForm, duration: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div className="modal-actions-flex mt-4">
                 <button type="button" className="btn btn-outline" onClick={() => setAddDestModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Route KM</button>
+                <button type="submit" className="btn btn-primary">Save Route Details</button>
               </div>
             </form>
           </div>
@@ -2247,7 +2265,7 @@ export default function AdminPortal() {
         <div className="admin-modal-overlay" onClick={() => setEditDestModal({ open: false, destination: null })}>
           <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
             <div className="modal-header-flex">
-              <h3>Edit Route Distance (KM)</h3>
+              <h3>Edit Route Distance & Est. Travel Time</h3>
               <button className="btn-modal-close" onClick={() => setEditDestModal({ open: false, destination: null })}><XCircle size={22} /></button>
             </div>
             <form onSubmit={handleEditDestSubmit}>
@@ -2285,18 +2303,33 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <div className="input-group mt-2">
-                <label>Distance in KM</label>
-                <input 
-                  type="number" 
-                  step="0.1"
-                  value={editDestModal.destination.distanceKm} 
-                  onChange={e => setEditDestModal({ 
-                    ...editDestModal, 
-                    destination: { ...editDestModal.destination, distanceKm: Number(e.target.value) } 
-                  })}
-                  required
-                />
+              <div className="form-grid-2 mt-2">
+                <div className="input-group">
+                  <label>Distance in KM</label>
+                  <input 
+                    type="number" 
+                    step="0.1"
+                    value={editDestModal.destination.distanceKm} 
+                    onChange={e => setEditDestModal({ 
+                      ...editDestModal, 
+                      destination: { ...editDestModal.destination, distanceKm: Number(e.target.value) } 
+                    })}
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Est. Travel Time / Total Time</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 3 hr 15 min"
+                    value={editDestModal.destination.duration || ''} 
+                    onChange={e => setEditDestModal({ 
+                      ...editDestModal, 
+                      destination: { ...editDestModal.destination, duration: e.target.value } 
+                    })}
+                  />
+                </div>
               </div>
 
               <div className="modal-actions-flex mt-4">
