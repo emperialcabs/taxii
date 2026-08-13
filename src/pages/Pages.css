@@ -73,8 +73,8 @@
   background-image: url('https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1600&auto=format&fit=crop&q=80');
   background-size: cover;
   background-position: center;
-  padding: clamp(3.5rem, 6vw, 6rem) clamp(2rem, 4vw, 4rem);
-  min-height: clamp(520px, 72vh, 750px);
+  padding: clamp(4.5rem, 7vw, 7.5rem) clamp(2.5rem, 5vw, 5rem);
+  min-height: clamp(620px, 86vh, 900px);
   color: #ffffff;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
