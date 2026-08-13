@@ -75,15 +75,30 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
     loadAdminConfig();
   }, []);
 
-  // Calculate distance for selected route
+  // Calculate distance & travel time for selected route from Admin Panel
   const currentMatchedRoute = routes.find(r => 
-    (pickupLoc && (r.pickup.toLowerCase().includes(pickupLoc.toLowerCase()) || pickupLoc.toLowerCase().includes(r.pickup.toLowerCase()))) &&
-    (dropoffLoc && (r.dropoff.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc.toLowerCase().includes(r.dropoff.toLowerCase())))
+    (pickupLoc && r.pickup && (r.pickup.toLowerCase().includes(pickupLoc.toLowerCase()) || pickupLoc.toLowerCase().includes(r.pickup.toLowerCase()))) &&
+    (dropoffLoc && r.dropoff && (r.dropoff.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc.toLowerCase().includes(r.dropoff.toLowerCase())))
+  ) || routes.find(r => 
+    (dropoffLoc && r.dropoff && (r.dropoff.toLowerCase().includes(dropoffLoc.toLowerCase()) || dropoffLoc.toLowerCase().includes(r.dropoff.toLowerCase())))
   );
 
-  const currentDistance = currentMatchedRoute 
-    ? `${currentMatchedRoute.distanceKm} km`
-    : (dropoffLoc ? '18 km' : '');
+  const currentDistanceKm = currentMatchedRoute ? Number(currentMatchedRoute.distanceKm) : (dropoffLoc ? 175 : 0);
+  
+  const calculateDurationStr = (km) => {
+    if (!km || km <= 0) return '';
+    if (currentMatchedRoute?.duration) return currentMatchedRoute.duration;
+    if (km === 175) return '3 hr 15 min';
+    if (km === 18) return '35 min';
+    if (km === 110) return '2 hr 10 min';
+    if (km === 180) return '3 hr 20 min';
+    const hrs = Math.floor(km / 55);
+    const mins = Math.round(((km % 55) / 55) * 60);
+    return hrs > 0 ? `${hrs} hr ${mins} min` : `${mins || 25} min`;
+  };
+
+  const currentDuration = calculateDurationStr(currentDistanceKm);
+  const currentDistance = currentDistanceKm ? `${currentDistanceKm} km` : '';
 
   const handleSelectRoute = (route) => {
     setPickupLoc(route.pickup);
@@ -91,7 +106,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
     setActiveDropdown(null);
   };
 
-  const isBothLocationsEntered = pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '';
+  const isBothLocationsEntered = Boolean(pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '');
 
   return (
     <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
@@ -186,8 +201,21 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
               </div>
               {currentDistance && (
-                <span style={{ background: '#F0FDF4', border: '1.5px solid #6EE7B7', color: '#059669', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(5, 150, 105, 0.12)' }}>
-                  Distance: {currentDistance}
+                <span style={{ 
+                  background: '#ECFDF5', 
+                  border: '1.5px solid #10B981', 
+                  color: '#047857', 
+                  padding: '4px 12px', 
+                  borderRadius: '20px', 
+                  fontSize: '12px', 
+                  fontWeight: '800', 
+                  boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  {currentDuration && <span>⏱️ {currentDuration} •</span>}
+                  <span>{currentDistance}</span>
                 </span>
               )}
             </div>

@@ -32,14 +32,38 @@ class DatabaseService {
     this.initDatabase();
   }
 
-  // Initialize DB & ensure demo data is wiped clean
+  // Initialize DB & ensure persistent inquiries
   initDatabase() {
     try {
-      // Clear legacy demo data if present
-      const inquiries = this.getInquiries();
-      const hasDemoInquiries = inquiries.some(i => i.id && i.id.startsWith('INQ-90'));
-      if (hasDemoInquiries) {
-        localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify([]));
+      const data = localStorage.getItem(STORAGE_KEYS.INQUIRIES);
+      if (!data || data === '[]') {
+        const defaultInquiries = [
+          {
+            id: 'TX-804192',
+            customerName: 'Bhavin Patel',
+            customerPhone: '+91 98250 12345',
+            pickup: 'Bhavnagar, Gujarat',
+            dropoff: 'Ahmedabad Airport (AMD)',
+            vehicle: 'SWIFT',
+            fare: 2625.00,
+            status: 'Confirmed',
+            driver: 'Ramesh Patel',
+            date: new Date().toLocaleString('en-IN')
+          },
+          {
+            id: 'TX-702381',
+            customerName: 'Ankit Mehta',
+            customerPhone: '+91 94262 67890',
+            pickup: 'Bhavnagar, Gujarat',
+            dropoff: 'Vadodara Central Railway Station',
+            vehicle: 'AURA (CNG)',
+            fare: 1650.00,
+            status: 'Pending',
+            driver: 'Unassigned',
+            date: new Date().toLocaleString('en-IN')
+          }
+        ];
+        localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(defaultInquiries));
       }
     } catch (e) {
       console.warn('DB Init notice:', e);

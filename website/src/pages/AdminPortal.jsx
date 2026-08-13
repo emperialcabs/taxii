@@ -126,10 +126,43 @@ export default function AdminPortal() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   
+  const DEFAULT_INITIAL_INQUIRIES = [
+    {
+      id: 'TX-804192',
+      customerName: 'Bhavin Patel',
+      customerPhone: '+91 98250 12345',
+      pickup: 'Bhavnagar, Gujarat',
+      dropoff: 'Ahmedabad Airport (AMD)',
+      vehicle: 'SWIFT',
+      fare: 2625.00,
+      status: 'Confirmed',
+      driver: 'Ramesh Patel',
+      date: new Date().toLocaleString('en-IN')
+    },
+    {
+      id: 'TX-702381',
+      customerName: 'Ankit Mehta',
+      customerPhone: '+91 94262 67890',
+      pickup: 'Bhavnagar, Gujarat',
+      dropoff: 'Vadodara Central Railway Station',
+      vehicle: 'AURA (CNG)',
+      fare: 1650.00,
+      status: 'Pending',
+      driver: 'Unassigned',
+      date: new Date().toLocaleString('en-IN')
+    }
+  ];
+
   // State from localStorage or default
   const [inquiries, setInquiries] = useState(() => {
-    const saved = localStorage.getItem('cabsy_inquiries');
-    return saved ? JSON.parse(saved) : INITIAL_INQUIRIES;
+    try {
+      const saved = localStorage.getItem('cabsy_inquiries');
+      if (saved && saved !== '[]') {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    return DEFAULT_INITIAL_INQUIRIES;
   });
 
   const [drivers, setDrivers] = useState(() => {
