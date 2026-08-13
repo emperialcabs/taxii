@@ -33,8 +33,14 @@ import {
   Edit
 } from 'lucide-react';
 import './AdminPortal.css';
+import {
+  loadAllInquiriesFromFirestore,
+  loadAllCustomersFromFirestore,
+  updateInquiryStatusInFirestore,
+  saveCustomerToFirestore
+} from '../services/firebaseService';
 
-const INITIAL_VEHICLES = [
+export const INITIAL_VEHICLES = [
   {
     id: 'CAR-101',
     name: 'Cabsy Reguler',
@@ -126,54 +132,16 @@ export default function AdminPortal() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  const DEFAULT_INITIAL_INQUIRIES = [
-    {
-      id: 'TX-804192',
-      customerName: 'Bhavin Patel',
-      customerPhone: '+91 98250 12345',
-      pickup: 'Bhavnagar, Gujarat',
-      dropoff: 'Ahmedabad Airport (AMD)',
-      vehicle: 'SWIFT',
-      fare: 2625.00,
-      status: 'Confirmed',
-      driver: 'Ramesh Patel',
-      date: new Date().toLocaleString('en-IN')
-    },
-    {
-      id: 'TX-702381',
-      customerName: 'Ankit Mehta',
-      customerPhone: '+91 94262 67890',
-      pickup: 'Bhavnagar, Gujarat',
-      dropoff: 'Vadodara Central Railway Station',
-      vehicle: 'AURA (CNG)',
-      fare: 1650.00,
-      status: 'Pending',
-      driver: 'Unassigned',
-      date: new Date().toLocaleString('en-IN')
-    }
-  ];
-
-  // State from localStorage or default
-  const [inquiries, setInquiries] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cabsy_inquiries');
-      if (saved && saved !== '[]') {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch(e) {}
-    return DEFAULT_INITIAL_INQUIRIES;
-  });
+  // State — start empty, Firestore will populate on mount
+  const [inquiries, setInquiries] = useState([]);
+  const [firestoreLoading, setFirestoreLoading] = useState(true);
 
   const [drivers, setDrivers] = useState(() => {
     const saved = localStorage.getItem('cabsy_drivers');
     return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
   });
 
-  const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem('cabsy_customers');
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
+  const [customers, setCustomers] = useState([]);
 
   const [vehicles, setVehicles] = useState(() => {
     const saved = localStorage.getItem('cabsy_vehicles');
@@ -244,10 +212,27 @@ export default function AdminPortal() {
   const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
-  // Sync to localStorage
+  // ── Load real data from Firestore on mount (cross-domain safe) ──
   useEffect(() => {
-    localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
-  }, [inquiries]);
+    const loadFromFirestore = async () => {
+      setFirestoreLoading(true);
+      try {
+        const [fsInquiries, fsCustomers] = await Promise.all([
+          loadAllInquiriesFromFirestore(),
+          loadAllCustomersFromFirestore()
+        ]);
+        if (fsInquiries && fsInquiries.length > 0) setInquiries(fsInquiries);
+        if (fsCustomers && fsCustomers.length > 0) setCustomers(fsCustomers);
+      } catch (e) {
+        console.warn('Firestore load failed:', e);
+      } finally {
+        setFirestoreLoading(false);
+      }
+    };
+    loadFromFirestore();
+    const pollInterval = setInterval(loadFromFirestore, 15000);
+    return () => clearInterval(pollInterval);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('cabsy_drivers', JSON.stringify(drivers));

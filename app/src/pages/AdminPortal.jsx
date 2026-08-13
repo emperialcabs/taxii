@@ -117,54 +117,16 @@ export default function AdminPortal() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  const DEFAULT_INITIAL_INQUIRIES = [
-    {
-      id: 'TX-804192',
-      customerName: 'Bhavin Patel',
-      customerPhone: '+91 98250 12345',
-      pickup: 'Bhavnagar, Gujarat',
-      dropoff: 'Ahmedabad Airport (AMD)',
-      vehicle: 'SWIFT',
-      fare: 2625.00,
-      status: 'Confirmed',
-      driver: 'Ramesh Patel',
-      date: new Date().toLocaleString('en-IN')
-    },
-    {
-      id: 'TX-702381',
-      customerName: 'Ankit Mehta',
-      customerPhone: '+91 94262 67890',
-      pickup: 'Bhavnagar, Gujarat',
-      dropoff: 'Vadodara Central Railway Station',
-      vehicle: 'AURA (CNG)',
-      fare: 1650.00,
-      status: 'Pending',
-      driver: 'Unassigned',
-      date: new Date().toLocaleString('en-IN')
-    }
-  ];
-
-  // State from localStorage or default
-  const [inquiries, setInquiries] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cabsy_inquiries');
-      if (saved && saved !== '[]') {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch(e) {}
-    return DEFAULT_INITIAL_INQUIRIES;
-  });
+  // State — start empty, Firestore will populate on mount
+  const [inquiries, setInquiries] = useState([]);
+  const [firestoreLoading, setFirestoreLoading] = useState(true);
 
   const [drivers, setDrivers] = useState(() => {
     const saved = localStorage.getItem('cabsy_drivers');
     return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
   });
 
-  const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem('cabsy_customers');
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
+  const [customers, setCustomers] = useState([]);
 
   const [vehicles, setVehicles] = useState(() => {
     const saved = localStorage.getItem('cabsy_vehicles');
@@ -255,55 +217,32 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // Sync to localStorage
+  // ── Load real data from Firestore on mount (cross-domain safe) ──
   useEffect(() => {
-    localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
-  }, [inquiries]);
-
-  // Real-time synchronization with incoming mobile app booking inquiries
-  useEffect(() => {
-    const handleSyncStorage = () => {
+    const loadFromFirestore = async () => {
+      setFirestoreLoading(true);
       try {
-        const saved = localStorage.getItem('cabsy_inquiries');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setInquiries(parsed);
-          // ✅ Auto-sync customers from all inquiries in storage
-          parsed.forEach(inq => {
-            if (inq.customerName) {
-              autoSyncCustomer(inq.customerName, inq.customerPhone, inq.status === 'Confirmed' ? inq.fare : 0);
-            }
-          });
-        }
-      } catch (e) {}
-    };
-
-    const handleCustomRideBooked = (e) => {
-      const newInq = e.detail;
-      if (newInq) {
-        setNotifications(prev => [
-          {
-            id: `notif-${Date.now()}`,
-            title: 'New Ride Booking Inquiry',
-            desc: `Inquiry ${newInq.id} from ${newInq.customerName} (${newInq.pickup} ➔ ${newInq.dropoff})`,
-            time: 'Just now',
-            type: 'inquiry',
-            read: false
-          },
-          ...prev
+        const [fsInquiries, fsCustomers] = await Promise.all([
+          loadAllInquiriesFromFirestore(),
+          loadAllCustomersFromFirestore()
         ]);
-        // ✅ Actually create the customer record when a mobile ride is booked
-        autoSyncCustomer(newInq.customerName, newInq.customerPhone, 0);
-        handleSyncStorage();
+        if (fsInquiries && fsInquiries.length > 0) setInquiries(fsInquiries);
+        if (fsCustomers && fsCustomers.length > 0) setCustomers(fsCustomers);
+      } catch (e) {
+        console.warn('Firestore load failed, localStorage fallback:', e);
+        try {
+          const s = localStorage.getItem('cabsy_inquiries');
+          if (s && s !== '[]') setInquiries(JSON.parse(s));
+          const c = localStorage.getItem('cabsy_customers');
+          if (c && c !== '[]') setCustomers(JSON.parse(c));
+        } catch (_) {}
+      } finally {
+        setFirestoreLoading(false);
       }
     };
-
-    window.addEventListener('storage', handleSyncStorage);
-    window.addEventListener('taxigo_ride_booked', handleCustomRideBooked);
-    return () => {
-      window.removeEventListener('storage', handleSyncStorage);
-      window.removeEventListener('taxigo_ride_booked', handleCustomRideBooked);
-    };
+    loadFromFirestore();
+    const pollInterval = setInterval(loadFromFirestore, 15000);
+    return () => clearInterval(pollInterval);
   }, []);
 
   useEffect(() => {
