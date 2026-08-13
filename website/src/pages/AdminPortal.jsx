@@ -84,27 +84,12 @@ export const INITIAL_VEHICLES = [
   }
 ];
 
-// Initial Mock Data Fallbacks
-const INITIAL_DRIVERS = [
-  { id: 'DRV-101', name: 'Marcus Vance', phone: '+1 (555) 234-5678', vehicle: 'Cabsy Luxury (BMW M4)', plate: 'CAB-9901', rating: 4.9, status: 'Active', trips: 142, earnings: 3840.00 },
-  { id: 'DRV-102', name: 'Sarah Jenkins', phone: '+1 (555) 876-5432', vehicle: 'Cabsy Reguler (Sedan)', plate: 'CAB-4412', rating: 4.8, status: 'Active', trips: 98, earnings: 2150.50 },
-  { id: 'DRV-103', name: 'David Miller', phone: '+1 (555) 345-6789', vehicle: 'Cabsy XL (SUV)', plate: 'CAB-8823', rating: 4.95, status: 'On Ride', trips: 210, earnings: 5420.00 },
-  { id: 'DRV-104', name: 'Elena Rostova', phone: '+1 (555) 901-2345', vehicle: 'Cabsy Electric (EV)', plate: 'CAB-1109', rating: 5.0, status: 'Active', trips: 76, earnings: 1890.00 },
-];
+// Clean Database Initialization (Demo Data Removed)
+const INITIAL_DRIVERS = [];
 
-const INITIAL_INQUIRIES = [
-  { id: 'INQ-9012', customerName: 'Alex Morgan', customerPhone: '+1 (555) 111-2233', pickup: 'Downtown Terminal, Gate 4', dropoff: 'International Airport T3', vehicle: 'Cabsy Luxury', fare: 65.00, status: 'Pending', driver: '-', date: '2026-08-08 19:40' },
-  { id: 'INQ-9011', customerName: 'Brian Taylor', customerPhone: '+1 (555) 444-5566', pickup: 'Grand Central Plaza', dropoff: 'Metro Business Bay', vehicle: 'Cabsy Reguler', fare: 32.50, status: 'Confirmed', driver: 'Sarah Jenkins', date: '2026-08-08 18:15' },
-  { id: 'INQ-9010', customerName: 'Catherine Zeta', customerPhone: '+1 (555) 777-8899', pickup: 'Westside Marina Resort', dropoff: 'City Convention Center', vehicle: 'Cabsy XL', fare: 88.00, status: 'Confirmed', driver: 'David Miller', date: '2026-08-08 17:30' },
-  { id: 'INQ-9009', customerName: 'Daniel Craig', customerPhone: '+1 (555) 222-3344', pickup: 'Silicon Heights Tower A', dropoff: 'Northside Shopping Mall', vehicle: 'Cabsy Electric', fare: 28.00, status: 'Cancelled', driver: '-', date: '2026-08-08 15:10' },
-];
+const INITIAL_INQUIRIES = [];
 
-const INITIAL_CUSTOMERS = [
-  { id: 'CUST-301', name: 'Alex Morgan', phone: '+1 (555) 111-2233', email: 'alex.m@example.com', totalRides: 4, totalSpent: 240.00, joined: '2026-07-10' },
-  { id: 'CUST-302', name: 'Brian Taylor', phone: '+1 (555) 444-5566', email: 'brian.t@example.com', totalRides: 12, totalSpent: 485.50, joined: '2026-05-18' },
-  { id: 'CUST-303', name: 'Catherine Zeta', phone: '+1 (555) 777-8899', email: 'catherine.z@example.com', totalRides: 8, totalSpent: 620.00, joined: '2026-06-22' },
-  { id: 'CUST-304', name: 'Daniel Craig', phone: '+1 (555) 222-3344', email: 'daniel.c@example.com', totalRides: 2, totalSpent: 56.00, joined: '2026-08-01' },
-];
+const INITIAL_CUSTOMERS = [];
 
 const INITIAL_DESTINATIONS = [
   { id: 'DEST-101', name: 'Downtown Terminal → International Airport T3', pickup: 'Downtown Terminal', dropoff: 'International Airport T3', distanceKm: 18 },
