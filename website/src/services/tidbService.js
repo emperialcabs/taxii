@@ -220,3 +220,20 @@ export const loadAllCustomersFromTiDB = async () => {
     return [];
   }
 };
+
+/**
+ * Purge demo customer data from TiDB Cloud tables
+ */
+export const purgeDemoDataFromTiDB = async () => {
+  const config = getTiDBConnectionConfig();
+  if (!config.username || !config.password) return false;
+  try {
+    const conn = connect(config);
+    await conn.execute("DELETE FROM customers WHERE email LIKE '%@customer.com' OR email LIKE '%@client.com' OR name IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe');");
+    await conn.execute("DELETE FROM inquiries WHERE customerName IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe') OR customerEmail LIKE '%@customer.com';");
+    return true;
+  } catch (e) {
+    console.warn('TiDB purgeDemoData error:', e);
+    return false;
+  }
+};

@@ -12,6 +12,7 @@ import {
   where,
   orderBy,
   updateDoc,
+  deleteDoc,
   serverTimestamp
 } from 'firebase/firestore';
 
@@ -201,6 +202,34 @@ export const loadAllCustomersFromFirestore = async () => {
   } catch (e) {
     console.warn('Firestore loadAllCustomers failed (offline?):', e);
     return [];
+  }
+};
+
+/**
+ * Purge demo customer documents from Firestore
+ */
+export const purgeDemoDataFromFirestore = async () => {
+  try {
+    const snap = await getDocs(collection(db, 'cabsy_customers'));
+    for (const docSnap of snap.docs) {
+      const data = docSnap.data();
+      const name = (data.name || '').toLowerCase();
+      const email = (data.email || '').toLowerCase();
+      if (
+        name.includes('ankit mehta') ||
+        name.includes('bhavin patel') ||
+        name.includes('website guest') ||
+        name.includes('john doe') ||
+        email.endsWith('@customer.com') ||
+        email.endsWith('@client.com') ||
+        docSnap.id.includes('ankit') ||
+        docSnap.id.includes('bhavin')
+      ) {
+        await deleteDoc(doc(db, 'cabsy_customers', docSnap.id));
+      }
+    }
+  } catch (e) {
+    console.warn('Firestore purgeDemoData error:', e);
   }
 };
 

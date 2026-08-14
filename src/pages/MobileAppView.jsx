@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
 import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
+import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -79,13 +80,14 @@ export default function MobileAppView() {
 
   // Dispatch Admin Notification & Save to Central DB when Ride is Requested
   const handleRequestRide = (carObj) => {
-    let userProf = { name: 'Dhruvil Patel', phone: '+91 98765 43210' };
+    let userProf = { name: 'Rider', phone: '+91 98765 43210', email: 'spiderman757506@gmail.com' };
     try {
       const savedProf = localStorage.getItem('cabsy_user_profile');
       if (savedProf) {
         const p = JSON.parse(savedProf);
         if (p.name) userProf.name = p.name;
         if (p.phone) userProf.phone = p.phone;
+        if (p.email) userProf.email = p.email;
       }
     } catch (e) { }
 
@@ -98,6 +100,7 @@ export default function MobileAppView() {
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       customerName: userProf.name,
       customerPhone: userProf.phone,
+      customerEmail: userProf.email || '',
       pickup: pickupLoc || 'Bhavnagar, Gujarat',
       dropoff: dropoffLoc || 'Ahmedabad Airport (AMD)',
       vehicle: selectedVehicleName,
@@ -124,13 +127,11 @@ export default function MobileAppView() {
 
     // 3. ✅ Save to Firestore (persists across devices & re-logins)
     saveInquiryToFirestore(newInquiry).catch(e => console.warn('Firestore inquiry save failed:', e));
+    saveInquiryToTiDB(newInquiry).catch(e => console.warn('TiDB inquiry save failed:', e));
 
-    // 4. ✅ Update customer record in Firestore with latest login/trip info
-    saveCustomerToFirestore({
-      name: userProf.name,
-      phone: userProf.phone,
-      email: userProf.email || '',
-    }).catch(e => console.warn('Firestore customer save failed:', e));
+    // 4. ✅ Update customer record in Firestore & TiDB Cloud
+    saveCustomerToFirestore(userProf).catch(e => console.warn('Firestore customer save failed:', e));
+    saveCustomerToTiDB(userProf).catch(e => console.warn('TiDB customer save failed:', e));
 
     // 5. Dispatch events to notify Admin Portal in real time
     window.dispatchEvent(new Event('storage'));

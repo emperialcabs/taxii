@@ -4,14 +4,16 @@ import {
   loadAllCustomersFromFirestore, 
   updateInquiryStatusInFirestore, 
   saveCustomerToFirestore,
-  saveInquiryToFirestore
+  saveInquiryToFirestore,
+  purgeDemoDataFromFirestore
 } from '../services/firebaseService';
 import {
   saveInquiryToTiDB,
   loadAllInquiriesFromTiDB,
   saveCustomerToTiDB,
   loadAllCustomersFromTiDB,
-  initTiDBTables
+  initTiDBTables,
+  purgeDemoDataFromTiDB
 } from '../services/tidbService';
 import db from '../services/dbService';
 import { 
@@ -232,6 +234,9 @@ export default function AdminPortal() {
       try {
         // Auto initialize TiDB tables and schema
         initTiDBTables().catch(() => {});
+        // Purge demo data in background
+        purgeDemoDataFromTiDB().catch(() => {});
+        purgeDemoDataFromFirestore().catch(() => {});
 
         const [fsInquiries, fsCustomers, tidbInquiries, tidbCustomers] = await Promise.all([
           loadAllInquiriesFromFirestore().catch(() => []),
@@ -249,8 +254,26 @@ export default function AdminPortal() {
           if (c) localCustomers = JSON.parse(c);
         } catch (err) {}
 
-        // Filter out demo customers from local cache
-        localCustomers = (localCustomers || []).filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
+        const isRealInquiry = (i) => {
+          if (!i) return false;
+          const name = (i.customerName || '').toLowerCase().trim();
+          const email = (i.customerEmail || '').toLowerCase().trim();
+          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name.includes('john doe')) return false;
+          if (email.endsWith('@customer.com') || email.endsWith('@client.com')) return false;
+          return true;
+        };
+
+        const isRealCustomer = (c) => {
+          if (!c) return false;
+          const name = (c.name || '').toLowerCase().trim();
+          const email = (c.email || '').toLowerCase().trim();
+          const id = (c.id || c.firestoreId || '').toLowerCase().trim();
+          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name.includes('john doe')) return false;
+          if (email.includes('ankit.mehta') || email.includes('bhavin.patel')) return false;
+          if (email.endsWith('@customer.com') || email.endsWith('@client.com')) return false;
+          if (id === 'cust-303' || id === 'cust-316' || id === 'cust-714' || id === 'cust-432') return false;
+          return true;
+        };
 
         // Merge inquiries
         const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
@@ -264,30 +287,38 @@ export default function AdminPortal() {
             }
           }
         });
-        setInquiries(mergedInquiries);
 
-        // Merge customers
-        const mergedCustomers = [...(fsCustomers || []), ...(tidbCustomers || [])];
-        const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email || c.id).filter(Boolean));
-        (localCustomers || []).forEach(lc => {
-          const k = lc.phone || lc.email || lc.id;
-          if (!k || !custKeys.has(k)) {
-            mergedCustomers.push(lc);
-            if (k) custKeys.add(k);
+        const cleanInquiries = mergedInquiries.filter(isRealInquiry);
+        setInquiries(cleanInquiries);
+
+        // Merge customers from Firestore + TiDB Cloud + Local + extracted from Real Inquiries
+        const allCustomerSources = [...(fsCustomers || []), ...(tidbCustomers || []), ...(localCustomers || [])];
+        const realCustomers = allCustomerSources.filter(isRealCustomer);
+        const custKeys = new Set(realCustomers.map(c => (c.phone || c.email || c.id || '').toLowerCase().trim()).filter(Boolean));
+
+        // Extract customer profiles from real inquiries so every active rider (like Spider Man) is present in Customer Directory
+        cleanInquiries.forEach(inq => {
+          if (inq.customerName) {
+            const pKey = (inq.customerPhone || inq.customerEmail || inq.customerName).toLowerCase().trim();
+            if (pKey && !custKeys.has(pKey)) {
+              custKeys.add(pKey);
+              realCustomers.push({
+                id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
+                name: inq.customerName,
+                phone: inq.customerPhone || '-',
+                email: inq.customerEmail || (inq.customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in'),
+                totalRides: 1,
+                totalSpent: Number(inq.fare || 0),
+                joined: inq.date || new Date().toISOString().split('T')[0]
+              });
+            }
           }
         });
 
-        const cleanCustomers = mergedCustomers.filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
-        setCustomers(cleanCustomers);
+        setCustomers(realCustomers);
 
       } catch (e) {
         console.warn('Cloud load failed, using localStorage fallback:', e);
-        try {
-          const saved = localStorage.getItem('cabsy_inquiries');
-          if (saved && saved !== '[]') setInquiries(JSON.parse(saved));
-          const savedCust = localStorage.getItem('cabsy_customers');
-          if (savedCust && savedCust !== '[]') setCustomers(JSON.parse(savedCust));
-        } catch (_) {}
       } finally {
         setFirestoreLoading(false);
       }
