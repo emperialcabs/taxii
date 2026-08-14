@@ -90,6 +90,15 @@ async function ensureTablesExist() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
   `);
+
+  await executeQuery(`
+    CREATE TABLE IF NOT EXISTS customer_wallets (
+      phone VARCHAR(64) PRIMARY KEY,
+      balance DECIMAL(10,2) DEFAULT 0.00,
+      transactions LONGTEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+  `);
 }
 
 export async function handleMySQLRequest(action, data = {}) {
@@ -279,6 +288,35 @@ export async function handleMySQLRequest(action, data = {}) {
         await executeQuery('TRUNCATE TABLE inquiries;');
         await executeQuery('TRUNCATE TABLE customers;');
         return { success: true };
+      }
+
+      case 'saveWallet': {
+        const { phone, balance, transactions } = data;
+        const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
+        if (!cleanPhone) return { success: false, error: 'Missing phone' };
+        const txnStr = typeof transactions === 'string' ? transactions : JSON.stringify(transactions || []);
+        const sql = `
+          INSERT INTO customer_wallets (phone, balance, transactions)
+          VALUES (?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            balance = VALUES(balance),
+            transactions = VALUES(transactions);
+        `;
+        await executeQuery(sql, [cleanPhone, Number(balance || 0), txnStr]);
+        return { success: true };
+      }
+
+      case 'getWallet': {
+        const { phone } = data;
+        const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
+        if (!cleanPhone) return { success: false, error: 'Missing phone' };
+        const [rows] = await executeQuery('SELECT * FROM customer_wallets WHERE phone = ?', [cleanPhone]);
+        if (rows && rows.length > 0) {
+          let txns = [];
+          try { txns = JSON.parse(rows[0].transactions || '[]'); } catch (e) {}
+          return { success: true, wallet: { balance: Number(rows[0].balance || 0), transactions: txns } };
+        }
+        return { success: true, wallet: { balance: 0, transactions: [] } };
       }
 
       default:

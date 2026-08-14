@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { db } from '../../services/dbService';
+import { loadWalletFromMySQL } from '../../services/mysqlService';
 
 export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
   const [wallet, setWallet] = useState({ balance: 0, transactions: [] });
@@ -15,18 +16,34 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
   const userPhone = userProfile?.phone || '+91 98765 43210';
 
   useEffect(() => {
-    const fetchWallet = () => {
-      const w = db.getCustomerWallet(userPhone);
-      setWallet(w);
+    const fetchWallet = async () => {
+      // 1. Instant local read
+      const localW = db.getCustomerWallet(userPhone);
+      setWallet(localW);
+
+      // 2. Fetch from Hostinger Remote MySQL Database
+      const cleanPhone = userPhone ? String(userPhone).replace(/\D/g, '').slice(-10) : 'default';
+      try {
+        const cloudW = await loadWalletFromMySQL(cleanPhone);
+        if (cloudW && (cloudW.balance > 0 || (cloudW.transactions && cloudW.transactions.length > 0))) {
+          setWallet(cloudW);
+          const key = `cabsy_wallet_${cleanPhone}`;
+          localStorage.setItem(key, JSON.stringify(cloudW));
+        }
+      } catch (e) {}
     };
 
     fetchWallet();
 
     window.addEventListener('storage', fetchWallet);
     window.addEventListener('taxigo_wallet_updated', fetchWallet);
+    window.addEventListener('taxigo_db_sync', fetchWallet);
+    const interval = setInterval(fetchWallet, 4000);
     return () => {
       window.removeEventListener('storage', fetchWallet);
       window.removeEventListener('taxigo_wallet_updated', fetchWallet);
+      window.removeEventListener('taxigo_db_sync', fetchWallet);
+      clearInterval(interval);
     };
   }, [userPhone]);
 

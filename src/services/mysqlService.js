@@ -117,6 +117,24 @@ export const updateInquiryRewardInMySQL = async (inquiryId, rewardIssued, reward
 };
 
 /**
+ * Save customer wallet to Hostinger MySQL database
+ */
+export const saveWalletToMySQL = async (phone, balance, transactions) => {
+  if (!phone) return false;
+  const res = await sendRequest('saveWallet', { phone, balance, transactions });
+  return res.success;
+};
+
+/**
+ * Load customer wallet from Hostinger MySQL database
+ */
+export const loadWalletFromMySQL = async (phone) => {
+  if (!phone) return { balance: 0, transactions: [] };
+  const res = await sendRequest('getWallet', { phone });
+  return res.success && res.wallet ? res.wallet : { balance: 0, transactions: [] };
+};
+
+/**
  * Delete inquiry from Hostinger MySQL database
  */
 export const deleteInquiryFromMySQL = async (inquiryId) => {

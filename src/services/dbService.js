@@ -5,7 +5,9 @@ import {
   saveInquiryToMySQL,
   saveCustomerToMySQL,
   loadAllInquiriesFromMySQL,
-  loadAllCustomersFromMySQL
+  loadAllCustomersFromMySQL,
+  saveWalletToMySQL,
+  loadWalletFromMySQL
 } from './mysqlService';
 
 // Local cache keys
@@ -188,6 +190,11 @@ class DatabaseService {
       window.dispatchEvent(new Event('storage'));
       window.dispatchEvent(new CustomEvent('taxigo_wallet_updated', { detail: walletData }));
     } catch (e) {}
+
+    // Auto-sync wallet to Hostinger MySQL Database
+    if (cleanPhone && cleanPhone !== 'default') {
+      saveWalletToMySQL(cleanPhone, walletData.balance, walletData.transactions).catch(() => {});
+    }
   }
 
   addRewardToCustomer(phone, rewardAmount, inquiryId) {
