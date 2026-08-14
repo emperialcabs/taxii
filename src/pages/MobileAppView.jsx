@@ -58,6 +58,33 @@ export default function MobileAppView() {
   const [activeTab, setActiveTab] = useState('home');
   const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
+  // Auto-detect Active Ride In Progress and switch customer view to Live Tracking Screen automatically!
+  useEffect(() => {
+    const syncActiveRideStage = () => {
+      try {
+        const savedInquiries = localStorage.getItem('cabsy_inquiries');
+        if (savedInquiries) {
+          const list = JSON.parse(savedInquiries);
+          const activeRide = list.find(i => i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
+          if (activeRide) {
+            setAppStage('TRACKING');
+          }
+        }
+      } catch (e) {}
+    };
+
+    syncActiveRideStage();
+
+    window.addEventListener('storage', syncActiveRideStage);
+    window.addEventListener('taxigo_trip_started', syncActiveRideStage);
+    window.addEventListener('taxigo_db_sync', syncActiveRideStage);
+    return () => {
+      window.removeEventListener('storage', syncActiveRideStage);
+      window.removeEventListener('taxigo_trip_started', syncActiveRideStage);
+      window.removeEventListener('taxigo_db_sync', syncActiveRideStage);
+    };
+  }, []);
+
   // Helper to complete onboarding & store in localStorage
   const completeOnboarding = () => {
     try {
