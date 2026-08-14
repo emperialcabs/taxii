@@ -1152,7 +1152,7 @@
 }
 
 /* WEB APP VIEW MODE PREVIEW & RESPONSIVENESS */
-@media (max-width: 1024px), .view-mode-mobile {
+@media (max-width: 1024px) {
   .admin-portal-wrapper {
     flex-direction: column;
   }
@@ -1185,6 +1185,40 @@
   .drivers-cards-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.view-mode-mobile.admin-portal-wrapper,
+.view-mode-mobile .admin-portal-wrapper {
+  flex-direction: column;
+}
+
+.view-mode-mobile .admin-sidebar {
+  width: 100%;
+  min-width: 100%;
+  height: auto;
+  min-height: auto;
+  position: relative;
+  padding: 1rem 1.25rem;
+}
+
+.view-mode-mobile .admin-nav-menu {
+  flex-direction: row;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.view-mode-mobile .admin-nav-link {
+  white-space: nowrap;
+}
+
+.view-mode-mobile .metrics-grid,
+.view-mode-mobile .reports-summary-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.view-mode-mobile .dashboard-columns-grid,
+.view-mode-mobile .drivers-cards-grid {
+  grid-template-columns: 1fr;
 }
 
 @media (max-width: 640px) {
