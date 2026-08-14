@@ -1722,35 +1722,7 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <h3 className="mt-4">Vehicle Rate Settings (₹ / km)</h3>
-              <div className="form-grid-3">
-                <div className="input-group">
-                  <label>Empire Regular Base Rate</label>
-                  <input 
-                    type="text" 
-                    value={settings.baseFareReguler} 
-                    onChange={(e) => setSettings({ ...settings, baseFareReguler: e.target.value })}
-                  />
-                </div>
 
-                <div className="input-group">
-                  <label>Empire XL Base Rate</label>
-                  <input 
-                    type="text" 
-                    value={settings.baseFareXL} 
-                    onChange={(e) => setSettings({ ...settings, baseFareXL: e.target.value })}
-                  />
-                </div>
-
-                <div className="input-group">
-                  <label>Empire Luxury Base Rate</label>
-                  <input 
-                    type="text" 
-                    value={settings.baseFareLuxury} 
-                    onChange={(e) => setSettings({ ...settings, baseFareLuxury: e.target.value })}
-                  />
-                </div>
-              </div>
 
               <div className="form-actions mt-4">
                 <button type="submit" className="btn btn-primary">
