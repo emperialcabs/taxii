@@ -57,6 +57,8 @@ async function ensureTablesExist() {
       dropoff TEXT,
       vehicle VARCHAR(100),
       fare DECIMAL(10,2) DEFAULT 0.00,
+      originalFare DECIMAL(10,2) DEFAULT 0.00,
+      walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00,
       tripType VARCHAR(100),
       scheduledDate VARCHAR(100),
       scheduledTime VARCHAR(100),
@@ -64,6 +66,8 @@ async function ensureTablesExist() {
       status VARCHAR(64) DEFAULT 'Pending',
       rewardIssued INT DEFAULT 0,
       rewardAmount DECIMAL(10,2) DEFAULT 0.00,
+      paymentMethod VARCHAR(100) DEFAULT 'Cash',
+      notes TEXT,
       timestamp VARCHAR(100),
       date VARCHAR(100),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -72,6 +76,10 @@ async function ensureTablesExist() {
 
   await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardIssued INT DEFAULT 0;`).catch(() => {});
   await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardAmount DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS originalFare DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS paymentMethod VARCHAR(100) DEFAULT 'Cash';`).catch(() => {});
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS notes TEXT;`).catch(() => {});
 
   await executeQuery(`
     CREATE TABLE IF NOT EXISTS customers (
@@ -116,10 +124,10 @@ export async function handleMySQLRequest(action, data = {}) {
       }
 
       case 'saveInquiry': {
-        const { id, customerName, customerPhone, customerEmail, pickup, dropoff, vehicle, fare, tripType, scheduledDate, scheduledTime, driver, status, timestamp, date } = data;
+        const { id, customerName, customerPhone, customerEmail, pickup, dropoff, vehicle, fare, originalFare, walletDiscountUsed, tripType, scheduledDate, scheduledTime, driver, status, rewardIssued, rewardAmount, paymentMethod, notes, timestamp, date } = data;
         const sql = `
-          INSERT INTO inquiries (id, customerName, customerPhone, customerEmail, pickup, dropoff, vehicle, fare, tripType, scheduledDate, scheduledTime, driver, status, timestamp, date)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO inquiries (id, customerName, customerPhone, customerEmail, pickup, dropoff, vehicle, fare, originalFare, walletDiscountUsed, tripType, scheduledDate, scheduledTime, driver, status, rewardIssued, rewardAmount, paymentMethod, notes, timestamp, date)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE
             customerName = VALUES(customerName),
             customerPhone = VALUES(customerPhone),
@@ -128,11 +136,17 @@ export async function handleMySQLRequest(action, data = {}) {
             dropoff = VALUES(dropoff),
             vehicle = VALUES(vehicle),
             fare = VALUES(fare),
+            originalFare = VALUES(originalFare),
+            walletDiscountUsed = VALUES(walletDiscountUsed),
             tripType = VALUES(tripType),
             scheduledDate = VALUES(scheduledDate),
             scheduledTime = VALUES(scheduledTime),
             driver = VALUES(driver),
             status = VALUES(status),
+            rewardIssued = VALUES(rewardIssued),
+            rewardAmount = VALUES(rewardAmount),
+            paymentMethod = VALUES(paymentMethod),
+            notes = VALUES(notes),
             timestamp = VALUES(timestamp),
             date = VALUES(date);
         `;
@@ -146,11 +160,17 @@ export async function handleMySQLRequest(action, data = {}) {
           dropoff || '',
           vehicle || 'Standard',
           Number(fare || 0),
+          Number(originalFare || fare || 0),
+          Number(walletDiscountUsed || 0),
           tripType || 'One-Way',
           scheduledDate || 'Today',
           scheduledTime || '',
           driver || 'Unassigned',
           status || 'Pending',
+          rewardIssued ? 1 : 0,
+          Number(rewardAmount || 0),
+          paymentMethod || 'Cash',
+          notes || '',
           timestamp || new Date().toISOString(),
           date || new Date().toLocaleDateString('en-US')
         ];
