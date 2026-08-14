@@ -30,18 +30,26 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isWebSite = location.pathname === '/web' || location.pathname.startsWith('/web');
   const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.startsWith('/app') || location.pathname.startsWith('/mobile');
   
-  // Detect environment flags & domains
+  // Detect environment flags & native containers
   const isMobileDomain = hostname.includes('androidapp') || hostname.includes('mobile');
   const isCapacitorNative = typeof window !== 'undefined' && (window.Capacitor !== undefined || window.location.protocol === 'file:');
   const appMode = (import.meta.env.VITE_APP_MODE || '').toLowerCase();
 
-  // Priority 1: Explicit Admin Mode OR /admin path -> Renders AdminPortal
-  if (appMode === 'admin' || isAdmin) {
-    return <AdminPortal />;
+  // 1. APP 1: Android App (VITE_APP_MODE = android)
+  if (appMode === 'android') {
+    return <MobileAppView platform="android" />;
   }
 
-  // Priority 2: Explicit Website Mode OR /web path -> Renders Customer Website
-  if (appMode === 'website' || isWebSite) {
+  // 2. APP 2: iOS App (VITE_APP_MODE = ios)
+  if (appMode === 'ios') {
+    return <MobileAppView platform="ios" />;
+  }
+
+  // 3. APP 3: Main Website & Admin Portal (VITE_APP_MODE = website OR default)
+  if (appMode === 'website' || (!isMobileDomain && !isMobilePath && !isCapacitorNative)) {
+    if (isAdmin) {
+      return <AdminPortal />;
+    }
     return (
       <div className="app-container">
         <Header onOpenBooking={handleOpenBooking} />
@@ -66,35 +74,8 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
     );
   }
 
-  // Priority 3: Mobile Apps (android / ios / mobile / Capacitor / mobile domain / /app / /mobile)
-  if (appMode === 'android' || appMode === 'ios' || appMode === 'mobile' || isMobileDomain || isMobilePath || isCapacitorNative) {
-    return <MobileAppView />;
-  }
-
-  // Default Fallback: Full Customer Website
-  return (
-    <div className="app-container">
-      <Header onOpenBooking={handleOpenBooking} />
-      
-      <main className="app-main-content">
-        <Routes>
-          <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
-          <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
-          <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
-          <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
-          <Route path="/book-ride" element={<BookRide />} />
-          <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<AdminPortal />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-
-      <Footer />
-
-      <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
-    </div>
-  );
+  // Fallback for Mobile domain / Capacitor Native
+  return <MobileAppView />;
 }
 
 class ErrorBoundary extends React.Component {
