@@ -667,7 +667,7 @@
 }
 
 .admin-table th {
-  padding: 0.75rem 0.5rem;
+  padding: 0.85rem 1rem;
   background: #f8fafc;
   color: #64748b;
   font-size: 0.75rem;
@@ -679,7 +679,7 @@
 }
 
 .admin-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.85rem;
   color: #334155;
@@ -687,7 +687,38 @@
 }
 
 .route-cell {
-  line-height: 1.4;
+  line-height: 1.5;
+  font-size: 0.85rem;
+}
+
+.route-place-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.dot-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.dot-indicator.green {
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.dot-indicator.red {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.place-name-text {
+  font-weight: 600;
+  color: #1e293b;
   font-size: 0.85rem;
 }
 

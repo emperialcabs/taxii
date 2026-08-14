@@ -1337,40 +1337,45 @@ export default function AdminPortal() {
 
                       return (
                         <tr key={inq.id}>
-                          <td><strong>{inq.id}</strong></td>
+                          <td><strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{inq.id}</strong></td>
                           <td>
-                            <div>
-                              <strong>{inq.customerName}</strong>
-                              <small className="text-muted display-block">{inq.customerPhone}</small>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                              <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{inq.customerName}</strong>
+                              <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>{inq.customerPhone}</span>
                             </div>
                           </td>
-                          <td className="route-cell">
-                            <div className="route-place-cell">
-                              <span className="dot-indicator green"></span>
-                              <span className="place-name-text">{inq.pickup}</span>
-                            </div>
-                            <div className="route-place-cell mt-1">
-                              <span className="dot-indicator red"></span>
-                              <span className="place-name-text">{inq.dropoff}</span>
+                          <td className="route-cell" style={{ padding: '12px 16px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '240px' }}>
+                              <div className="route-place-cell">
+                                <span className="dot-indicator green"></span>
+                                <span className="place-name-text">{inq.pickup}</span>
+                              </div>
+                              <div className="route-place-cell">
+                                <span className="dot-indicator red"></span>
+                                <span className="place-name-text">{inq.dropoff}</span>
+                              </div>
                             </div>
                           </td>
                           <td>
-                            <span className="plate-badge">{inq.driver || 'Assigned Driver'}</span>
+                            <span className="plate-badge" style={{ padding: '6px 12px', background: '#F1F5F9', color: '#334155', borderRadius: '8px', fontWeight: '700', fontSize: '0.82rem', display: 'inline-block' }}>
+                              {inq.driver || 'Assigned Driver'}
+                            </span>
                           </td>
-                          <td><strong className="text-green">₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
+                          <td><strong className="text-green" style={{ fontSize: '0.95rem', fontWeight: '800' }}>₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
                           <td>
-                            {isConfirmed && <span className="status-tag status-confirmed">Confirmed (Ready)</span>}
-                            {isInProgress && <span className="status-tag status-on-ride">● Live In Progress</span>}
-                            {isCompletedPendingReward && <span className="status-tag status-active">Ride Finished</span>}
+                            {isConfirmed && <span className="status-tag status-confirmed" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>Confirmed (Ready)</span>}
+                            {isInProgress && <span className="status-tag status-on-ride" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>● Live In Progress</span>}
+                            {isCompletedPendingReward && <span className="status-tag status-active" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>Ride Finished</span>}
                           </td>
                           <td className="text-right">
-                            <div className="flex gap-2 justify-end align-center">
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
                               {/* 1. START TRIP BUTTON */}
                               {isConfirmed && (
                                 <button 
                                   className="btn-action-start"
                                   onClick={() => handleStartTrip(inq.id)}
                                   title="Admin Start Ride"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                                 >
                                   <Play size={14} /> Start Trip
                                 </button>
@@ -1382,6 +1387,7 @@ export default function AdminPortal() {
                                   className="btn-action-complete"
                                   onClick={() => handleCompleteTrip(inq.id)}
                                   title="Admin Complete Ride"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                                 >
                                   <CheckCircle size={14} /> Complete Trip
                                 </button>
@@ -1393,6 +1399,7 @@ export default function AdminPortal() {
                                   className="btn-action-reward"
                                   onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
                                   title="Assign Wallet Reward to Customer"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                                 >
                                   <Gift size={14} /> Assign Reward
                                 </button>
@@ -1402,6 +1409,7 @@ export default function AdminPortal() {
                                 className="btn-action-view"
                                 onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                                 title="View Trip Details"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                               >
                                 <Eye size={14} /> View
                               </button>
