@@ -44,7 +44,12 @@ import {
   Bell,
   Zap,
   Activity,
-  Edit
+  Edit,
+  Play,
+  CheckCircle,
+  Award,
+  Navigation,
+  Gift
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -556,6 +561,46 @@ export default function AdminPortal() {
     setAssignModal({ open: false, inquiry: null });
   };
 
+  const handleStartTrip = (inquiryId) => {
+    if (!inquiryId) return;
+    setInquiries(prev => prev.map(inq => {
+      if (inq.id === inquiryId) {
+        return { ...inq, status: 'In Progress' };
+      }
+      return inq;
+    }));
+
+    const targetInq = inquiries.find(i => i.id === inquiryId);
+    if (targetInq) {
+      updateInquiryStatusInMySQL(inquiryId, 'In Progress', targetInq.driver || 'Assigned Driver').catch(() => {});
+      try {
+        db.saveInquiry({ ...targetInq, status: 'In Progress' });
+      } catch (e) {}
+    }
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('taxigo_trip_started', { detail: { id: inquiryId } }));
+  };
+
+  const handleCompleteTrip = (inquiryId) => {
+    if (!inquiryId) return;
+    setInquiries(prev => prev.map(inq => {
+      if (inq.id === inquiryId) {
+        return { ...inq, status: 'Completed' };
+      }
+      return inq;
+    }));
+
+    const targetInq = inquiries.find(i => i.id === inquiryId);
+    if (targetInq) {
+      updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
+      try {
+        db.saveInquiry({ ...targetInq, status: 'Completed' });
+      } catch (e) {}
+    }
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('taxigo_trip_completed', { detail: { id: inquiryId } }));
+  };
+
   const handleCancelInquiry = (inquiryId) => {
     setInquiries(prev => {
       const target = prev.find(i => i.id === inquiryId);
@@ -788,6 +833,32 @@ export default function AdminPortal() {
             <span>All Inquiries</span>
             {inquiries.filter(i => i.status === 'Pending').length > 0 && (
               <span className="badge-pending">{inquiries.filter(i => i.status === 'Pending').length}</span>
+            )}
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'final_trips' ? 'active' : ''}`}
+            onClick={() => setActiveTab('final_trips')}
+          >
+            <Navigation size={19} />
+            <span>Final Trips</span>
+            {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride' || (i.status === 'Completed' && !i.rewardIssued)).length > 0 && (
+              <span className="badge-pending" style={{ background: '#3b82f6' }}>
+                {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride' || (i.status === 'Completed' && !i.rewardIssued)).length}
+              </span>
+            )}
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'success_trips' ? 'active' : ''}`}
+            onClick={() => setActiveTab('success_trips')}
+          >
+            <Award size={19} />
+            <span>Success Trips</span>
+            {inquiries.filter(i => i.status === 'Completed').length > 0 && (
+              <span className="badge-pending" style={{ background: '#10b981' }}>
+                {inquiries.filter(i => i.status === 'Completed').length}
+              </span>
             )}
           </button>
 
@@ -1222,6 +1293,211 @@ export default function AdminPortal() {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: FINAL TRIPS (Active Ride Pipeline & Reward Workflow) */}
+        {activeTab === 'final_trips' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Final Trips Command Center</h2>
+                <p>Manage live ongoing rides. Start trip, complete ride upon arrival, and assign rewards to customers.</p>
+              </div>
+            </div>
+
+            <div className="admin-table-card mt-3">
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>Customer Details</th>
+                      <th>Route (Pickup → Dropoff)</th>
+                      <th>Assigned Driver</th>
+                      <th>Fare</th>
+                      <th>Live Status</th>
+                      <th className="text-right">Action Pipeline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inquiries.filter(i => 
+                      i.status === 'Confirmed' || 
+                      i.status === 'In Progress' || 
+                      i.status === 'On Ride' || 
+                      (i.status === 'Completed' && !i.rewardIssued)
+                    ).map((inq) => {
+                      const isConfirmed = inq.status === 'Confirmed';
+                      const isInProgress = inq.status === 'In Progress' || inq.status === 'On Ride';
+                      const isCompletedPendingReward = inq.status === 'Completed' && !inq.rewardIssued;
+
+                      return (
+                        <tr key={inq.id}>
+                          <td><strong>{inq.id}</strong></td>
+                          <td>
+                            <div>
+                              <strong>{inq.customerName}</strong>
+                              <small className="text-muted display-block">{inq.customerPhone}</small>
+                            </div>
+                          </td>
+                          <td className="route-cell">
+                            <div className="route-place-cell">
+                              <span className="dot-indicator green"></span>
+                              <span className="place-name-text">{inq.pickup}</span>
+                            </div>
+                            <div className="route-place-cell mt-1">
+                              <span className="dot-indicator red"></span>
+                              <span className="place-name-text">{inq.dropoff}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="plate-badge">{inq.driver || 'Assigned Driver'}</span>
+                          </td>
+                          <td><strong className="text-green">₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
+                          <td>
+                            {isConfirmed && <span className="status-tag status-confirmed">Confirmed (Ready)</span>}
+                            {isInProgress && <span className="status-tag status-on-ride">● Live In Progress</span>}
+                            {isCompletedPendingReward && <span className="status-tag status-active">Ride Finished</span>}
+                          </td>
+                          <td className="text-right">
+                            <div className="flex gap-2 justify-end align-center">
+                              {/* 1. START TRIP BUTTON */}
+                              {isConfirmed && (
+                                <button 
+                                  className="btn-action-start"
+                                  onClick={() => handleStartTrip(inq.id)}
+                                  title="Admin Start Ride"
+                                >
+                                  <Play size={14} /> Start Trip
+                                </button>
+                              )}
+
+                              {/* 2. COMPLETE TRIP BUTTON */}
+                              {isInProgress && (
+                                <button 
+                                  className="btn-action-complete"
+                                  onClick={() => handleCompleteTrip(inq.id)}
+                                  title="Admin Complete Ride"
+                                >
+                                  <CheckCircle size={14} /> Complete Trip
+                                </button>
+                              )}
+
+                              {/* 3. ASSIGN REWARD BUTTON */}
+                              {isCompletedPendingReward && (
+                                <button 
+                                  className="btn-action-reward"
+                                  onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
+                                  title="Assign Wallet Reward to Customer"
+                                >
+                                  <Gift size={14} /> Assign Reward
+                                </button>
+                              )}
+
+                              <button 
+                                className="btn-action-view"
+                                onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                                title="View Trip Details"
+                              >
+                                <Eye size={14} /> View
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {inquiries.filter(i => 
+                      i.status === 'Confirmed' || 
+                      i.status === 'In Progress' || 
+                      i.status === 'On Ride' || 
+                      (i.status === 'Completed' && !i.rewardIssued)
+                    ).length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="text-center text-muted p-4">
+                          No active final trips currently in progress or awaiting start.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: SUCCESS TRIPS (Completed Trips History) */}
+        {activeTab === 'success_trips' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Success Trips Directory</h2>
+                <p>History of all successfully completed rides, customer rewards, and trip details.</p>
+              </div>
+            </div>
+
+            <div className="admin-table-card mt-3">
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>Customer Name</th>
+                      <th>Route (Pickup → Dropoff)</th>
+                      <th>Driver</th>
+                      <th>Fare</th>
+                      <th>Reward Status</th>
+                      <th className="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inquiries.filter(i => i.status === 'Completed').map((inq) => (
+                      <tr key={inq.id}>
+                        <td><strong>{inq.id}</strong></td>
+                        <td>
+                          <div>
+                            <strong>{inq.customerName}</strong>
+                            <small className="text-muted display-block">{inq.customerPhone}</small>
+                          </div>
+                        </td>
+                        <td className="route-cell">
+                          <div>{inq.pickup} → {inq.dropoff}</div>
+                          <small className="text-muted">{inq.date}</small>
+                        </td>
+                        <td>
+                          <span className="plate-badge">{inq.driver || 'Fulfilled'}</span>
+                        </td>
+                        <td><strong className="text-green">₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
+                        <td>
+                          {inq.rewardIssued ? (
+                            <span className="status-tag status-confirmed">✓ ₹{inq.rewardAmount || 100} Credited</span>
+                          ) : (
+                            <span className="status-tag status-pending">Reward Pending</span>
+                          )}
+                        </td>
+                        <td className="text-right">
+                          <button 
+                            className="btn-action-view"
+                            onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                            title="View Full Trip Details & Receipt"
+                          >
+                            <Eye size={14} /> View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {inquiries.filter(i => i.status === 'Completed').length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="text-center text-muted p-4">
+                          No completed success trips in database history yet.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

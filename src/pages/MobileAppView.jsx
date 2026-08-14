@@ -79,6 +79,19 @@ export default function MobileAppView() {
 
   // Dispatch Admin Notification & Save to Central DB when Ride is Requested
   const handleRequestRide = (carObj) => {
+    try {
+      const savedInquiries = localStorage.getItem('cabsy_inquiries');
+      if (savedInquiries) {
+        const list = JSON.parse(savedInquiries);
+        const ongoing = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+        if (ongoing) {
+          alert(`You currently have an active ride (${ongoing.status}) heading to ${ongoing.dropoff}. Cannot book a second ride while a trip is active!`);
+          setAppStage('TRACKING');
+          return;
+        }
+      }
+    } catch (e) {}
+
     let userProf = { name: 'Rider', phone: '+91 98765 43210', email: 'spiderman757506@gmail.com' };
     try {
       const savedProf = localStorage.getItem('cabsy_user_profile');
