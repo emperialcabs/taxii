@@ -177,6 +177,7 @@ export default function AdminPortal() {
   const [editDestModal, setEditDestModal] = useState({ open: false, destination: null });
   const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
   const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
+  const [receiptModal, setReceiptModal] = useState({ open: false, inquiry: null });
   const [companyShare, setCompanyShare] = useState(() => {
     const saved = localStorage.getItem('cabsy_company_share');
     return saved ? Number(saved) : 20;
@@ -903,10 +904,6 @@ export default function AdminPortal() {
               )}
             </div>
 
-            <span className="pill-badge flex align-center gap-2">
-              <Clock size={14} /> Live: {new Date().toLocaleTimeString()}
-            </span>
-
             <div className="admin-profile flex align-center gap-2">
               <div className="avatar">A</div>
               <div className="admin-profile-info">
@@ -1142,6 +1139,26 @@ export default function AdminPortal() {
                         </td>
                         <td>
                           <div className="flex gap-1.5 align-center" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <button 
+                              className="btn-action-view"
+                              title="View Detailed Trip Receipt & Coupon Info"
+                              style={{
+                                background: '#EFF6FF',
+                                color: '#1D4ED8',
+                                border: '1px solid #BFDBFE',
+                                padding: '5px 10px',
+                                borderRadius: '16px',
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                            >
+                              <Eye size={13} /> View Receipt
+                            </button>
                             {inq.status === 'Pending' && (
                               <button 
                                 className="btn-action-assign"
@@ -1619,6 +1636,7 @@ export default function AdminPortal() {
                       <th>Gross Fare</th>
                       <th>Driver Payout ({driverShare}%)</th>
                       <th>Company Net ({companyShare}%)</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1632,6 +1650,15 @@ export default function AdminPortal() {
                         <td><strong>₹{Number(item.fare).toFixed(2)}</strong></td>
                         <td>₹{(Number(item.fare) * (driverShare / 100)).toFixed(2)}</td>
                         <td><strong className="text-purple">₹{(Number(item.fare) * (companyShare / 100)).toFixed(2)}</strong></td>
+                        <td>
+                          <button 
+                            className="btn btn-sm btn-outline flex align-center gap-1" 
+                            style={{ padding: '4px 8px', fontSize: '12px' }}
+                            onClick={() => setReceiptModal({ open: true, inquiry: item })}
+                          >
+                            <Eye size={13} /> View Receipt
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -2586,6 +2613,135 @@ export default function AdminPortal() {
                   ✓ Save Commission Split
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 12: DETAILED TRIP RECEIPT & COUPON BREAKDOWN */}
+      {receiptModal.open && receiptModal.inquiry && (
+        <div className="admin-modal-overlay" onClick={() => setReceiptModal({ open: false, inquiry: null })}>
+          <div className="admin-modal-box card" style={{ maxWidth: '600px', padding: '24px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex" style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '16px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: '#10B981', color: '#FFF', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🚕</div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Empire Cab - Detailed Trip Receipt</h3>
+                  <small style={{ color: '#64748B' }}>Booking Ref: <strong>{receiptModal.inquiry.id}</strong> • {receiptModal.inquiry.date || 'Today'}</small>
+                </div>
+              </div>
+              <button className="btn-modal-close" onClick={() => setReceiptModal({ open: false, inquiry: null })}><XCircle size={22} /></button>
+            </div>
+
+            {/* Status & Customer Summary */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+              <div>
+                <small style={{ color: '#64748B', fontWeight: '700', textTransform: 'uppercase', fontSize: '11px' }}>Customer Information</small>
+                <div style={{ fontWeight: '800', fontSize: '15px', color: '#0F172A', marginTop: '2px' }}>{receiptModal.inquiry.customerName || 'Customer'}</div>
+                <div style={{ fontSize: '13px', color: '#475569', marginTop: '2px' }}>📞 {receiptModal.inquiry.customerPhone || 'N/A'}</div>
+                {receiptModal.inquiry.customerEmail && <div style={{ fontSize: '12px', color: '#64748B' }}>✉️ {receiptModal.inquiry.customerEmail}</div>}
+              </div>
+              <div>
+                <small style={{ color: '#64748B', fontWeight: '700', textTransform: 'uppercase', fontSize: '11px' }}>Booking Status & Driver</small>
+                <div style={{ marginTop: '4px' }}>
+                  <span className={`status-tag status-${(receiptModal.inquiry.status || 'pending').toLowerCase()}`}>
+                    {receiptModal.inquiry.status || 'Pending'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: '#334155', marginTop: '6px', fontWeight: '700' }}>
+                  Driver: <span style={{ color: '#059669' }}>{receiptModal.inquiry.driver || 'Unassigned'}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>Vehicle: <strong>{receiptModal.inquiry.vehicle || 'Standard'}</strong></div>
+              </div>
+            </div>
+
+            {/* Route Details */}
+            <div style={{ marginBottom: '20px', background: '#FFFFFF', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+              <small style={{ color: '#64748B', fontWeight: '700', textTransform: 'uppercase', fontSize: '11px', display: 'block', marginBottom: '8px' }}>Trip Route</small>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                  <span style={{ color: '#10B981', fontWeight: '800' }}>📍 Pick-up:</span>
+                  <span style={{ color: '#1E293B', fontWeight: '600' }}>{receiptModal.inquiry.pickup}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                  <span style={{ color: '#EF4444', fontWeight: '800' }}>🏁 Drop-off:</span>
+                  <span style={{ color: '#1E293B', fontWeight: '600' }}>{receiptModal.inquiry.dropoff}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* FARE & COUPON DISCOUNT BREAKDOWN */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>Fare & Coupon Discount Breakdown</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#FAFAFA', padding: '16px', borderRadius: '14px', border: '1px solid #E5E7EB' }}>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
+                  <span>Base Trip Fare:</span>
+                  <span style={{ fontWeight: '700' }}>₹{Number(receiptModal.inquiry.originalFare || receiptModal.inquiry.fare).toFixed(2)}</span>
+                </div>
+
+                {/* Coupon Used Highlight */}
+                {receiptModal.inquiry.walletDiscountUsed > 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '10px 14px', borderRadius: '10px', color: '#047857' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '800', fontSize: '13px' }}>
+                      <span>🎁 Wallet Coupon Discount Applied</span>
+                    </div>
+                    <div style={{ fontWeight: '800', fontSize: '15px' }}>
+                      -₹{Number(receiptModal.inquiry.walletDiscountUsed).toFixed(2)}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#94A3B8' }}>
+                    <span>Wallet Coupon / Reward Discount:</span>
+                    <span>No coupon applied</span>
+                  </div>
+                )}
+
+                <div style={{ borderTop: '2px dashed #CBD5E1', paddingTop: '10px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>Final Net Amount:</span>
+                  <span style={{ fontSize: '22px', fontWeight: '800', color: '#059669', fontFamily: 'League Spartan' }}>₹{Number(receiptModal.inquiry.fare).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Reward Status & Profit Split */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ background: '#EEF2FF', padding: '12px', borderRadius: '12px', border: '1px solid #C7D2FE' }}>
+                <small style={{ color: '#4338CA', fontWeight: '800', fontSize: '11px', display: 'block' }}>Admin Reward Status</small>
+                <div style={{ fontSize: '13px', fontWeight: '800', color: '#3730A3', marginTop: '2px' }}>
+                  {(receiptModal.inquiry.rewardIssued == 1 || receiptModal.inquiry.rewardIssued === true) ? (
+                    `✓ ₹${receiptModal.inquiry.rewardAmount || 100} Reward Issued`
+                  ) : (
+                    'Pending Award'
+                  )}
+                </div>
+              </div>
+
+              <div style={{ background: '#F5F3FF', padding: '12px', borderRadius: '12px', border: '1px solid #DDD6FE' }}>
+                <small style={{ color: '#6D28D9', fontWeight: '800', fontSize: '11px', display: 'block' }}>Commission Split</small>
+                <div style={{ fontSize: '12px', color: '#5B21B6', marginTop: '2px', fontWeight: '700' }}>
+                  Driver ({driverShare}%): ₹{(Number(receiptModal.inquiry.fare) * (driverShare / 100)).toFixed(2)}<br />
+                  Company ({companyShare}%): ₹{(Number(receiptModal.inquiry.fare) * (companyShare / 100)).toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-actions-flex">
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => window.print()}
+              >
+                🖨️ Print Receipt
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={() => setReceiptModal({ open: false, inquiry: null })}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
