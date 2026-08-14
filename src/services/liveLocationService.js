@@ -97,12 +97,19 @@ export const reverseGeocodeCoords = async (lat, lng) => {
 // Method 1: Native Hardware GPS (Capacitor)
 const getCapacitorLocation = async () => {
   try {
+    const isNative = typeof window !== 'undefined' && window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform();
+    if (!isNative) return null;
+
     if (Geolocation && typeof Geolocation.requestPermissions === 'function') {
-      await Geolocation.requestPermissions();
+      try {
+        await Geolocation.requestPermissions();
+      } catch (permErr) {
+        // Silently catch web/unsupported permission error
+      }
     }
     const position = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
-      timeout: 15000,
+      timeout: 10000,
       maximumAge: 0
     });
 
@@ -113,7 +120,7 @@ const getCapacitorLocation = async () => {
       }
     }
   } catch (e) {
-    console.warn('Capacitor location error:', e);
+    // Graceful fallback on web
   }
   return null;
 };
