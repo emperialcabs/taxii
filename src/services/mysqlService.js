@@ -2,14 +2,14 @@
 // Host: srv1671.hstgr.io | Database: u889282535_taxi | Central Backend API: taxii-yth5.vercel.app
 
 const getApiEndpoints = () => {
-  const endpoints = ['/api/db', 'https://taxii-yth5.vercel.app/api/db'];
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    const currentOrigin = `${window.location.origin}/api/db`;
-    if (!endpoints.includes(currentOrigin)) {
-      endpoints.push(currentOrigin);
+  const centralApi = 'https://taxii-yth5.vercel.app/api/db';
+  if (typeof window !== 'undefined' && window.location) {
+    const host = window.location.hostname.toLowerCase();
+    if (host.includes('taxii-yth5') || host.includes('localhost') || host.includes('127.0.0.1')) {
+      return ['/api/db', centralApi];
     }
   }
-  return endpoints;
+  return [centralApi, '/api/db'];
 };
 
 const sendRequest = async (action, data = {}) => {
