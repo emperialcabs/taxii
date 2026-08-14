@@ -104,6 +104,19 @@ export const updateInquiryStatusInMySQL = async (inquiryId, status, driverName) 
 };
 
 /**
+ * Update inquiry reward status in Hostinger MySQL database
+ */
+export const updateInquiryRewardInMySQL = async (inquiryId, rewardIssued, rewardAmount) => {
+  if (!inquiryId) return false;
+  const res = await sendRequest('updateInquiryReward', {
+    id: inquiryId,
+    rewardIssued: rewardIssued ? 1 : 0,
+    rewardAmount: Number(rewardAmount || 0)
+  });
+  return res.success;
+};
+
+/**
  * Delete inquiry from Hostinger MySQL database
  */
 export const deleteInquiryFromMySQL = async (inquiryId) => {

@@ -9,7 +9,8 @@ import {
   purgeAllDataFromMySQL,
   deleteCustomerFromMySQL,
   deleteInquiryFromMySQL,
-  updateInquiryStatusInMySQL
+  updateInquiryStatusInMySQL,
+  updateInquiryRewardInMySQL
 } from '../services/mysqlService';
 import db from '../services/dbService';
 import { 
@@ -189,16 +190,21 @@ export default function AdminPortal() {
     // 2. Update inquiry state & localStorage
     setInquiries(prev => prev.map(item => {
       if (item.id === inq.id) {
-        return { ...item, rewardIssued: true, rewardAmount: rewardAmount };
+        return { ...item, rewardIssued: 1, rewardAmount: rewardAmount };
       }
       return item;
     }));
+
+    // 3. Persist to Hostinger MySQL Database
+    if (inq.id) {
+      updateInquiryRewardInMySQL(inq.id, true, rewardAmount).catch(() => {});
+    }
 
     try {
       const savedInquiries = db.getInquiries();
       const updated = savedInquiries.map(item => {
         if (item.id === inq.id) {
-          return { ...item, rewardIssued: true, rewardAmount: rewardAmount };
+          return { ...item, rewardIssued: 1, rewardAmount: rewardAmount };
         }
         return item;
       });
@@ -1143,9 +1149,9 @@ export default function AdminPortal() {
 
                             {/* Reward Button for Confirmed / Successful Trips */}
                             {(inq.status === 'Confirmed' || inq.status === 'Completed') && (
-                              inq.rewardIssued ? (
+                              (inq.rewardIssued === true || inq.rewardIssued == 1 || Number(inq.rewardIssued) === 1) ? (
                                 <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#047857', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  🎁 Reward Issued (₹{inq.rewardAmount})
+                                  ✓ Reward Issued (₹{inq.rewardAmount || 100})
                                 </span>
                               ) : (
                                 <button 

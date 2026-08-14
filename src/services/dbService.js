@@ -160,7 +160,7 @@ class DatabaseService {
 
   // Customer Wallet & Reward Engine
   getCustomerWallet(phone) {
-    const cleanPhone = phone ? String(phone).replace(/\D/g, '') : 'default';
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : 'default';
     const key = `cabsy_wallet_${cleanPhone}`;
     try {
       const saved = localStorage.getItem(key);
@@ -181,7 +181,7 @@ class DatabaseService {
   }
 
   saveCustomerWallet(phone, walletData) {
-    const cleanPhone = phone ? String(phone).replace(/\D/g, '') : 'default';
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : 'default';
     const key = `cabsy_wallet_${cleanPhone}`;
     try {
       localStorage.setItem(key, JSON.stringify(walletData));

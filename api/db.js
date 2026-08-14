@@ -62,11 +62,16 @@ async function ensureTablesExist() {
       scheduledTime VARCHAR(100),
       driver VARCHAR(255) DEFAULT 'Unassigned',
       status VARCHAR(64) DEFAULT 'Pending',
+      rewardIssued INT DEFAULT 0,
+      rewardAmount DECIMAL(10,2) DEFAULT 0.00,
       timestamp VARCHAR(100),
       date VARCHAR(100),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
   `);
+
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardIssued INT DEFAULT 0;`).catch(() => {});
+  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardAmount DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
 
   await executeQuery(`
     CREATE TABLE IF NOT EXISTS customers (
@@ -179,6 +184,13 @@ export async function handleMySQLRequest(action, data = {}) {
         } else {
           await executeQuery('UPDATE inquiries SET status = ? WHERE id = ?', [status, id]);
         }
+        return { success: true };
+      }
+
+      case 'updateInquiryReward': {
+        const { id, rewardIssued, rewardAmount } = data;
+        if (!id) return { success: false, error: 'Missing inquiry ID' };
+        await executeQuery('UPDATE inquiries SET rewardIssued = ?, rewardAmount = ? WHERE id = ?', [rewardIssued ? 1 : 0, Number(rewardAmount || 0), id]);
         return { success: true };
       }
 
