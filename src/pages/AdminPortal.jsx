@@ -1649,7 +1649,7 @@ export default function AdminPortal() {
             <div className="modal-info-summary">
               <div><strong>Route:</strong> {assignModal.inquiry.pickup} → {assignModal.inquiry.dropoff}</div>
               <div><strong>Vehicle:</strong> {assignModal.inquiry.vehicle}</div>
-              <div><strong>Fare:</strong> <span className="text-green font-bold">${Number(assignModal.inquiry.fare).toFixed(2)}</span></div>
+              <div><strong>Fare:</strong> <span className="text-green font-bold">₹{Number(assignModal.inquiry.fare).toFixed(2)}</span></div>
             </div>
 
             <div className="input-group mt-3">
