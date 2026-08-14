@@ -227,6 +227,59 @@ class DatabaseService {
     return wallet;
   }
 
+  async reconcileCustomerWallet(phone) {
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
+    if (!cleanPhone) return this.getCustomerWallet(phone);
+
+    // 1. Fetch current wallet (local or cloud)
+    let wallet = this.getCustomerWallet(phone);
+    try {
+      const cloudW = await loadWalletFromMySQL(cleanPhone);
+      if (cloudW && (cloudW.balance > 0 || (cloudW.transactions && cloudW.transactions.length > 0))) {
+        wallet = cloudW;
+      }
+    } catch (e) {}
+
+    // 2. Fetch all inquiries to check if any inquiry with rewardIssued = 1 is missing from transactions
+    let allInquiries = [];
+    try {
+      allInquiries = await loadAllInquiriesFromMySQL();
+    } catch (e) {}
+    if (!allInquiries || allInquiries.length === 0) {
+      allInquiries = this.getInquiries();
+    }
+
+    const customerInquiries = allInquiries.filter(inq => {
+      const p = inq.customerPhone ? String(inq.customerPhone).replace(/\D/g, '').slice(-10) : '';
+      return p === cleanPhone && (inq.rewardIssued == 1 || inq.rewardIssued === true);
+    });
+
+    let updated = false;
+    for (const inq of customerInquiries) {
+      const exists = wallet.transactions.some(t => t.inquiryId === inq.id || (t.title && t.title.includes(inq.id)));
+      if (!exists) {
+        const rewardAmt = Number(inq.rewardAmount) || 100;
+        wallet.balance += rewardAmt;
+        wallet.transactions.unshift({
+          title: `Trip Reward (${inq.id})`,
+          date: inq.date || new Date().toLocaleDateString('en-IN'),
+          amount: `+₹${rewardAmt.toFixed(2)}`,
+          type: 'credit',
+          inquiryId: inq.id
+        });
+        updated = true;
+      }
+    }
+
+    if (updated) {
+      this.saveCustomerWallet(phone, wallet);
+    } else {
+      const key = `cabsy_wallet_${cleanPhone}`;
+      try { localStorage.setItem(key, JSON.stringify(wallet)); } catch (e) {}
+    }
+    return wallet;
+  }
+
   clearAllDemoData() {
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.DRIVERS, JSON.stringify([]));

@@ -21,14 +21,11 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
       const localW = db.getCustomerWallet(userPhone);
       setWallet(localW);
 
-      // 2. Fetch from Hostinger Remote MySQL Database
-      const cleanPhone = userPhone ? String(userPhone).replace(/\D/g, '').slice(-10) : 'default';
+      // 2. Fetch and reconcile from Hostinger Remote MySQL Database
       try {
-        const cloudW = await loadWalletFromMySQL(cleanPhone);
-        if (cloudW && (cloudW.balance > 0 || (cloudW.transactions && cloudW.transactions.length > 0))) {
-          setWallet(cloudW);
-          const key = `cabsy_wallet_${cleanPhone}`;
-          localStorage.setItem(key, JSON.stringify(cloudW));
+        const reconciledW = await db.reconcileCustomerWallet(userPhone);
+        if (reconciledW) {
+          setWallet(reconciledW);
         }
       } catch (e) {}
     };
