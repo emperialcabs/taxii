@@ -1107,8 +1107,8 @@ export default function AdminPortal() {
                           <strong>{inq.customerName}</strong>
                           <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone}</div>
                         </td>
-                        <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
-                        <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
+                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
+                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
                         <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
                         <td>
                           <strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong>
@@ -1136,7 +1136,7 @@ export default function AdminPortal() {
                           </span>
                         </td>
                         <td>
-                          <div className="flex gap-2 align-center" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+                          <div className="flex gap-1.5 align-center" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                             {inq.status === 'Pending' && (
                               <button 
                                 className="btn-action-assign"
