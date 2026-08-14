@@ -179,9 +179,9 @@ export default function AdminPortal() {
 
   // Notification System State
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 ($65.00)', time: '2 mins ago', read: false },
+    { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 (₹65.00)', time: '2 mins ago', read: false },
     { id: 2, type: 'driver', title: 'Fleet Driver Active', desc: 'Alex Morgan status changed to On Duty', time: '12 mins ago', read: false },
-    { id: 3, type: 'revenue', title: 'Daily Revenue Target', desc: 'Dispatch revenue crossed $1,450.00 today', time: '1 hour ago', read: true }
+    { id: 3, type: 'revenue', title: 'Daily Revenue Target', desc: 'Dispatch revenue crossed ₹1,450.00 today', time: '1 hour ago', read: true }
   ]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
@@ -901,7 +901,7 @@ export default function AdminPortal() {
                 </div>
                 <div>
                   <small>Total Confirmed Revenue</small>
-                  <h3>${totalRevenue.toFixed(2)}</h3>
+                  <h3>₹{totalRevenue.toFixed(2)}</h3>
                   <span className="text-green flex align-center gap-1 text-xs">
                     <TrendingUp size={13} /> +18.4% this week
                   </span>
@@ -973,7 +973,7 @@ export default function AdminPortal() {
                             <span className="text-green">●</span> {inq.pickup}<br />
                             <span className="text-red">●</span> {inq.dropoff}
                           </td>
-                          <td><strong>${Number(inq.fare).toFixed(2)}</strong></td>
+                          <td><strong>₹{Number(inq.fare).toFixed(2)}</strong></td>
                           <td>
                             <span className={`status-tag status-${inq.status.toLowerCase()}`}>
                               {inq.status}
@@ -1011,14 +1011,14 @@ export default function AdminPortal() {
                         <div className="driver-avatar">{drv.name.charAt(0)}</div>
                         <div>
                           <strong>{drv.name}</strong>
-                          <small className="display-block text-muted">{drv.vehicle} • {drv.plate}</small>
+                          <small className="display-block text-muted">{drv.vehicle}</small>
                         </div>
                       </div>
                       <div className="text-right">
                         <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
                           {drv.status}
                         </span>
-                        <small className="display-block text-muted mt-1">{drv.trips} Trips (${drv.earnings.toFixed(0)})</small>
+                        <small className="display-block text-muted mt-1">{drv.trips} Trips (₹{drv.earnings.toFixed(0)})</small>
                       </div>
                     </div>
                   ))}
@@ -1068,7 +1068,7 @@ export default function AdminPortal() {
                         <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
                         <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
                         <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
-                        <td><strong className="text-green">${Number(inq.fare).toFixed(2)}</strong></td>
+                        <td><strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong></td>
                         <td>
                           {inq.driver && inq.driver !== '-' ? (
                             <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
@@ -1345,10 +1345,6 @@ export default function AdminPortal() {
                       <strong>{drv.vehicle}</strong>
                     </div>
                     <div className="detail-row">
-                      <span className="text-muted">License Plate:</span>
-                      <strong className="plate-badge">{drv.plate}</strong>
-                    </div>
-                    <div className="detail-row">
                       <span className="text-muted">Rating:</span>
                       <strong className="text-yellow">★ {drv.rating}</strong>
                     </div>
@@ -1361,7 +1357,7 @@ export default function AdminPortal() {
                     </div>
                     <div className="stat-col text-right">
                       <span className="stat-label">Total Earnings</span>
-                      <span className="stat-value text-green">${drv.earnings.toFixed(2)}</span>
+                      <span className="stat-value text-green">₹{drv.earnings.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -1430,7 +1426,7 @@ export default function AdminPortal() {
                         <td><Phone size={12} className="inline-icon text-muted" /> {cust.phone}</td>
                         <td><Mail size={12} className="inline-icon text-muted" /> {cust.email}</td>
                         <td><span className="pill-badge-sm">{cust.totalRides} Rides</span></td>
-                        <td><strong className="text-green">${Number(cust.totalSpent).toFixed(2)}</strong></td>
+                        <td><strong className="text-green">₹{Number(cust.totalSpent).toFixed(2)}</strong></td>
                         <td><small className="text-muted">{cust.joined}</small></td>
                         <td>
                           <div className="flex gap-2 align-center">
@@ -1468,26 +1464,26 @@ export default function AdminPortal() {
                 <p>Comprehensive earnings log, driver payouts (80%), company commission (20%), and completed ride manifests.</p>
               </div>
               <div className="pill-badge flex align-center gap-1">
-                <DollarSign size={15} /> Total Revenue: <strong>${totalRevenue.toFixed(2)}</strong>
+                <DollarSign size={15} /> Total Revenue: <strong>₹{totalRevenue.toFixed(2)}</strong>
               </div>
             </div>
 
             <div className="reports-summary-grid">
               <div className="card summary-stat-box">
                 <small className="text-muted display-block">Gross Fare Revenue</small>
-                <h3 className="text-green">${totalRevenue.toFixed(2)}</h3>
+                <h3 className="text-green">₹{totalRevenue.toFixed(2)}</h3>
                 <small className="text-xs text-muted">All confirmed bookings</small>
               </div>
 
               <div className="card summary-stat-box">
                 <small className="text-muted display-block">Company Platform Fee (20%)</small>
-                <h3 className="text-purple">${(totalRevenue * 0.20).toFixed(2)}</h3>
+                <h3 className="text-purple">₹{(totalRevenue * 0.20).toFixed(2)}</h3>
                 <small className="text-xs text-muted">Net platform profit</small>
               </div>
 
               <div className="card summary-stat-box">
                 <small className="text-muted display-block">Driver Payouts (80%)</small>
-                <h3>${(totalRevenue * 0.80).toFixed(2)}</h3>
+                <h3>₹{(totalRevenue * 0.80).toFixed(2)}</h3>
                 <small className="text-xs text-muted">Distributed to drivers</small>
               </div>
 
@@ -1524,9 +1520,9 @@ export default function AdminPortal() {
                         <td><strong>{item.customerName}</strong></td>
                         <td><span className="text-green font-bold">{item.driver}</span></td>
                         <td><span className="pill-badge-sm">{item.vehicle}</span></td>
-                        <td><strong>${Number(item.fare).toFixed(2)}</strong></td>
-                        <td>${(Number(item.fare) * 0.80).toFixed(2)}</td>
-                        <td><strong className="text-purple">${(Number(item.fare) * 0.20).toFixed(2)}</strong></td>
+                        <td><strong>₹{Number(item.fare).toFixed(2)}</strong></td>
+                        <td>₹{(Number(item.fare) * 0.80).toFixed(2)}</td>
+                        <td><strong className="text-purple">₹{(Number(item.fare) * 0.20).toFixed(2)}</strong></td>
                       </tr>
                     ))}
                   </tbody>
@@ -1590,7 +1586,7 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <h3 className="mt-4">Vehicle Rate Settings ($ / km)</h3>
+              <h3 className="mt-4">Vehicle Rate Settings (₹ / km)</h3>
               <div className="form-grid-3">
                 <div className="input-group">
                   <label>Empire Regular Base Rate</label>
@@ -1703,17 +1699,7 @@ export default function AdminPortal() {
                 />
               </div>
 
-              <div className="input-group">
-                <label>Assigned Vehicle Class</label>
-                <select value={newDriverForm.vehicle} onChange={e => setNewDriverForm({ ...newDriverForm, vehicle: e.target.value })}>
-                  {Array.from(new Set([
-                    ...vehicles.map(v => v.name),
-                    ...inquiries.map(i => i.vehicle).filter(Boolean)
-                  ])).map(vName => (
-                    <option key={vName} value={vName}>{vName}</option>
-                  ))}
-                </select>
-              </div>
+
 
               <div className="modal-actions-flex mt-4">
                 <button type="button" className="btn btn-outline" onClick={() => setAddDriverModal(false)}>Cancel</button>
@@ -1853,7 +1839,7 @@ export default function AdminPortal() {
                 </div>
 
                 <div className="input-group">
-                  <label>Fare ($)</label>
+                  <label>Fare (₹)</label>
                   <input 
                     type="number" 
                     value={newInquiryForm.fare} 
@@ -1893,7 +1879,7 @@ export default function AdminPortal() {
               </div>
               <div className="text-right">
                 <span className="stat-label">Total Spent Revenue</span>
-                <h2 className="text-green m-0">${Number(customerDetailModal.customer.totalSpent).toFixed(2)}</h2>
+                <h2 className="text-green m-0">₹{Number(customerDetailModal.customer.totalSpent).toFixed(2)}</h2>
               </div>
             </div>
 
@@ -1917,7 +1903,7 @@ export default function AdminPortal() {
                       <td><small>{tr.date}</small></td>
                       <td>{tr.pickup} → {tr.dropoff}</td>
                       <td><span className="pill-badge-sm">{tr.vehicle}</span></td>
-                      <td><strong className="text-green">${Number(tr.fare).toFixed(2)}</strong></td>
+                      <td><strong className="text-green">₹{Number(tr.fare).toFixed(2)}</strong></td>
                       <td><span className={`status-tag status-${tr.status.toLowerCase()}`}>{tr.status}</span></td>
                     </tr>
                   ))}
@@ -1947,11 +1933,11 @@ export default function AdminPortal() {
             <div className="driver-profile-header mt-3 flex justify-between align-center">
               <div>
                 <h2 className="m-0">{driverReportModal.driver.name}</h2>
-                <p className="text-muted mt-1 m-0">{driverReportModal.driver.vehicle} • Plate: <strong className="plate-badge">{driverReportModal.driver.plate}</strong></p>
+                <p className="text-muted mt-1 m-0">{driverReportModal.driver.vehicle}</p>
               </div>
               <div className="text-right">
                 <span className="stat-label">Driver Total Earnings</span>
-                <h2 className="text-green m-0">${driverReportModal.driver.earnings.toFixed(2)}</h2>
+                <h2 className="text-green m-0">₹{driverReportModal.driver.earnings.toFixed(2)}</h2>
               </div>
             </div>
 
@@ -1974,8 +1960,8 @@ export default function AdminPortal() {
                       <td><strong>{tr.id}</strong></td>
                       <td>{tr.customerName}</td>
                       <td>{tr.pickup} → {tr.dropoff}</td>
-                      <td>${Number(tr.fare).toFixed(2)}</td>
-                      <td><strong className="text-green">${(Number(tr.fare) * 0.80).toFixed(2)}</strong></td>
+                      <td>₹{Number(tr.fare).toFixed(2)}</td>
+                      <td><strong className="text-green">₹{(Number(tr.fare) * 0.80).toFixed(2)}</strong></td>
                       <td><small className="text-muted">{tr.date}</small></td>
                     </tr>
                   ))}
