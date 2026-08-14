@@ -30,8 +30,8 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isWebSite = location.pathname === '/web' || location.pathname.startsWith('/web');
   const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.startsWith('/app') || location.pathname.startsWith('/mobile');
   
-  // Detect environment flags & native containers
-  const isMobileDomain = hostname.includes('androidapp') || hostname.includes('mobile');
+  // Detect domain names (e.g. androidddd.netlify.app, iossss.netlify.app, androidapp-omega.vercel.app)
+  const isMobileDomain = hostname.includes('android') || hostname.includes('ios') || hostname.includes('mobile');
   const isCapacitorNative = typeof window !== 'undefined' && (window.Capacitor !== undefined || window.location.protocol === 'file:');
   const appMode = (import.meta.env.VITE_APP_MODE || '').toLowerCase();
 
