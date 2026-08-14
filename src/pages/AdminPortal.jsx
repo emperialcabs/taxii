@@ -247,6 +247,7 @@ export default function AdminPortal() {
 
     loadFromCloud();
     const pollInterval = setInterval(loadFromCloud, 10000);
+    const handleSyncEvent = () => loadFromCloud();
 
     window.addEventListener('storage', handleSyncEvent);
     window.addEventListener('taxigo_db_sync', handleSyncEvent);
