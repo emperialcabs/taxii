@@ -254,22 +254,71 @@ export default function AdminPortal() {
   });
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
+  // Notification & Live MySQL Data Sync Engine
   useEffect(() => {
     requestNotificationPermission();
     initEcosystemScheduler();
 
+    const fetchAllData = async () => {
+      try {
+        setFirestoreLoading(true);
+
+        // 1. Fetch Inquiries from Hostinger MySQL
+        const mysqlInquiries = await loadAllInquiriesFromMySQL();
+        const localInquiries = db.getInquiries() || [];
+        
+        // Merge MySQL + Local Storage inquiries
+        const inqMap = new Map();
+        [...localInquiries, ...mysqlInquiries].forEach(item => {
+          if (item && item.id) {
+            inqMap.set(item.id, { ...inqMap.get(item.id), ...item });
+          }
+        });
+        const mergedInquiries = Array.from(inqMap.values());
+        setInquiries(mergedInquiries);
+
+        // 2. Fetch Customers from Hostinger MySQL
+        const mysqlCustomers = await loadAllCustomersFromMySQL();
+        const localCustomers = db.getCustomers() || [];
+
+        const custMap = new Map();
+        [...localCustomers, ...mysqlCustomers].forEach(c => {
+          const key = (c.email || c.phone || c.id || '').toLowerCase().trim();
+          if (key) {
+            custMap.set(key, { ...custMap.get(key), ...c });
+          }
+        });
+        setCustomers(Array.from(custMap.values()));
+      } catch (e) {
+        console.warn('MySQL Fetch Exception in AdminPortal:', e);
+      } finally {
+        setFirestoreLoading(false);
+      }
+    };
+
+    fetchAllData();
+
+    // Sync admin notifications
     const syncAdminNotifs = () => {
       const fresh = getAdminNotifications();
       if (fresh && fresh.length > 0) {
         setNotifications(fresh);
       }
+      fetchAllData();
     };
 
     window.addEventListener('taxigo_admin_notif', syncAdminNotifs);
+    window.addEventListener('taxigo_db_sync', syncAdminNotifs);
     window.addEventListener('storage', syncAdminNotifs);
+    
+    // Poll Hostinger MySQL every 15s for live cross-device trip updates
+    const interval = setInterval(fetchAllData, 15000);
+
     return () => {
       window.removeEventListener('taxigo_admin_notif', syncAdminNotifs);
+      window.removeEventListener('taxigo_db_sync', syncAdminNotifs);
       window.removeEventListener('storage', syncAdminNotifs);
+      clearInterval(interval);
     };
   }, []);
 
