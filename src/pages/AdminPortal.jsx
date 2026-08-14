@@ -176,8 +176,13 @@ export default function AdminPortal() {
   const [addDestModal, setAddDestModal] = useState(false);
   const [editDestModal, setEditDestModal] = useState({ open: false, destination: null });
   const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
-  const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
   const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
+  const [companyShare, setCompanyShare] = useState(() => {
+    const saved = localStorage.getItem('cabsy_company_share');
+    return saved ? Number(saved) : 20;
+  });
+  const driverShare = 100 - companyShare;
+  const [commissionModal, setCommissionModal] = useState(false);
 
   const handleIssueRewardSubmit = () => {
     if (!rewardModal.inquiry) return;
@@ -185,7 +190,7 @@ export default function AdminPortal() {
     const rewardAmount = Number(rewardModal.amount) || 100;
 
     // 1. Add reward to customer wallet in dbService
-    db.addRewardToCustomer(inq.customerPhone, rewardAmount, inq.id);
+    db.addRewardToCustomer(inq.customerPhone, rewardAmount, inq.id, inq.pickup, inq.dropoff);
 
     // 2. Update inquiry state & localStorage
     setInquiries(prev => prev.map(item => {
@@ -1549,10 +1554,19 @@ export default function AdminPortal() {
             <div className="pane-header flex justify-between align-center">
               <div>
                 <h2>Financial & Trip Audit Reports</h2>
-                <p>Comprehensive earnings log, driver payouts (80%), company commission (20%), and completed ride manifests.</p>
+                <p>Comprehensive earnings log, driver payouts ({driverShare}%), company commission ({companyShare}%), and completed ride manifests.</p>
               </div>
-              <div className="pill-badge flex align-center gap-1">
-                <DollarSign size={15} /> Total Revenue: <strong>₹{totalRevenue.toFixed(2)}</strong>
+              <div className="flex align-center gap-2">
+                <button 
+                  className="btn btn-primary btn-sm flex align-center gap-1"
+                  style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#FFFFFF', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)' }}
+                  onClick={() => setCommissionModal(true)}
+                >
+                  <Settings size={15} /> ⚙️ Set Profit % (Company: {companyShare}%, Driver: {driverShare}%)
+                </button>
+                <div className="pill-badge flex align-center gap-1">
+                  <DollarSign size={15} /> Total Revenue: <strong>₹{totalRevenue.toFixed(2)}</strong>
+                </div>
               </div>
             </div>
 
@@ -1564,14 +1578,14 @@ export default function AdminPortal() {
               </div>
 
               <div className="card summary-stat-box">
-                <small className="text-muted display-block">Company Platform Fee (20%)</small>
-                <h3 className="text-purple">₹{(totalRevenue * 0.20).toFixed(2)}</h3>
+                <small className="text-muted display-block">Company Platform Fee ({companyShare}%)</small>
+                <h3 className="text-purple">₹{(totalRevenue * (companyShare / 100)).toFixed(2)}</h3>
                 <small className="text-xs text-muted">Net platform profit</small>
               </div>
 
               <div className="card summary-stat-box">
-                <small className="text-muted display-block">Driver Payouts (80%)</small>
-                <h3>₹{(totalRevenue * 0.80).toFixed(2)}</h3>
+                <small className="text-muted display-block">Driver Payouts ({driverShare}%)</small>
+                <h3>₹{(totalRevenue * (driverShare / 100)).toFixed(2)}</h3>
                 <small className="text-xs text-muted">Distributed to drivers</small>
               </div>
 
@@ -1585,6 +1599,13 @@ export default function AdminPortal() {
             <div className="card admin-table-card mt-3">
               <div className="card-header-flex">
                 <h3>Confirmed Trip Manifest</h3>
+                <button 
+                  className="btn btn-outline btn-sm flex align-center gap-1"
+                  onClick={() => setCommissionModal(true)}
+                  style={{ fontSize: '12px', fontWeight: '700' }}
+                >
+                  <Settings size={13} /> Adjust Commission Split ({companyShare}% / {driverShare}%)
+                </button>
               </div>
               <div className="table-responsive">
                 <table className="admin-table">
@@ -1596,8 +1617,8 @@ export default function AdminPortal() {
                       <th>Assigned Driver</th>
                       <th>Vehicle Class</th>
                       <th>Gross Fare</th>
-                      <th>Driver Payout (80%)</th>
-                      <th>Company Net (20%)</th>
+                      <th>Driver Payout ({driverShare}%)</th>
+                      <th>Company Net ({companyShare}%)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1609,8 +1630,8 @@ export default function AdminPortal() {
                         <td><span className="text-green font-bold">{item.driver}</span></td>
                         <td><span className="pill-badge-sm">{item.vehicle}</span></td>
                         <td><strong>₹{Number(item.fare).toFixed(2)}</strong></td>
-                        <td>₹{(Number(item.fare) * 0.80).toFixed(2)}</td>
-                        <td><strong className="text-purple">₹{(Number(item.fare) * 0.20).toFixed(2)}</strong></td>
+                        <td>₹{(Number(item.fare) * (driverShare / 100)).toFixed(2)}</td>
+                        <td><strong className="text-purple">₹{(Number(item.fare) * (companyShare / 100)).toFixed(2)}</strong></td>
                       </tr>
                     ))}
                   </tbody>
@@ -2476,6 +2497,96 @@ export default function AdminPortal() {
                 <button type="submit" className="btn btn-primary">Save Changes</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 11: PROFIT SPLIT & COMMISSION SETTINGS */}
+      {commissionModal && (
+        <div className="admin-modal-overlay" onClick={() => setCommissionModal(false)}>
+          <div className="admin-modal-box card" style={{ maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header-flex">
+              <h3>⚙️ Configure Profit & Driver Share Split</h3>
+              <button className="btn-modal-close" onClick={() => setCommissionModal(false)}><XCircle size={22} /></button>
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px' }}>
+                Set the company platform commission fee percentage. The driver payout share will automatically be calculated as the remainder.
+              </p>
+
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#6366F1' }}>🏢 Company Platform Commission</span>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#4F46E5' }}>{companyShare}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="50" 
+                  step="1"
+                  value={companyShare}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setCompanyShare(val);
+                    localStorage.setItem('cabsy_company_share', val);
+                  }}
+                  style={{ width: '100%', height: '8px', borderRadius: '4px', cursor: 'pointer', accentColor: '#4F46E5' }}
+                />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#10B981' }}>🚕 Driver Net Payout Share</span>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#059669' }}>{driverShare}%</span>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Quick Presets</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '90% Driver / 10% Co.', company: 10 },
+                    { label: '85% Driver / 15% Co.', company: 15 },
+                    { label: '80% Driver / 20% Co.', company: 20 },
+                    { label: '75% Driver / 25% Co.', company: 25 },
+                  ].map((preset, idx) => (
+                    <button 
+                      key={idx}
+                      type="button"
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        border: companyShare === preset.company ? '2px solid #4F46E5' : '1px solid #CBD5E1',
+                        background: companyShare === preset.company ? '#EEF2FF' : '#FFFFFF',
+                        color: companyShare === preset.company ? '#4F46E5' : '#475569',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        setCompanyShare(preset.company);
+                        localStorage.setItem('cabsy_company_share', preset.company);
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="modal-actions-flex">
+                <button type="button" className="btn btn-outline" onClick={() => setCommissionModal(false)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' }}
+                  onClick={() => {
+                    localStorage.setItem('cabsy_company_share', companyShare);
+                    setCommissionModal(false);
+                  }}
+                >
+                  ✓ Save Commission Split
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

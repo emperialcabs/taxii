@@ -197,12 +197,20 @@ class DatabaseService {
     }
   }
 
-  addRewardToCustomer(phone, rewardAmount, inquiryId) {
+  addRewardToCustomer(phone, rewardAmount, inquiryId, pickup, dropoff) {
     const wallet = this.getCustomerWallet(phone);
     const amountNum = Number(rewardAmount) || 0;
     wallet.balance += amountNum;
+    
+    let title = 'Trip Reward';
+    if (pickup && dropoff) {
+      const p = pickup.split(',')[0].trim();
+      const d = dropoff.split(',')[0].trim();
+      title = `Trip Reward (${p} → ${d})`;
+    }
+
     wallet.transactions.unshift({
-      title: `Trip Reward (${inquiryId || 'Trip'})`,
+      title,
       date: new Date().toLocaleDateString('en-IN'),
       amount: `+₹${amountNum.toFixed(2)}`,
       type: 'credit',
@@ -217,7 +225,7 @@ class DatabaseService {
     const amountNum = Number(amountToDeduct) || 0;
     wallet.balance = Math.max(0, wallet.balance - amountNum);
     wallet.transactions.unshift({
-      title: `Booking Reward Used (${inquiryId || 'Ride'})`,
+      title: `Booking Reward Used`,
       date: new Date().toLocaleDateString('en-IN'),
       amount: `-₹${amountNum.toFixed(2)}`,
       type: 'debit',
@@ -260,8 +268,16 @@ class DatabaseService {
       if (!exists) {
         const rewardAmt = Number(inq.rewardAmount) || 100;
         wallet.balance += rewardAmt;
+        
+        let title = 'Trip Reward';
+        if (inq.pickup && inq.dropoff) {
+          const p = inq.pickup.split(',')[0].trim();
+          const d = inq.dropoff.split(',')[0].trim();
+          title = `Trip Reward (${p} → ${d})`;
+        }
+
         wallet.transactions.unshift({
-          title: `Trip Reward (${inq.id})`,
+          title,
           date: inq.date || new Date().toLocaleDateString('en-IN'),
           amount: `+₹${rewardAmt.toFixed(2)}`,
           type: 'credit',
@@ -271,7 +287,20 @@ class DatabaseService {
       }
     }
 
-    if (updated) {
+    // Clean any old transaction titles that had inquiry code (INQ-xxxx) in them
+    let cleanedOld = false;
+    if (wallet.transactions && wallet.transactions.length > 0) {
+      wallet.transactions = wallet.transactions.map(t => {
+        if (t.title && (t.title.includes('INQ-') || t.title.includes('('))) {
+          const newTitle = t.title.replace(/\s*\(INQ-[^)]+\)/gi, '').replace(/\s*INQ-\d+/gi, '');
+          if (newTitle !== t.title) cleanedOld = true;
+          return { ...t, title: newTitle };
+        }
+        return t;
+      });
+    }
+
+    if (updated || cleanedOld) {
       this.saveCustomerWallet(phone, wallet);
     } else {
       const key = `cabsy_wallet_${cleanPhone}`;
