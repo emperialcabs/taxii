@@ -3,7 +3,7 @@ import BottomNavBar from '../../components/BottomNavBar';
 import { db } from '../../services/dbService';
 
 export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
-  const [wallet, setWallet] = useState({ balance: 200, transactions: [] });
+  const [wallet, setWallet] = useState({ balance: 0, transactions: [] });
 
   const userProfile = React.useMemo(() => {
     try {
@@ -52,45 +52,8 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         }}>
           <div style={{ position: 'absolute', right: '-10px', top: '-10px', fontSize: '100px', opacity: 0.15, pointerEvents: 'none' }}>💳</div>
           <div style={{ fontSize: '12px', fontWeight: '800', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>Available Taxi Wallet Balance</div>
-          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 16px 0' }}>
+          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 0 0' }}>
             ₹{wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </div>
-          
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              onClick={() => {
-                db.addRewardToCustomer(userPhone, 100, 'ADMIN_TOPUP');
-              }}
-              style={{ 
-                flex: 1, 
-                background: '#FFFFFF', 
-                color: '#059669', 
-                border: 'none', 
-                padding: '12px', 
-                borderRadius: '16px', 
-                fontFamily: 'League Spartan', 
-                fontWeight: '800', 
-                fontSize: '15px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}
-            >
-              + Quick ₹100 Reward
-            </button>
-            <button style={{ 
-              flex: 1, 
-              background: 'rgba(255, 255, 255, 0.25)', 
-              color: '#FFFFFF', 
-              border: '1.5px solid rgba(255, 255, 255, 0.5)', 
-              padding: '12px', 
-              borderRadius: '16px', 
-              fontFamily: 'League Spartan', 
-              fontWeight: '800', 
-              fontSize: '15px',
-              cursor: 'pointer'
-            }}>
-              🎁 Rewards Active
-            </button>
           </div>
         </div>
 

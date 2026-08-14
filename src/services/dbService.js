@@ -169,12 +169,10 @@ class DatabaseService {
       }
     } catch (e) {}
 
-    // Initial wallet balance for customer
+    // Initial wallet balance for customer (Zero demo/hardcoded data)
     const initialWallet = {
-      balance: 200, // Welcome reward bonus
-      transactions: [
-        { title: 'Welcome Reward Bonus', date: new Date().toLocaleDateString('en-IN'), amount: '+₹200.00', type: 'credit', inquiryId: 'WELCOME' }
-      ]
+      balance: 0,
+      transactions: []
     };
     try {
       localStorage.setItem(key, JSON.stringify(initialWallet));
