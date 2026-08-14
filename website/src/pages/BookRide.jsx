@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { INITIAL_VEHICLES } from './AdminPortal';
 
-import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
+import { saveInquiryToMySQL, saveCustomerToMySQL } from '../../../src/services/mysqlService';
 
 const DEFAULT_PLACES = [
   'Downtown Terminal',
@@ -163,9 +163,9 @@ export default function BookRide() {
     const updatedInquiries = [newInquiry, ...inquiriesList];
     localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
 
-    // Save to TiDB Cloud Database
-    saveInquiryToTiDB(newInquiry).catch(() => {});
-    saveCustomerToTiDB({
+    // Save to Hostinger MySQL Database
+    saveInquiryToMySQL(newInquiry).catch(() => {});
+    saveCustomerToMySQL({
       name: customerName,
       phone: customerPhone,
       email: customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in',

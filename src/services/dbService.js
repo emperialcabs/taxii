@@ -1,20 +1,12 @@
-// TiDB Cloud & Central Database Sync Engine for Empire Cab Ecosystem (Website, Android, iPhone)
+// Hostinger Remote MySQL Central Database Sync Engine for Empire Cab Ecosystem (Website, Android, iPhone)
+// Host: srv1671.hstgr.io | DB: u889282535_taxi
 
-const TIDB_CONFIG = {
-  instanceName: 'dhruvil',
-  instanceId: '10422715358543366144',
-  region: 'ap-southeast-1 (Singapore)',
-  status: 'Active',
-  // TiDB Cloud Serverless MySQL Endpoint
-  host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
-  port: 4000,
-  database: 'taxigo_db',
-  ssl: {
-    rejectUnauthorized: true,
-    caCertPath: 'd:\\taxiiiii\\isrgrootx1.pem',
-    caCertName: 'ISRG Root X1 (Let\'s Encrypt)'
-  }
-};
+import {
+  saveInquiryToMySQL,
+  saveCustomerToMySQL,
+  loadAllInquiriesFromMySQL,
+  loadAllCustomersFromMySQL
+} from './mysqlService';
 
 // Local cache keys
 const STORAGE_KEYS = {
@@ -28,16 +20,31 @@ const STORAGE_KEYS = {
 
 class DatabaseService {
   constructor() {
-    this.config = TIDB_CONFIG;
     this.initDatabase();
   }
 
-  // Initialize DB — no demo data, Firestore is the source of truth
   initDatabase() {
-    // Nothing to pre-seed; Admin Portal loads from Firestore on mount.
-    // localStorage is only used as a temporary write buffer for the mobile app.
+    // Background sync from Hostinger MySQL
+    this.syncFromCloud();
   }
 
+  async syncFromCloud() {
+    try {
+      const [cloudInquiries, cloudCustomers] = await Promise.all([
+        loadAllInquiriesFromMySQL().catch(() => []),
+        loadAllCustomersFromMySQL().catch(() => [])
+      ]);
+
+      if (Array.isArray(cloudInquiries) && cloudInquiries.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(cloudInquiries));
+      }
+      if (Array.isArray(cloudCustomers) && cloudCustomers.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(cloudCustomers));
+      }
+    } catch (e) {
+      console.warn('MySQL cloud sync warning:', e);
+    }
+  }
 
   // Inquiries / Bookings API
   getInquiries() {
@@ -66,7 +73,7 @@ class DatabaseService {
     }
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(inquiries));
     
-    // Auto sync customer in central database
+    // Auto sync customer in Hostinger MySQL central database
     if (newInquiry.customerName || newInquiry.customerPhone) {
       this.saveCustomer({
         name: newInquiry.customerName,
@@ -74,6 +81,9 @@ class DatabaseService {
         email: newInquiry.customerEmail
       });
     }
+
+    // Auto sync inquiry to Hostinger MySQL Database
+    saveInquiryToMySQL(newInquiry).catch(() => {});
 
     // Dispatch real-time cross-platform event
     window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'INQUIRY_ADDED', data: newInquiry } }));
@@ -141,12 +151,8 @@ class DatabaseService {
 
     localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
     
-    // Auto-sync customer profile to TiDB Cloud SQL Database
-    import('./tidbService.js').then(m => {
-      if (m.saveCustomerToTiDB) {
-        m.saveCustomerToTiDB(updatedCustomer).catch(() => {});
-      }
-    }).catch(() => {});
+    // Auto-sync customer profile to Hostinger MySQL Database
+    saveCustomerToMySQL(updatedCustomer).catch(() => {});
 
     window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedCustomer } }));
     return updatedCustomer;

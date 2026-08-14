@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
 import './BookingModal.css';
-import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
+import { saveInquiryToMySQL, saveCustomerToMySQL } from '../../../src/services/mysqlService';
 
 export default function BookingModal({ isOpen, onClose }) {
   const [pickup, setPickup] = useState('');
@@ -50,9 +50,9 @@ export default function BookingModal({ isOpen, onClose }) {
       localStorage.setItem('cabsy_inquiries', JSON.stringify([createdInquiry, ...existing]));
     } catch (err) {}
 
-    // 2. Save directly to TiDB Cloud Database
-    saveInquiryToTiDB(createdInquiry).catch(() => {});
-    saveCustomerToTiDB({
+    // 2. Save directly to Hostinger MySQL Database
+    saveInquiryToMySQL(createdInquiry).catch(() => {});
+    saveCustomerToMySQL({
       name: createdInquiry.customerName,
       phone: createdInquiry.customerPhone,
       email: createdInquiry.customerEmail,

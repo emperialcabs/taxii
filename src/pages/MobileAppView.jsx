@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
-import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
+import { saveInquiryToMySQL, saveCustomerToMySQL } from '../services/mysqlService';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -115,9 +115,9 @@ export default function MobileAppView() {
     // 1. Save into dbService (single source of truth for localStorage inquiries)
     db.saveInquiry(newInquiry);
 
-    // 2. Save directly to TiDB Cloud Database
-    saveInquiryToTiDB(newInquiry).catch(e => console.warn('TiDB inquiry save failed:', e));
-    saveCustomerToTiDB(userProf).catch(e => console.warn('TiDB customer save failed:', e));
+    // 2. Save directly to Hostinger MySQL Database
+    saveInquiryToMySQL(newInquiry).catch(e => console.warn('MySQL inquiry save failed:', e));
+    saveCustomerToMySQL(userProf).catch(e => console.warn('MySQL customer save failed:', e));
 
     // 5. Dispatch events to notify Admin Portal in real time
     window.dispatchEvent(new Event('storage'));

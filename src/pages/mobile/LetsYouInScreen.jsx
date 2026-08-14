@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import db from '../../services/dbService';
 import { signInWithGoogle } from '../../services/firebaseService';
-import { saveCustomerToTiDB, loadAllInquiriesFromTiDB } from '../../services/tidbService';
+import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
 
-  // ── After login: save profile to TiDB Cloud Database AND restore past trips ──
-  const syncWithTiDB = async (profile) => {
+  // ── After login: save profile to Hostinger MySQL Database AND restore past trips ──
+  const syncWithMySQL = async (profile) => {
     try {
-      // 1. Save profile directly to TiDB Cloud Database
-      await saveCustomerToTiDB(profile).catch(() => {});
+      // 1. Save profile directly to Hostinger MySQL Database
+      await saveCustomerToMySQL(profile).catch(() => {});
 
-      // 2. Pull user's past trip history from TiDB Cloud Database
-      const tidbInquiries = await loadAllInquiriesFromTiDB().catch(() => []);
+      // 2. Pull user's past trip history from Hostinger MySQL Database
+      const mysqlInquiries = await loadAllInquiriesFromMySQL().catch(() => []);
       const userPhoneKey = (profile.phone || '').replace(/\D/g, '');
       const userEmailKey = (profile.email || '').toLowerCase().trim();
 
-      const userInquiries = (tidbInquiries || []).filter(i => {
+      const userInquiries = (mysqlInquiries || []).filter(i => {
         const iPhone = (i.customerPhone || '').replace(/\D/g, '');
         const iEmail = (i.customerEmail || '').toLowerCase().trim();
         return (userPhoneKey && iPhone && userPhoneKey === iPhone) || (userEmailKey && iEmail && userEmailKey === iEmail);
@@ -33,7 +33,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
         window.dispatchEvent(new Event('storage'));
       }
     } catch (e) {
-      console.warn('TiDB sync on login failed:', e);
+      console.warn('MySQL sync on login failed:', e);
     }
   };
 
@@ -56,8 +56,8 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
         localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
         db.saveCustomer(realProfile);
-        // ✅ Save to TiDB Cloud Database + restore past trips
-        await syncWithTiDB(realProfile);
+        // ✅ Save to Hostinger MySQL Database + restore past trips
+        await syncWithMySQL(realProfile);
       } catch(e) {}
 
       setLoading(false);
@@ -80,7 +80,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
-        await syncWithTiDB(fallbackProfile);
+        await syncWithMySQL(fallbackProfile);
       } catch(e) {}
       if (onGoogleSignIn) {
         onGoogleSignIn(fallbackProfile);

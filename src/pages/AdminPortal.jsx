@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  saveInquiryToTiDB,
-  loadAllInquiriesFromTiDB,
-  saveCustomerToTiDB,
-  loadAllCustomersFromTiDB,
-  initTiDBTables,
-  purgeDemoDataFromTiDB,
-  updateInquiryStatusInTiDB,
-  getTiDBConnectionConfig
-} from '../services/tidbService';
+  saveInquiryToMySQL,
+  loadAllInquiriesFromMySQL,
+  saveCustomerToMySQL,
+  loadAllCustomersFromMySQL,
+  initMySQLTables,
+  purgeDemoDataFromMySQL,
+  updateInquiryStatusInMySQL
+} from '../services/mysqlService';
 import db from '../services/dbService';
 import { 
   LayoutDashboard, 
@@ -221,19 +220,19 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // ── Load real data from TiDB Cloud Database ──
+  // ── Load real data from Hostinger MySQL Database ──
   useEffect(() => {
     const loadFromCloud = async () => {
       setFirestoreLoading(true);
       try {
-        // Auto initialize TiDB tables and schema
-        initTiDBTables().catch(() => {});
+        // Auto initialize Hostinger MySQL tables and schema
+        initMySQLTables().catch(() => {});
         // Purge demo data in background
-        purgeDemoDataFromTiDB().catch(() => {});
+        purgeDemoDataFromMySQL().catch(() => {});
 
-        const [tidbInquiries, tidbCustomers] = await Promise.all([
-          loadAllInquiriesFromTiDB().catch(() => []),
-          loadAllCustomersFromTiDB().catch(() => [])
+        const [mysqlInquiries, mysqlCustomers] = await Promise.all([
+          loadAllInquiriesFromMySQL().catch(() => []),
+          loadAllCustomersFromMySQL().catch(() => [])
         ]);
 
         let localInquiries = [];
@@ -263,8 +262,8 @@ export default function AdminPortal() {
           return true;
         };
 
-        // Merge inquiries from TiDB + local
-        const mergedInquiries = [...(tidbInquiries || [])];
+        // Merge inquiries from Hostinger MySQL + local
+        const mergedInquiries = [...(mysqlInquiries || [])];
         const existingIds = new Set(mergedInquiries.map(i => i.id).filter(Boolean));
         (localInquiries || []).forEach(localItem => {
           if (localItem && (localItem.id || localItem.customerName)) {
@@ -279,8 +278,8 @@ export default function AdminPortal() {
         const cleanInquiries = mergedInquiries.filter(isRealInquiry);
         setInquiries(cleanInquiries);
 
-        // Merge customers from TiDB Cloud + Local + extracted from Real Inquiries
-        const allCustomerSources = [...(tidbCustomers || []), ...(localCustomers || [])];
+        // Merge customers from Hostinger MySQL + Local + extracted from Real Inquiries
+        const allCustomerSources = [...(mysqlCustomers || []), ...(localCustomers || [])];
         const realCustomers = allCustomerSources.filter(isRealCustomer);
         const custKeys = new Set(realCustomers.map(c => (c.phone || c.email || c.id || '').toLowerCase().trim()).filter(Boolean));
 
@@ -306,7 +305,7 @@ export default function AdminPortal() {
         setCustomers(realCustomers);
 
       } catch (e) {
-        console.warn('TiDB Cloud load failed:', e);
+        console.warn('Hostinger MySQL Cloud load failed:', e);
       } finally {
         setFirestoreLoading(false);
       }
@@ -499,10 +498,10 @@ export default function AdminPortal() {
     });
 
     if (targetCustomer) {
-      saveCustomerToTiDB(targetCustomer).catch(() => {});
+      saveCustomerToMySQL(targetCustomer).catch(() => {});
     }
 
-    // Persistent sync to TiDB
+    // Persistent sync to Hostinger MySQL
     try {
       db.saveCustomer({ name, phone });
     } catch (e) {}
@@ -531,9 +530,9 @@ export default function AdminPortal() {
 
     setInquiries(updatedInquiries);
 
-    // Sync status to TiDB Cloud SQL
+    // Sync status to Hostinger MySQL
     if (assignModal.inquiry.id) {
-      updateInquiryStatusInTiDB(
+      updateInquiryStatusInMySQL(
         assignModal.inquiry.id,
         'Confirmed',
         driverObj.name
@@ -561,7 +560,7 @@ export default function AdminPortal() {
     setInquiries(prev => {
       const target = prev.find(i => i.id === inquiryId);
       if (target && target.id) {
-        updateInquiryStatusInTiDB(target.id, 'Cancelled').catch(() => {});
+        updateInquiryStatusInMySQL(target.id, 'Cancelled').catch(() => {});
       }
       return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
     });
