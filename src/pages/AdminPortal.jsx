@@ -312,9 +312,18 @@ export default function AdminPortal() {
     };
     loadFromCloud();
 
-    // Poll Cloud databases every 10s for live updates
+    // Poll Cloud database every 10s & listen for real-time customer registrations
     const pollInterval = setInterval(loadFromCloud, 10000);
-    return () => clearInterval(pollInterval);
+    const handleSyncEvent = () => loadFromCloud();
+
+    window.addEventListener('storage', handleSyncEvent);
+    window.addEventListener('taxigo_db_sync', handleSyncEvent);
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('storage', handleSyncEvent);
+      window.removeEventListener('taxigo_db_sync', handleSyncEvent);
+    };
   }, []);
 
   useEffect(() => {

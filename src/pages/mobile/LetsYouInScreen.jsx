@@ -43,20 +43,34 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       const googleUser = await signInWithGoogle();
 
       const realProfile = {
+        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
         name: googleUser.name || 'Google User',
         email: googleUser.email || 'user@empirecab.in',
         phone: phoneNumber || '+91 98765 43210',
         photoURL: googleUser.photoURL || null,
         uid: googleUser.uid || null,
         profession: 'Rider',
-        area: 'Bhavnagar, Gujarat'
+        area: 'Bhavnagar, Gujarat',
+        registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        status: 'Active',
+        lastLogin: new Date().toISOString()
       };
 
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
+        
+        // 1. Save directly to Hostinger MySQL Database
+        await saveCustomerToMySQL(realProfile).catch(() => {});
+
+        // 2. Save into dbService local registry
         db.saveCustomer(realProfile);
-        // ✅ Save to Hostinger MySQL Database + restore past trips
+
+        // 3. Dispatch real-time events for Admin Portal customer directory sync
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: realProfile } }));
+
+        // 4. Restore past trips from MySQL
         await syncWithMySQL(realProfile);
       } catch(e) {}
 
@@ -70,16 +84,24 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       setLoading(false);
       console.warn("Google Auth handled:", err);
       const fallbackProfile = {
+        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
         name: 'Google User',
         email: 'user@empirecab.in',
         phone: phoneNumber || '+91 98765 43210',
         photoURL: null,
         profession: 'Rider',
-        area: 'Bhavnagar, Gujarat'
+        area: 'Bhavnagar, Gujarat',
+        registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        status: 'Active',
+        lastLogin: new Date().toISOString()
       };
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
+        await saveCustomerToMySQL(fallbackProfile).catch(() => {});
+        db.saveCustomer(fallbackProfile);
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: fallbackProfile } }));
         await syncWithMySQL(fallbackProfile);
       } catch(e) {}
       if (onGoogleSignIn) {
