@@ -27,24 +27,28 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
     };
   }, []);
 
-  const actualPickup = activeRide?.pickup || pickupLoc || "Bhavnagar, Gujarat";
-  const actualDropoff = activeRide?.dropoff || dropoffLoc || "Ahmedabad Airport (AMD)";
+  const rawPickup = activeRide?.pickup || pickupLoc || "Bhavnagar, Gujarat";
+  const rawDropoff = activeRide?.dropoff || dropoffLoc || "Ahmedabad Airport (AMD)";
+
+  const actualPickup = typeof rawPickup === 'object' ? (rawPickup.label || rawPickup.name || "Bhavnagar, Gujarat") : String(rawPickup || "Bhavnagar, Gujarat");
+  const actualDropoff = typeof rawDropoff === 'object' ? (rawDropoff.label || rawDropoff.name || "Ahmedabad Airport (AMD)") : String(rawDropoff || "Ahmedabad Airport (AMD)");
   const driverName = activeRide?.driver || "Ramesh Patel";
   const fareAmt = activeRide?.fare || 770;
 
   const pickupPos = getCoordsForPlace(actualPickup, userCoords);
   const destPos = getCoordsForPlace(actualDropoff, userCoords);
-  const routePolyline = generateRoutePolyline(pickupPos, destPos);
+  const routePolyline = generateRoutePolyline(pickupPos, destPos) || [];
 
   const [driverStep, setDriverStep] = useState(1);
   useEffect(() => {
+    if (!routePolyline || routePolyline.length === 0) return;
     const interval = setInterval(() => {
       setDriverStep((prev) => (prev < routePolyline.length - 1 ? prev + 1 : prev));
     }, 3500);
     return () => clearInterval(interval);
   }, [routePolyline.length]);
 
-  const currentDriverPos = routePolyline[driverStep] || pickupPos;
+  const currentDriverPos = (routePolyline && routePolyline[driverStep]) || pickupPos || { lat: 21.7645, lng: 72.1519 };
   const totalSteps = Math.max(1, routePolyline.length);
   const remainingSteps = totalSteps - driverStep;
   const remainingDistKm = (remainingSteps * 5.2).toFixed(0); // e.g. 164 km
@@ -55,6 +59,8 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
   // Arrival clock calculation
   const arrivalDate = new Date(Date.now() + (hoursLeft * 60 + minsLeft) * 60000);
   const arrivalTimeFormatted = arrivalDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  const dropoffShortText = typeof actualDropoff === 'string' ? actualDropoff.split(',')[0] : 'Destination';
 
   return (
     <div className="real-mobile-app" style={{ background: '#0F172A', position: 'relative', height: '100%', overflow: 'hidden' }}>
@@ -83,7 +89,7 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
               Highway NH-47
             </h2>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.15)', padding: '2px 10px', borderRadius: '10px', marginTop: '6px', fontSize: '13px', fontWeight: '700' }}>
-              Then ↱ {actualDropoff.split(',')[0]}
+              Then ↱ {dropoffShortText}
             </div>
           </div>
         </div>

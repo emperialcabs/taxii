@@ -15,6 +15,18 @@ export const KNOWN_COORDINATES = {
 
 export function getCoordsForPlace(placeName, defaultCoords = { lat: 21.7645, lng: 72.1519 }) {
   if (!placeName) return defaultCoords;
+
+  if (typeof placeName === 'object') {
+    if (typeof placeName.lat === 'number' && typeof placeName.lng === 'number') {
+      return placeName;
+    }
+    placeName = placeName.label || placeName.name || placeName.pickup || placeName.dropoff || '';
+  }
+
+  if (typeof placeName !== 'string') {
+    return defaultCoords;
+  }
+
   const p = placeName.toLowerCase();
 
   for (const [key, coords] of Object.entries(KNOWN_COORDINATES)) {
@@ -32,8 +44,8 @@ export function getCoordsForPlace(placeName, defaultCoords = { lat: 21.7645, lng
   const offsetLng = (((hash >> 2) % 100) / 10000);
 
   return {
-    lat: defaultCoords.lat + (offsetLat || 0.015),
-    lng: defaultCoords.lng + (offsetLng || 0.020),
+    lat: (defaultCoords && typeof defaultCoords.lat === 'number' ? defaultCoords.lat : 21.7645) + (offsetLat || 0.015),
+    lng: (defaultCoords && typeof defaultCoords.lng === 'number' ? defaultCoords.lng : 72.1519) + (offsetLng || 0.020),
     label: placeName
   };
 }
