@@ -2,28 +2,32 @@ import React, { useState } from 'react';
 import db from '../../services/dbService';
 import { saveCustomerToMySQL } from '../../services/mysqlService';
 
-export default function AccountDetailScreen({ onBack, onSave }) {
+export default function AccountDetailScreen({ onBack, onSave, isCreateMode = false }) {
   const [profile, setProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
       return saved ? JSON.parse(saved) : {
-        name: 'Rider',
-        email: 'user@empirecab.in',
-        phone: '+91 98765 43210',
+        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
+        name: '',
+        email: '',
+        phone: '',
         age: 26,
         profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
-        photoURL: null
+        photoURL: null,
+        joined: new Date().toISOString().split('T')[0]
       };
     } catch (e) {
       return {
-        name: 'Rider',
-        email: 'user@empirecab.in',
-        phone: '+91 98765 43210',
+        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
+        name: '',
+        email: '',
+        phone: '',
         age: 26,
         profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
-        photoURL: null
+        photoURL: null,
+        joined: new Date().toISOString().split('T')[0]
       };
     }
   });
@@ -41,20 +45,27 @@ export default function AccountDetailScreen({ onBack, onSave }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalProfile = {
+      ...profile,
+      id: profile.id || ('CUST-' + Math.floor(10000 + Math.random() * 89999)),
+      joined: profile.joined || new Date().toISOString().split('T')[0]
+    };
     try {
-      localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
+      localStorage.setItem('cabsy_user_profile', JSON.stringify(finalProfile));
       localStorage.setItem('taxigo_onboarded', 'true');
-      db.saveCustomer(profile);
-      saveCustomerToMySQL(profile).catch(() => {});
+      db.saveCustomer(finalProfile);
+      await saveCustomerToMySQL(finalProfile).catch(() => {});
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: finalProfile } }));
     } catch (err) {}
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
-      if (onSave) onSave(profile);
+      if (onSave) onSave(finalProfile);
       else if (onBack) onBack();
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -62,7 +73,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
       {/* Header */}
       <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
         <button className="header-back-arrow" onClick={onBack}>←</button>
-        <h2 className="white-header-title">Edit Profile Details</h2>
+        <h2 className="white-header-title">{isCreateMode ? 'Complete Customer Profile' : 'Edit Profile Details'}</h2>
       </div>
 
       <div className="mobile-screen-body" style={{ padding: '20px 20px 100px 20px' }}>

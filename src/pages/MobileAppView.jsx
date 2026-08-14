@@ -195,7 +195,7 @@ export default function MobileAppView() {
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoogleSignIn={(acc) => {
             if (acc) setSelectedGoogleAccount(acc);
-            completeOnboarding();
+            setAppStage('CREATE_PROFILE');
           }}
           onBack={() => setAppStage('ONBOARDING')}
         />
@@ -233,7 +233,7 @@ export default function MobileAppView() {
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen
-          onNext={() => setAppStage('ACCOUNT_CREATED')}
+          onNext={() => setAppStage('CREATE_PROFILE')}
           onBack={() => setAppStage('PREFERRED_LANG')}
         />
       );
@@ -241,8 +241,24 @@ export default function MobileAppView() {
     case 'ACCOUNT_CREATED':
       return (
         <AccountCreatedScreen
-          onNext={() => completeOnboarding()}
+          onNext={() => setAppStage('CREATE_PROFILE')}
           onBack={() => setAppStage('LOCATION_PERM')}
+        />
+      );
+
+    case 'CREATE_PROFILE':
+      return (
+        <AccountDetailScreen
+          isCreateMode={true}
+          onBack={() => setAppStage('LETS_YOU_IN')}
+          onSave={(updatedProfile) => {
+            if (updatedProfile) {
+              saveCustomerToMySQL(updatedProfile).catch(() => {});
+              window.dispatchEvent(new Event('storage'));
+              window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedProfile } }));
+            }
+            completeOnboarding();
+          }}
         />
       );
 
