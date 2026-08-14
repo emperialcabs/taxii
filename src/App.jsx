@@ -35,11 +35,12 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isCapacitorNative = typeof window !== 'undefined' && (window.Capacitor !== undefined || window.location.protocol === 'file:');
   const appMode = import.meta.env.VITE_APP_MODE || '';
 
-  if (isAdmin) {
+  // 1. Force Admin Portal if path is /admin OR VITE_APP_MODE === 'admin'
+  if (isAdmin || appMode === 'admin') {
     return <AdminPortal />;
   }
 
-  // Force MobileAppView if on androidapp-omega.vercel.app, Capacitor Native, /app or /mobile
+  // 2. Force MobileAppView if on androidapp domain, Capacitor Native, /app, /mobile, OR VITE_APP_MODE === 'mobile'
   if (!isWebSite && (isMobileDomain || isMobilePath || isCapacitorNative || appMode === 'mobile')) {
     return <MobileAppView />;
   }
