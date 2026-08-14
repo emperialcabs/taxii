@@ -21,14 +21,22 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     return INITIAL_VEHICLES;
   };
 
-  // Load real user inquiries from localStorage ONLY (NO DEMO DATA)
+  // Load real user inquiries from localStorage ONLY (NO DEMO DATA & NO DUPLICATES)
   const loadInquiries = () => {
     try {
       const saved = localStorage.getItem('cabsy_inquiries');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          setInquiries(parsed);
+          // Deduplicate by ID
+          const seen = new Set();
+          const unique = parsed.filter(item => {
+            const idKey = item.id || `${item.customerPhone}-${item.timestamp || item.scheduledTime}`;
+            if (seen.has(idKey)) return false;
+            seen.add(idKey);
+            return true;
+          });
+          setInquiries(unique);
           return;
         }
       }

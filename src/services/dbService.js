@@ -51,14 +51,19 @@ class DatabaseService {
 
   saveInquiry(inquiry) {
     const inquiries = this.getInquiries();
+    const existingIdx = inquiries.findIndex(i => i.id && inquiry.id && i.id === inquiry.id);
     const newInquiry = {
-      id: 'TX-' + Math.floor(100000 + Math.random() * 900000),
+      id: inquiry.id || ('INQ-' + Math.floor(1000 + Math.random() * 9000)),
       timestamp: new Date().toISOString(),
       date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
       status: 'Pending',
       ...inquiry
     };
-    inquiries.unshift(newInquiry);
+    if (existingIdx >= 0) {
+      inquiries[existingIdx] = newInquiry;
+    } else {
+      inquiries.unshift(newInquiry);
+    }
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(inquiries));
     
     // Auto sync customer in central database

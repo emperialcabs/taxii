@@ -248,9 +248,7 @@ export default function AdminPortal() {
         const isRealInquiry = (i) => {
           if (!i) return false;
           const name = (i.customerName || '').toLowerCase().trim();
-          const email = (i.customerEmail || '').toLowerCase().trim();
-          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name.includes('john doe')) return false;
-          if (email.endsWith('@customer.com') || email.endsWith('@client.com')) return false;
+          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name === 'john doe') return false;
           return true;
         };
 
@@ -259,9 +257,8 @@ export default function AdminPortal() {
           const name = (c.name || '').toLowerCase().trim();
           const email = (c.email || '').toLowerCase().trim();
           const id = (c.id || c.firestoreId || '').toLowerCase().trim();
-          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name.includes('john doe')) return false;
+          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name === 'john doe') return false;
           if (email.includes('ankit.mehta') || email.includes('bhavin.patel')) return false;
-          if (email.endsWith('@customer.com') || email.endsWith('@client.com')) return false;
           if (id === 'cust-303' || id === 'cust-316' || id === 'cust-714' || id === 'cust-432') return false;
           return true;
         };

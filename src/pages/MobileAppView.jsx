@@ -112,19 +112,10 @@ export default function MobileAppView() {
       timestamp: new Date().toISOString()
     };
 
-    // 1. Save directly into cabsy_inquiries for Admin Portal (localStorage)
-    try {
-      const existingInquiries = JSON.parse(localStorage.getItem('cabsy_inquiries') || '[]');
-      const updatedInquiries = [newInquiry, ...existingInquiries];
-      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
-    } catch (err) {
-      console.error("Error saving inquiry to localStorage:", err);
-    }
-
-    // 2. Save into dbService for local history
+    // 1. Save into dbService (single source of truth for localStorage inquiries)
     db.saveInquiry(newInquiry);
 
-    // 3. Save directly to TiDB Cloud Database
+    // 2. Save directly to TiDB Cloud Database
     saveInquiryToTiDB(newInquiry).catch(e => console.warn('TiDB inquiry save failed:', e));
     saveCustomerToTiDB(userProf).catch(e => console.warn('TiDB customer save failed:', e));
 
