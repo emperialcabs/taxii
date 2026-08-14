@@ -1082,32 +1082,31 @@ export default function AdminPortal() {
                           </span>
                         </td>
                         <td>
-                          <div className="flex gap-1">
+                          <div className="flex gap-2 align-center" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
                             {inq.status === 'Pending' && (
                               <button 
-                                className="btn-icon btn-icon-success"
+                                className="btn-action-assign"
                                 title="Confirm & Assign Driver"
                                 onClick={() => setAssignModal({ open: true, inquiry: inq })}
                               >
-                                <CheckCircle2 size={16} />
+                                <UserCheck size={14} /> Assign Driver
                               </button>
                             )}
                             {inq.status !== 'Cancelled' && (
                               <button 
-                                className="btn-icon btn-icon-danger"
+                                className="btn-action-cancel"
                                 title="Cancel Booking"
                                 onClick={() => handleCancelInquiry(inq.id)}
                               >
-                                <XCircle size={16} />
+                                <XCircle size={14} /> Cancel
                               </button>
                             )}
                             <button 
-                              className="btn-icon btn-icon-danger"
+                              className="btn-action-delete"
                               title="Delete Inquiry Permanently"
                               onClick={() => handleDeleteInquiry(inq.id)}
-                              style={{ backgroundColor: '#ef4444', color: '#ffffff', marginLeft: '4px' }}
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={14} /> Delete
                             </button>
                           </div>
                         </td>
