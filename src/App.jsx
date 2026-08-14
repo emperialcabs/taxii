@@ -69,6 +69,49 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("App Render Error Caught:", error, errorInfo);
+  }
+
+  handleReload = () => {
+    try {
+      localStorage.clear();
+    } catch (e) {}
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px', background: '#F8FAFC', color: '#0F172A', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }}>
+          <div style={{ fontSize: '54px', marginBottom: '16px' }}>🚖</div>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0' }}>Empire Cab Application</h2>
+          <p style={{ color: '#64748B', maxWidth: '360px', margin: '0 0 20px 0', fontSize: '15px' }}>
+            Application view updated. Tap below to reload fresh session.
+          </p>
+          <button 
+            onClick={this.handleReload} 
+            style={{ background: '#10B981', color: '#FFFFFF', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: '700', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)' }}
+          >
+            Reload Empire App
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
@@ -81,13 +124,15 @@ export default function App() {
   };
 
   return (
-    <Router>
-      <ScrollToTop />
-      <MainLayout 
-        handleOpenBooking={handleOpenBooking}
-        isBookingOpen={isBookingOpen}
-        handleCloseBooking={handleCloseBooking}
-      />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <ScrollToTop />
+        <MainLayout 
+          handleOpenBooking={handleOpenBooking}
+          isBookingOpen={isBookingOpen}
+          handleCloseBooking={handleCloseBooking}
+        />
+      </Router>
+    </ErrorBoundary>
   );
 }

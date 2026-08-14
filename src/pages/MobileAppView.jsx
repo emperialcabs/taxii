@@ -435,6 +435,6 @@ export default function MobileAppView() {
       return <TripReceiptScreen onDone={() => setAppStage('APP_HOME')} />;
 
     default:
-      return null;
+      return renderTabContent();
   }
 }
