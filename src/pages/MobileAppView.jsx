@@ -271,7 +271,7 @@ export default function MobileAppView() {
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoogleSignIn={(acc) => {
             if (acc) setSelectedGoogleAccount(acc);
-            setAppStage('CREATE_PROFILE');
+            proceedAfterAuth();
           }}
           onBack={() => setAppStage('ONBOARDING')}
         />
@@ -309,7 +309,7 @@ export default function MobileAppView() {
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen
-          onNext={() => setAppStage('CREATE_PROFILE')}
+          onNext={() => proceedAfterAuth()}
           onBack={() => setAppStage('PREFERRED_LANG')}
         />
       );
@@ -317,7 +317,7 @@ export default function MobileAppView() {
     case 'ACCOUNT_CREATED':
       return (
         <AccountCreatedScreen
-          onNext={() => setAppStage('CREATE_PROFILE')}
+          onNext={() => proceedAfterAuth()}
           onBack={() => setAppStage('LOCATION_PERM')}
         />
       );

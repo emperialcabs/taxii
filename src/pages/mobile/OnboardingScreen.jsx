@@ -27,7 +27,9 @@ export default function OnboardingScreen({ onFinish }) {
     <div className="real-mobile-app">
       <div className="onboarding-screen-container">
         <div className="onboarding-image-box">
-          <img src={currentSlide.img} alt={currentSlide.title} />
+          <div style={{ fontSize: '80px', textAlign: 'center', margin: '20px 0' }}>
+            {onboardingStep === 0 ? '🚖' : onboardingStep === 1 ? '👨‍✈️' : '📍'}
+          </div>
         </div>
         <div className="onboarding-text-box">
           <h2 className="onboarding-title">{currentSlide.title}</h2>
