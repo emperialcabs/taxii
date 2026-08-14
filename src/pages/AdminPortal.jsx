@@ -1087,6 +1087,14 @@ export default function AdminPortal() {
                                 <XCircle size={16} />
                               </button>
                             )}
+                            <button 
+                              className="btn-icon btn-icon-danger"
+                              title="Delete Inquiry Permanently"
+                              onClick={() => handleDeleteInquiry(inq.id)}
+                              style={{ backgroundColor: '#ef4444', color: '#ffffff', marginLeft: '4px' }}
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1411,12 +1419,22 @@ export default function AdminPortal() {
                         <td><strong className="text-green">${Number(cust.totalSpent).toFixed(2)}</strong></td>
                         <td><small className="text-muted">{cust.joined}</small></td>
                         <td>
-                          <button 
-                            className="btn btn-sm btn-outline flex align-center gap-1"
-                            onClick={() => setCustomerDetailModal({ open: true, customer: cust })}
-                          >
-                            <Eye size={13} /> View Profile & Trips
-                          </button>
+                          <div className="flex gap-2 align-center">
+                            <button 
+                              className="btn btn-sm btn-outline flex align-center gap-1"
+                              onClick={() => setCustomerDetailModal({ open: true, customer: cust })}
+                            >
+                              <Eye size={13} /> View Profile & Trips
+                            </button>
+                            <button 
+                              className="btn btn-sm flex align-center gap-1"
+                              style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                              onClick={() => handleDeleteCustomer(cust.id || cust.email)}
+                              title="Delete Customer Profile"
+                            >
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
