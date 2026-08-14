@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
+import { db } from '../../services/dbService';
 
 export default function SeatScheduleScreen({ 
   userCoords,
@@ -45,7 +46,7 @@ export default function SeatScheduleScreen({
   const baseDistance = getRouteDistanceKm();
   const effectiveDistance = tripType === 'round-trip' ? baseDistance * 2 : baseDistance;
 
-  // Load configured vehicles from Admin Portal (Zero demo/hardcoded fallback cars)
+  // Load configured vehicles from Admin Portal
   const getFleetVehicles = () => {
     let rawList = [];
     try {
@@ -82,6 +83,28 @@ export default function SeatScheduleScreen({
   const fleet = getFleetVehicles();
   const [currentCarId, setCurrentCarId] = useState(selectedCar || fleet[0]?.id);
   const activeCarObj = fleet.find(c => c.id === currentCarId) || fleet[0];
+
+  // Wallet Reward Redemption State
+  const [useWalletDiscount, setUseWalletDiscount] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  const userProfile = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  }, []);
+
+  const userPhone = userProfile?.phone || '+91 98765 43210';
+
+  useEffect(() => {
+    const w = db.getCustomerWallet(userPhone);
+    setWalletBalance(w.balance || 0);
+  }, [userPhone]);
+
+  const baseFare = activeCarObj ? activeCarObj.totalFareNum : 770;
+  const discountAmount = (useWalletDiscount && walletBalance > 0) ? Math.min(walletBalance, baseFare) : 0;
+  const netFare = Math.max(0, baseFare - discountAmount);
 
   return (
     <div className="real-mobile-app">
@@ -244,7 +267,7 @@ export default function SeatScheduleScreen({
               3. SELECT FLEET CAR (PRICE PER KM)
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
               {fleet.map((car) => {
                 const isSelected = currentCarId === car.id;
                 return (
@@ -283,6 +306,32 @@ export default function SeatScheduleScreen({
               })}
             </div>
 
+            {/* 4. WALLET REWARD DISCOUNT CARD */}
+            {walletBalance > 0 && (
+              <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '16px', padding: '12px 16px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🎁</span> Apply Wallet Reward Balance
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '800', color: '#15803D' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={useWalletDiscount} 
+                      onChange={(e) => setUseWalletDiscount(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#10B981', cursor: 'pointer' }}
+                    />
+                    Use Reward
+                  </label>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#047857', fontWeight: '700' }}>
+                  <span>Available Wallet: ₹{walletBalance.toLocaleString('en-IN')}</span>
+                  {useWalletDiscount && discountAmount > 0 && (
+                    <span style={{ color: '#E11D48', fontWeight: '800' }}>-₹{discountAmount} Discount Applied</span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Direct Booking Submission Button */}
             <button 
               className="taxigo-btn-primary" 
@@ -300,9 +349,18 @@ export default function SeatScheduleScreen({
                 boxShadow: '0 6px 20px rgba(52, 211, 153, 0.4)',
                 transition: 'all 0.2s ease'
               }}
-              onClick={() => onNext && onNext(activeCarObj)}
+              onClick={() => {
+                const payload = {
+                  ...activeCarObj,
+                  totalFareNum: netFare,
+                  originalFare: baseFare,
+                  walletDiscountUsed: discountAmount,
+                  couponUsed: discountAmount > 0 ? `Wallet Reward (-₹${discountAmount})` : null
+                };
+                onNext && onNext(payload);
+              }}
             >
-              Confirm Booking Request ({activeCarObj.price}) →
+              Confirm Booking Request ({discountAmount > 0 ? `₹${netFare}` : activeCarObj.price}) →
             </button>
           </div>
         </div>

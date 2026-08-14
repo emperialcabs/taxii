@@ -176,6 +176,39 @@ export default function AdminPortal() {
   const [editDestModal, setEditDestModal] = useState({ open: false, destination: null });
   const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
   const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
+  const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
+
+  const handleIssueRewardSubmit = () => {
+    if (!rewardModal.inquiry) return;
+    const inq = rewardModal.inquiry;
+    const rewardAmount = Number(rewardModal.amount) || 100;
+
+    // 1. Add reward to customer wallet in dbService
+    db.addRewardToCustomer(inq.customerPhone, rewardAmount, inq.id);
+
+    // 2. Update inquiry state & localStorage
+    setInquiries(prev => prev.map(item => {
+      if (item.id === inq.id) {
+        return { ...item, rewardIssued: true, rewardAmount: rewardAmount };
+      }
+      return item;
+    }));
+
+    try {
+      const savedInquiries = db.getInquiries();
+      const updated = savedInquiries.map(item => {
+        if (item.id === inq.id) {
+          return { ...item, rewardIssued: true, rewardAmount: rewardAmount };
+        }
+        return item;
+      });
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+    } catch (e) {}
+
+    window.dispatchEvent(new Event('storage'));
+    alert(`Successfully credited ₹${rewardAmount} reward to ${inq.customerName}'s wallet!`);
+    setRewardModal({ open: false, inquiry: null, amount: 100 });
+  };
 
   // Notification System State
   const [notifications, setNotifications] = useState([
@@ -1068,7 +1101,19 @@ export default function AdminPortal() {
                         <td><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
                         <td><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
                         <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
-                        <td><strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong></td>
+                        <td>
+                          <strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong>
+                          {inq.walletDiscountUsed > 0 && (
+                            <div style={{ fontSize: '11px', color: '#059669', fontWeight: '800', marginTop: '2px', background: '#F0FDF4', padding: '2px 6px', borderRadius: '6px', border: '1px solid #BBF7D0', display: 'inline-block' }}>
+                              🎁 Coupon Used: -₹{Number(inq.walletDiscountUsed).toFixed(2)}
+                            </div>
+                          )}
+                          {inq.originalFare && inq.walletDiscountUsed > 0 && (
+                            <div className="text-xs text-muted" style={{ textDecoration: 'line-through' }}>
+                              Base: ₹{Number(inq.originalFare).toFixed(2)}
+                            </div>
+                          )}
+                        </td>
                         <td>
                           {inq.driver && inq.driver !== '-' ? (
                             <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
@@ -1092,6 +1137,39 @@ export default function AdminPortal() {
                                 <UserCheck size={14} /> Assign Driver
                               </button>
                             )}
+
+                            {/* Reward Button for Confirmed / Successful Trips */}
+                            {(inq.status === 'Confirmed' || inq.status === 'Completed') && (
+                              inq.rewardIssued ? (
+                                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#047857', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  🎁 Reward Issued (₹{inq.rewardAmount})
+                                </span>
+                              ) : (
+                                <button 
+                                  className="btn-action-reward"
+                                  title="Give Reward to Customer Wallet"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    padding: '6px 14px',
+                                    borderRadius: '20px',
+                                    fontFamily: 'League Spartan, sans-serif',
+                                    fontSize: '13px',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
+                                >
+                                  🎁 Give Reward
+                                </button>
+                              )
+                            )}
+
                             {inq.status !== 'Cancelled' && (
                               <button 
                                 className="btn-action-cancel"
@@ -1640,7 +1718,7 @@ export default function AdminPortal() {
       </main>
 
       {/* MODAL 1: CONFIRM INQUIRY & ASSIGN DRIVER */}
-      {assignModal.open && (
+      {assignModal.open && assignModal.inquiry && (
         <div className="admin-modal-overlay" onClick={() => setAssignModal({ open: false, inquiry: null })}>
           <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
             <h3>Confirm Booking & Assign Driver</h3>
@@ -1650,6 +1728,11 @@ export default function AdminPortal() {
               <div><strong>Route:</strong> {assignModal.inquiry.pickup} → {assignModal.inquiry.dropoff}</div>
               <div><strong>Vehicle:</strong> {assignModal.inquiry.vehicle}</div>
               <div><strong>Fare:</strong> <span className="text-green font-bold">₹{Number(assignModal.inquiry.fare).toFixed(2)}</span></div>
+              {assignModal.inquiry.walletDiscountUsed > 0 && (
+                <div style={{ marginTop: '6px', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '6px 12px', borderRadius: '8px', color: '#047857', fontSize: '13px', fontWeight: '700' }}>
+                  🎁 Customer used Wallet Reward Discount: -₹{Number(assignModal.inquiry.walletDiscountUsed).toFixed(2)} (Base Fare: ₹{Number(assignModal.inquiry.originalFare || (assignModal.inquiry.fare + assignModal.inquiry.walletDiscountUsed)).toFixed(2)})
+                </div>
+              )}
             </div>
 
             <div className="input-group mt-3">
@@ -1667,6 +1750,52 @@ export default function AdminPortal() {
             <div className="modal-actions-flex mt-4">
               <button className="btn btn-outline" onClick={() => setAssignModal({ open: false, inquiry: null })}>Cancel</button>
               <button className="btn btn-primary" onClick={handleConfirmInquiry}>Confirm & Dispatch Money to Report</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ISSUE WALLET REWARD TO CUSTOMER */}
+      {rewardModal.open && rewardModal.inquiry && (
+        <div className="admin-modal-overlay" onClick={() => setRewardModal({ open: false, inquiry: null, amount: 100 })}>
+          <div className="admin-modal-box card" onClick={e => e.stopPropagation()}>
+            <h3 style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🎁 Issue Wallet Reward to Customer
+            </h3>
+            <p>Grant reward credit to customer <strong>{rewardModal.inquiry.customerName}</strong> ({rewardModal.inquiry.customerPhone}) for trip completion.</p>
+
+            <div className="modal-info-summary" style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
+              <div><strong>Trip ID:</strong> {rewardModal.inquiry.id}</div>
+              <div><strong>Customer Phone:</strong> {rewardModal.inquiry.customerPhone}</div>
+              <div><strong>Route:</strong> {rewardModal.inquiry.pickup} → {rewardModal.inquiry.dropoff}</div>
+              <div><strong>Net Trip Fare Paid:</strong> ₹{Number(rewardModal.inquiry.fare).toFixed(2)}</div>
+            </div>
+
+            <div className="input-group">
+              <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>Enter Reward Amount (₹)</label>
+              <input 
+                type="number" 
+                placeholder="e.g. 100"
+                value={rewardModal.amount} 
+                onChange={e => setRewardModal({ ...rewardModal, amount: e.target.value })}
+                required 
+                style={{ fontSize: '20px', fontWeight: '800', color: '#059669', padding: '10px 14px', borderRadius: '12px', border: '2px solid #10B981' }}
+              />
+              <small className="text-muted" style={{ display: 'block', marginTop: '6px' }}>
+                This amount will be added directly to the customer's Taxi Wallet and can be redeemed on their next booking!
+              </small>
+            </div>
+
+            <div className="modal-actions-flex mt-4">
+              <button type="button" className="btn btn-outline" onClick={() => setRewardModal({ open: false, inquiry: null, amount: 100 })}>Cancel</button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', border: 'none', fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800' }} 
+                onClick={handleIssueRewardSubmit}
+              >
+                🎁 Credit ₹{rewardModal.amount || 0} Reward
+              </button>
             </div>
           </div>
         </div>

@@ -158,6 +158,70 @@ class DatabaseService {
     return updatedCustomer;
   }
 
+  // Customer Wallet & Reward Engine
+  getCustomerWallet(phone) {
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '') : 'default';
+    const key = `cabsy_wallet_${cleanPhone}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {}
+
+    // Initial wallet balance for customer
+    const initialWallet = {
+      balance: 200, // Welcome reward bonus
+      transactions: [
+        { title: 'Welcome Reward Bonus', date: new Date().toLocaleDateString('en-IN'), amount: '+₹200.00', type: 'credit', inquiryId: 'WELCOME' }
+      ]
+    };
+    try {
+      localStorage.setItem(key, JSON.stringify(initialWallet));
+    } catch (e) {}
+    return initialWallet;
+  }
+
+  saveCustomerWallet(phone, walletData) {
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '') : 'default';
+    const key = `cabsy_wallet_${cleanPhone}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(walletData));
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('taxigo_wallet_updated', { detail: walletData }));
+    } catch (e) {}
+  }
+
+  addRewardToCustomer(phone, rewardAmount, inquiryId) {
+    const wallet = this.getCustomerWallet(phone);
+    const amountNum = Number(rewardAmount) || 0;
+    wallet.balance += amountNum;
+    wallet.transactions.unshift({
+      title: `Trip Reward (${inquiryId || 'Trip'})`,
+      date: new Date().toLocaleDateString('en-IN'),
+      amount: `+₹${amountNum.toFixed(2)}`,
+      type: 'credit',
+      inquiryId
+    });
+    this.saveCustomerWallet(phone, wallet);
+    return wallet;
+  }
+
+  deductWalletBalance(phone, amountToDeduct, inquiryId) {
+    const wallet = this.getCustomerWallet(phone);
+    const amountNum = Number(amountToDeduct) || 0;
+    wallet.balance = Math.max(0, wallet.balance - amountNum);
+    wallet.transactions.unshift({
+      title: `Booking Reward Used (${inquiryId || 'Ride'})`,
+      date: new Date().toLocaleDateString('en-IN'),
+      amount: `-₹${amountNum.toFixed(2)}`,
+      type: 'debit',
+      inquiryId
+    });
+    this.saveCustomerWallet(phone, wallet);
+    return wallet;
+  }
+
   clearAllDemoData() {
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.DRIVERS, JSON.stringify([]));

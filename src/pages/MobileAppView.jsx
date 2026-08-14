@@ -94,6 +94,10 @@ export default function MobileAppView() {
     const totalFareNum = carObj?.totalFareNum || 770;
 
     const newInquiryId = `INQ-${Math.floor(1000 + Math.random() * 9000)}`;
+    const walletDiscountUsed = carObj?.walletDiscountUsed || 0;
+    const originalFare = carObj?.originalFare || totalFareNum;
+    const couponUsed = carObj?.couponUsed || (walletDiscountUsed > 0 ? `Wallet Reward (-₹${walletDiscountUsed})` : null);
+
     const newInquiry = {
       id: newInquiryId,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -104,6 +108,9 @@ export default function MobileAppView() {
       dropoff: dropoffLoc || 'Ahmedabad Airport (AMD)',
       vehicle: selectedVehicleName,
       fare: totalFareNum,
+      originalFare,
+      walletDiscountUsed,
+      couponUsed,
       tripType: tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way',
       scheduledDate,
       scheduledTime,
@@ -111,6 +118,10 @@ export default function MobileAppView() {
       status: 'Pending',
       timestamp: new Date().toISOString()
     };
+
+    if (walletDiscountUsed > 0) {
+      db.deductWalletBalance(userProf.phone, walletDiscountUsed, newInquiryId);
+    }
 
     // 1. Save into dbService (single source of truth for localStorage inquiries)
     db.saveInquiry(newInquiry);

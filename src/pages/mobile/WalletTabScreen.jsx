@@ -1,7 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
+import { db } from '../../services/dbService';
 
 export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
+  const [wallet, setWallet] = useState({ balance: 200, transactions: [] });
+
+  const userProfile = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  }, []);
+
+  const userPhone = userProfile?.phone || '+91 98765 43210';
+
+  useEffect(() => {
+    const fetchWallet = () => {
+      const w = db.getCustomerWallet(userPhone);
+      setWallet(w);
+    };
+
+    fetchWallet();
+
+    window.addEventListener('storage', fetchWallet);
+    window.addEventListener('taxigo_wallet_updated', fetchWallet);
+    return () => {
+      window.removeEventListener('storage', fetchWallet);
+      window.removeEventListener('taxigo_wallet_updated', fetchWallet);
+    };
+  }, [userPhone]);
+
   return (
     <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
       {/* Header */}
@@ -24,23 +52,30 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         }}>
           <div style={{ position: 'absolute', right: '-10px', top: '-10px', fontSize: '100px', opacity: 0.15, pointerEvents: 'none' }}>💳</div>
           <div style={{ fontSize: '12px', fontWeight: '800', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>Available Taxi Wallet Balance</div>
-          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 16px 0' }}>₹1,450.00</div>
+          <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 16px 0' }}>
+            ₹{wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </div>
           
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button style={{ 
-              flex: 1, 
-              background: '#FFFFFF', 
-              color: '#059669', 
-              border: 'none', 
-              padding: '12px', 
-              borderRadius: '16px', 
-              fontFamily: 'League Spartan', 
-              fontWeight: '800', 
-              fontSize: '15px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-            }}>
-              + Add Funds
+            <button 
+              onClick={() => {
+                db.addRewardToCustomer(userPhone, 100, 'ADMIN_TOPUP');
+              }}
+              style={{ 
+                flex: 1, 
+                background: '#FFFFFF', 
+                color: '#059669', 
+                border: 'none', 
+                padding: '12px', 
+                borderRadius: '16px', 
+                fontFamily: 'League Spartan', 
+                fontWeight: '800', 
+                fontSize: '15px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+            >
+              + Quick ₹100 Reward
             </button>
             <button style={{ 
               flex: 1, 
@@ -54,7 +89,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
               fontSize: '15px',
               cursor: 'pointer'
             }}>
-              🎁 Rewards
+              🎁 Rewards Active
             </button>
           </div>
         </div>
@@ -64,7 +99,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
           {[
             { name: 'UPI / Google Pay / PhonePe', icon: '📱', desc: 'Instant 1-Click Payment' },
-            { name: 'Credit / Debit Cards', icon: '💳', desc: 'HDFC, ICICI, SBI Cards' },
+            { name: 'Taxi Wallet Rewards Balance', icon: '💳', desc: 'Auto-apply discount on booking' },
             { name: 'Cash on Arrival', icon: '💵', desc: 'Pay Driver directly after trip' }
           ].map((item, idx) => (
             <div key={idx} style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
@@ -79,28 +114,30 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         </div>
 
         {/* Recent Wallet Activity */}
-        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Transactions</h3>
+        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Wallet Transactions</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {[
-            { title: 'Trip Payment - Bhavnagar Railway Station', date: 'Today, 10:15 AM', amount: '-₹270.00', type: 'debit' },
-            { title: 'Wallet Top Up via UPI', date: 'Yesterday, 04:30 PM', amount: '+₹1,000.00', type: 'credit' },
-            { title: 'Trip Payment - Ahmedabad Airport', date: '08 Aug 2026', amount: '-₹2,625.00', type: 'debit' }
-          ].map((txn, idx) => (
-            <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn.title}</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>{txn.date}</div>
-              </div>
-              <div style={{ 
-                fontFamily: 'League Spartan', 
-                fontWeight: '800', 
-                fontSize: '16px', 
-                color: txn.type === 'credit' ? '#22C55E' : '#E11D48' 
-              }}>
-                {txn.amount}
-              </div>
+          {wallet.transactions.length === 0 ? (
+            <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', textOverflow: 'ellipsis', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+              No transactions recorded yet. Completed trips & admin rewards will appear here.
             </div>
-          ))}
+          ) : (
+            wallet.transactions.map((txn, idx) => (
+              <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn.title}</div>
+                  <div style={{ fontSize: '12px', color: '#64748B' }}>{txn.date}</div>
+                </div>
+                <div style={{ 
+                  fontFamily: 'League Spartan', 
+                  fontWeight: '800', 
+                  fontSize: '16px', 
+                  color: txn.type === 'credit' ? '#22C55E' : '#E11D48' 
+                }}>
+                  {txn.amount}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
