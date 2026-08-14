@@ -528,13 +528,11 @@ export default function AdminPortal() {
       ).catch(() => {});
     }
 
-    // Update driver earnings and trip count
+    // Update driver status
     setDrivers(prev => prev.map(d => {
       if (d.id === driverObj.id) {
         return {
           ...d,
-          trips: d.trips + 1,
-          earnings: d.earnings + Number(assignModal.inquiry.fare),
           status: 'On Ride'
         };
       }
@@ -1038,23 +1036,28 @@ export default function AdminPortal() {
                   <button className="btn-link-sm" onClick={() => setActiveTab('drivers')}>Manage Drivers &gt;</button>
                 </div>
                 <div className="driver-mini-list">
-                  {drivers.map(drv => (
-                    <div key={drv.id} className="driver-mini-item flex justify-between align-center">
-                      <div className="flex align-center gap-2">
-                        <div className="driver-avatar">{drv.name.charAt(0)}</div>
-                        <div>
-                          <strong>{drv.name}</strong>
-                          <small className="display-block text-muted">{drv.vehicle}</small>
+                  {drivers.map(drv => {
+                    const drvInqs = inquiries.filter(i => i.driver === drv.name && (i.status === 'Confirmed' || i.status === 'Completed'));
+                    const tripsCount = drvInqs.length;
+                    const earningsTotal = drvInqs.reduce((sum, item) => sum + Number(item.fare || 0), 0);
+                    return (
+                      <div key={drv.id} className="driver-mini-item flex justify-between align-center">
+                        <div className="flex align-center gap-2">
+                          <div className="driver-avatar">{drv.name.charAt(0)}</div>
+                          <div>
+                            <strong>{drv.name}</strong>
+                            <small className="display-block text-muted">{drv.vehicle}</small>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {drv.status}
+                          </span>
+                          <small className="display-block text-muted mt-1">{tripsCount} Trips (₹{earningsTotal.toFixed(0)})</small>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                          {drv.status}
-                        </span>
-                        <small className="display-block text-muted mt-1">{drv.trips} Trips (₹{drv.earnings.toFixed(0)})</small>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1397,60 +1400,65 @@ export default function AdminPortal() {
             </div>
 
             <div className="drivers-cards-grid">
-              {drivers.map(drv => (
-                <div key={drv.id} className="card driver-card-full">
-                  <div className="driver-card-header flex justify-between align-center">
-                    <div className="flex align-center gap-2">
-                      <div className="driver-avatar-lg">{drv.name.charAt(0)}</div>
-                      <div>
-                        <h3>{drv.name}</h3>
-                        <small className="text-muted">ID: {drv.id}</small>
+              {drivers.map(drv => {
+                const drvInqs = inquiries.filter(i => i.driver === drv.name && (i.status === 'Confirmed' || i.status === 'Completed'));
+                const tripsCount = drvInqs.length;
+                const earningsTotal = drvInqs.reduce((sum, item) => sum + Number(item.fare || 0), 0);
+                return (
+                  <div key={drv.id} className="card driver-card-full">
+                    <div className="driver-card-header flex justify-between align-center">
+                      <div className="flex align-center gap-2">
+                        <div className="driver-avatar-lg">{drv.name.charAt(0)}</div>
+                        <div>
+                          <h3>{drv.name}</h3>
+                          <small className="text-muted">ID: {drv.id}</small>
+                        </div>
+                      </div>
+                      <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {drv.status}
+                      </span>
+                    </div>
+
+                    <div className="driver-details-list">
+                      <div className="detail-row">
+                        <span className="text-muted">Phone:</span>
+                        <strong>{drv.phone}</strong>
+                      </div>
+                      <div className="detail-row">
+                        <span className="text-muted">Rating:</span>
+                        <strong className="text-yellow">★ {drv.rating}</strong>
                       </div>
                     </div>
-                    <span className={`status-tag status-${drv.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {drv.status}
-                    </span>
-                  </div>
 
-                  <div className="driver-details-list">
-                    <div className="detail-row">
-                      <span className="text-muted">Phone:</span>
-                      <strong>{drv.phone}</strong>
+                    <div className="driver-stats-footer flex justify-between align-center">
+                      <div className="stat-col">
+                        <span className="stat-label">Completed Trips</span>
+                        <span className="stat-value">{tripsCount} {tripsCount === 1 ? 'Ride' : 'Rides'}</span>
+                      </div>
+                      <div className="stat-col text-right">
+                        <span className="stat-label">Total Earnings</span>
+                        <span className="stat-value text-green">₹{earningsTotal.toFixed(2)}</span>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <span className="text-muted">Rating:</span>
-                      <strong className="text-yellow">★ {drv.rating}</strong>
-                    </div>
-                  </div>
 
-                  <div className="driver-stats-footer flex justify-between align-center">
-                    <div className="stat-col">
-                      <span className="stat-label">Completed Trips</span>
-                      <span className="stat-value">{drv.trips} Rides</span>
-                    </div>
-                    <div className="stat-col text-right">
-                      <span className="stat-label">Total Earnings</span>
-                      <span className="stat-value text-green">₹{drv.earnings.toFixed(2)}</span>
+                    <div className="driver-card-actions flex gap-2 align-center">
+                      <button 
+                        className="btn btn-outline btn-sm flex-1 flex align-center justify-center gap-1"
+                        onClick={() => setDriverReportModal({ open: true, driver: drv })}
+                      >
+                        <Eye size={14} /> Performance Report
+                      </button>
+                      <button 
+                        className="btn btn-danger-icon btn-sm flex align-center justify-center"
+                        title="Delete Driver"
+                        onClick={() => handleDeleteDriver(drv.id)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="driver-card-actions flex gap-2 align-center">
-                    <button 
-                      className="btn btn-outline btn-sm flex-1 flex align-center justify-center gap-1"
-                      onClick={() => setDriverReportModal({ open: true, driver: drv })}
-                    >
-                      <Eye size={14} /> Performance Report
-                    </button>
-                    <button 
-                      className="btn btn-danger-icon btn-sm flex align-center justify-center"
-                      title="Delete Driver"
-                      onClick={() => handleDeleteDriver(drv.id)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -2045,26 +2053,30 @@ export default function AdminPortal() {
       )}
 
       {/* MODAL 6: DRIVER PERFORMANCE REPORT */}
-      {driverReportModal.open && driverReportModal.driver && (
-        <div className="admin-modal-overlay" onClick={() => setDriverReportModal({ open: false, driver: null })}>
-          <div className="admin-modal-box card large-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header-flex">
-              <h3>Driver Audit & Performance Report</h3>
-              <button className="btn-modal-close" onClick={() => setDriverReportModal({ open: false, driver: null })}>
-                <XCircle size={22} />
-              </button>
-            </div>
+      {driverReportModal.open && driverReportModal.driver && (() => {
+        const drvName = driverReportModal.driver.name;
+        const drvInqs = inquiries.filter(i => i.driver === drvName && (i.status === 'Confirmed' || i.status === 'Completed'));
+        const calcEarnings = drvInqs.reduce((sum, i) => sum + Number(i.fare || 0), 0);
+        return (
+          <div className="admin-modal-overlay" onClick={() => setDriverReportModal({ open: false, driver: null })}>
+            <div className="admin-modal-box card large-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header-flex">
+                <h3>Driver Audit & Performance Report</h3>
+                <button className="btn-modal-close" onClick={() => setDriverReportModal({ open: false, driver: null })}>
+                  <XCircle size={22} />
+                </button>
+              </div>
 
-            <div className="driver-profile-header mt-3 flex justify-between align-center">
-              <div>
-                <h2 className="m-0">{driverReportModal.driver.name}</h2>
-                <p className="text-muted mt-1 m-0">{driverReportModal.driver.vehicle}</p>
+              <div className="driver-profile-header mt-3 flex justify-between align-center">
+                <div>
+                  <h2 className="m-0">{driverReportModal.driver.name}</h2>
+                  <p className="text-muted mt-1 m-0">{driverReportModal.driver.vehicle}</p>
+                </div>
+                <div className="text-right">
+                  <span className="stat-label">Driver Total Earnings</span>
+                  <h2 className="text-green m-0">₹{calcEarnings.toFixed(2)}</h2>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="stat-label">Driver Total Earnings</span>
-                <h2 className="text-green m-0">₹{driverReportModal.driver.earnings.toFixed(2)}</h2>
-              </div>
-            </div>
 
             <h4 className="mt-4">Assigned Trips & Completed Duties</h4>
             <div className="table-responsive mt-2">
@@ -2100,7 +2112,8 @@ export default function AdminPortal() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* MODAL 7: ADD NEW VEHICLE / CAR */}
       {addVehicleModal && (

@@ -57,25 +57,6 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
           </div>
         </div>
 
-        {/* Saved Payment Methods */}
-        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Saved Payment Options</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
-          {[
-            { name: 'UPI / Google Pay / PhonePe', icon: '📱', desc: 'Instant 1-Click Payment' },
-            { name: 'Taxi Wallet Rewards Balance', icon: '💳', desc: 'Auto-apply discount on booking' },
-            { name: 'Cash on Arrival', icon: '💵', desc: 'Pay Driver directly after trip' }
-          ].map((item, idx) => (
-            <div key={idx} style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '24px' }}>{item.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{item.name}</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>{item.desc}</div>
-              </div>
-              <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '800' }}>Active ✓</span>
-            </div>
-          ))}
-        </div>
-
         {/* Recent Wallet Activity */}
         <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Wallet Transactions</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
