@@ -1662,7 +1662,7 @@ export default function AdminPortal() {
                 <option value="">-- Choose Driver --</option>
                 {drivers.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.vehicle} - {d.plate}) - [{d.status}]
+                    {d.name} ({d.vehicle}) - [{d.status}]
                   </option>
                 ))}
               </select>
@@ -1706,21 +1706,13 @@ export default function AdminPortal() {
               <div className="input-group">
                 <label>Assigned Vehicle Class</label>
                 <select value={newDriverForm.vehicle} onChange={e => setNewDriverForm({ ...newDriverForm, vehicle: e.target.value })}>
-                  <option value="Empire Regular (Sedan)">Empire Regular (Sedan)</option>
-                  <option value="Empire XL (SUV)">Empire XL (SUV)</option>
-                  <option value="Empire Luxury (BMW M4)">Empire Luxury (BMW M4)</option>
-                  <option value="Empire Electric (EV)">Empire Electric (EV)</option>
+                  {Array.from(new Set([
+                    ...vehicles.map(v => v.name),
+                    ...inquiries.map(i => i.vehicle).filter(Boolean)
+                  ])).map(vName => (
+                    <option key={vName} value={vName}>{vName}</option>
+                  ))}
                 </select>
-              </div>
-
-              <div className="input-group">
-                <label>License Plate Number</label>
-                <input 
-                  type="text" 
-                  placeholder="CAB-1234"
-                  value={newDriverForm.plate} 
-                  onChange={e => setNewDriverForm({ ...newDriverForm, plate: e.target.value })}
-                />
               </div>
 
               <div className="modal-actions-flex mt-4">
@@ -1851,10 +1843,12 @@ export default function AdminPortal() {
                 <div className="input-group">
                   <label>Vehicle Class</label>
                   <select value={newInquiryForm.vehicle} onChange={e => setNewInquiryForm({ ...newInquiryForm, vehicle: e.target.value })}>
-                    <option value="Empire Regular">Empire Regular</option>
-                    <option value="Empire XL">Empire XL</option>
-                    <option value="Empire Luxury">Empire Luxury</option>
-                    <option value="Empire Electric">Empire Electric</option>
+                    {Array.from(new Set([
+                      ...vehicles.map(v => v.name),
+                      ...inquiries.map(i => i.vehicle).filter(Boolean)
+                    ])).map(vName => (
+                      <option key={vName} value={vName}>{vName}</option>
+                    ))}
                   </select>
                 </div>
 
