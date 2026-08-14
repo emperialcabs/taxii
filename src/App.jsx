@@ -40,8 +40,8 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
     return <AdminPortal />;
   }
 
-  // 2. Force MobileAppView if on androidapp domain, Capacitor Native, /app, /mobile, OR VITE_APP_MODE === 'mobile'
-  if (!isWebSite && (isMobileDomain || isMobilePath || isCapacitorNative || appMode === 'mobile')) {
+  // 2. Force MobileAppView if on android/ios domain, Capacitor Native, /app, /mobile, OR VITE_APP_MODE === 'mobile' / 'android' / 'ios'
+  if (!isWebSite && (isMobileDomain || isMobilePath || isCapacitorNative || appMode === 'mobile' || appMode === 'android' || appMode === 'ios')) {
     return <MobileAppView />;
   }
 
