@@ -24,48 +24,23 @@ function ScrollToTop() {
 
 function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const location = useLocation();
+  const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+
   const isAdmin = location.pathname === '/admin';
   const isWebSite = location.pathname === '/web';
-  const isMobileRoute = location.pathname === '/app' || location.pathname === '/mobile';
+  const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile';
+  
+  // Detect if running on mobile Vercel URL (androidapp-omega.vercel.app) or Capacitor Native App
+  const isMobileDomain = hostname.includes('androidapp') || hostname.includes('mobile');
+  const isCapacitorNative = typeof window !== 'undefined' && (window.Capacitor !== undefined || window.location.protocol === 'file:');
+  const appMode = import.meta.env.VITE_APP_MODE || '';
 
   if (isAdmin) {
     return <AdminPortal />;
   }
 
-  // App Mode Environment Flag (Defaults to 'website' so Vercel deployments serve full website)
-  const appMode = import.meta.env.VITE_APP_MODE || 'website';
-
-  // Force Website mode if VITE_APP_MODE === 'website' and not explicitly on /app or /mobile
-  if (appMode === 'website' && !isMobileRoute) {
-    return (
-      <div className="app-container">
-        <Header onOpenBooking={handleOpenBooking} />
-        
-        <main className="app-main-content">
-          <Routes>
-            <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
-            <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
-            <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
-            <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
-            <Route path="/book-ride" element={<BookRide />} />
-            <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<AdminPortal />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        <Footer />
-        <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
-      </div>
-    );
-  }
-
-  // Native Mobile App View (Default for Mobile Apps / Android / iOS Vercel Deployments)
-  const isCapacitorNative = window.Capacitor !== undefined || window.location.protocol === 'file:';
-  const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile';
-
-  if (!isWebSite && (isMobilePath || isCapacitorNative)) {
+  // Force MobileAppView if on androidapp-omega.vercel.app, Capacitor Native, /app or /mobile
+  if (!isWebSite && (isMobileDomain || isMobilePath || isCapacitorNative || appMode === 'mobile')) {
     return <MobileAppView />;
   }
 
