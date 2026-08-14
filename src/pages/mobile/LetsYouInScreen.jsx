@@ -5,11 +5,12 @@ import { signInWithGoogle, saveCustomerToFirestore, loadUserInquiriesFromFiresto
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
 
-  // ── After login: save profile to Firestore AND restore past trips ──
+  // ── After login: save profile to Firestore & TiDB Cloud AND restore past trips ──
   const syncWithFirestore = async (profile) => {
     try {
-      // 1. Save profile to Firestore (creates doc if new, merges if existing)
+      // 1. Save profile to Firestore and TiDB Cloud (creates doc/row if new, merges if existing)
       await saveCustomerToFirestore(profile);
+      import('../../services/tidbService.js').then(m => m.saveCustomerToTiDB && m.saveCustomerToTiDB(profile)).catch(() => {});
 
       // 2. Pull user's past trip history from Firestore
       const firestoreInquiries = await loadUserInquiriesFromFirestore(profile.phone, profile.email);

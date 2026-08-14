@@ -3,8 +3,16 @@ import {
   loadAllInquiriesFromFirestore, 
   loadAllCustomersFromFirestore, 
   updateInquiryStatusInFirestore, 
-  saveCustomerToFirestore 
+  saveCustomerToFirestore,
+  saveInquiryToFirestore
 } from '../services/firebaseService';
+import {
+  saveInquiryToTiDB,
+  loadAllInquiriesFromTiDB,
+  saveCustomerToTiDB,
+  loadAllCustomersFromTiDB,
+  initTiDBTables
+} from '../services/tidbService';
 import db from '../services/dbService';
 import { 
   LayoutDashboard, 
@@ -217,24 +225,63 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // ── Load real data from Firestore on mount (cross-domain safe) ──
+  // ── Load real data from Firestore & TiDB Cloud (cross-domain safe) ──
   useEffect(() => {
-    const loadFromFirestore = async () => {
+    const loadFromCloud = async () => {
       setFirestoreLoading(true);
       try {
-        const [fsInquiries, fsCustomers] = await Promise.all([
-          loadAllInquiriesFromFirestore(),
-          loadAllCustomersFromFirestore()
+        // Auto initialize TiDB tables and schema
+        initTiDBTables().catch(() => {});
+
+        const [fsInquiries, fsCustomers, tidbInquiries, tidbCustomers] = await Promise.all([
+          loadAllInquiriesFromFirestore().catch(() => []),
+          loadAllCustomersFromFirestore().catch(() => []),
+          loadAllInquiriesFromTiDB().catch(() => []),
+          loadAllCustomersFromTiDB().catch(() => [])
         ]);
-        if (fsInquiries && fsInquiries.length > 0) {
-          setInquiries(fsInquiries);
-        }
-        if (fsCustomers && fsCustomers.length > 0) {
-          setCustomers(fsCustomers);
-        }
+
+        let localInquiries = [];
+        let localCustomers = [];
+        try {
+          const s = localStorage.getItem('cabsy_inquiries');
+          if (s) localInquiries = JSON.parse(s);
+          const c = localStorage.getItem('cabsy_customers');
+          if (c) localCustomers = JSON.parse(c);
+        } catch (err) {}
+
+        // Filter out demo customers from local cache
+        localCustomers = (localCustomers || []).filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
+
+        // Merge inquiries
+        const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
+        const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
+        (localInquiries || []).forEach(localItem => {
+          if (localItem && (localItem.id || localItem.customerName)) {
+            const itemKey = localItem.id || localItem.firestoreId;
+            if (!itemKey || !existingIds.has(itemKey)) {
+              mergedInquiries.push(localItem);
+              if (itemKey) existingIds.add(itemKey);
+            }
+          }
+        });
+        setInquiries(mergedInquiries);
+
+        // Merge customers
+        const mergedCustomers = [...(fsCustomers || []), ...(tidbCustomers || [])];
+        const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email || c.id).filter(Boolean));
+        (localCustomers || []).forEach(lc => {
+          const k = lc.phone || lc.email || lc.id;
+          if (!k || !custKeys.has(k)) {
+            mergedCustomers.push(lc);
+            if (k) custKeys.add(k);
+          }
+        });
+
+        const cleanCustomers = mergedCustomers.filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
+        setCustomers(cleanCustomers);
+
       } catch (e) {
-        console.warn('Firestore load failed, using localStorage fallback:', e);
-        // Fallback to localStorage if Firestore unavailable
+        console.warn('Cloud load failed, using localStorage fallback:', e);
         try {
           const saved = localStorage.getItem('cabsy_inquiries');
           if (saved && saved !== '[]') setInquiries(JSON.parse(saved));
@@ -245,10 +292,10 @@ export default function AdminPortal() {
         setFirestoreLoading(false);
       }
     };
-    loadFromFirestore();
+    loadFromCloud();
 
-    // Poll Firestore every 15s for live updates from mobile app bookings
-    const pollInterval = setInterval(loadFromFirestore, 15000);
+    // Poll Cloud databases every 10s for live updates
+    const pollInterval = setInterval(loadFromCloud, 10000);
     return () => clearInterval(pollInterval);
   }, []);
 
@@ -454,34 +501,41 @@ export default function AdminPortal() {
   // Helper to auto sync customer
   const autoSyncCustomer = (name, phone, fareAmount) => {
     if (!name) return;
+    let targetCustomer = null;
     setCustomers(prev => {
       const existingIndex = prev.findIndex(c => c.name.toLowerCase() === name.toLowerCase() || c.phone === phone);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          totalRides: updated[existingIndex].totalRides + 1,
-          totalSpent: updated[existingIndex].totalSpent + Number(fareAmount)
+          totalRides: (updated[existingIndex].totalRides || 0) + 1,
+          totalSpent: (updated[existingIndex].totalSpent || 0) + Number(fareAmount)
         };
+        targetCustomer = updated[existingIndex];
         return updated;
       } else {
         const newCust = {
           id: 'CUST-' + Math.floor(300 + Math.random() * 600),
           name: name,
-          phone: phone || '+1 (555) ' + Math.floor(100 + Math.random() * 899) + '-9900',
+          phone: phone || '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
           email: name.toLowerCase().replace(/\s+/g, '.') + '@customer.com',
           totalRides: 1,
           totalSpent: Number(fareAmount),
           joined: new Date().toISOString().split('T')[0]
         };
+        targetCustomer = newCust;
         return [newCust, ...prev];
       }
     });
 
+    if (targetCustomer) {
+      saveCustomerToTiDB(targetCustomer).catch(() => {});
+      saveCustomerToFirestore(targetCustomer).catch(() => {});
+    }
+
     // Persistent sync to TiDB & Firestore
     try {
       db.saveCustomer({ name, phone });
-      saveCustomerToFirestore({ name, phone });
     } catch (e) {}
   };
 

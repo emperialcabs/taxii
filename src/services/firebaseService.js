@@ -66,6 +66,14 @@ export const signInWithGoogle = async () => {
  */
 export const saveCustomerToFirestore = async (profile) => {
   if (!profile || (!profile.email && !profile.phone)) return null;
+
+  // Dual-write: save customer profile to TiDB Cloud SQL database as well
+  import('./tidbService.js').then(m => {
+    if (m.saveCustomerToTiDB) {
+      m.saveCustomerToTiDB(profile).catch(() => {});
+    }
+  }).catch(() => {});
+
   try {
     const docId = (profile.email || profile.phone).toLowerCase().replace(/[^a-z0-9]/g, '_');
     const ref = doc(db, 'cabsy_customers', docId);

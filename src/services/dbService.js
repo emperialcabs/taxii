@@ -135,6 +135,14 @@ class DatabaseService {
     }
 
     localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
+    
+    // Auto-sync customer profile to TiDB Cloud SQL Database
+    import('./tidbService.js').then(m => {
+      if (m.saveCustomerToTiDB) {
+        m.saveCustomerToTiDB(updatedCustomer).catch(() => {});
+      }
+    }).catch(() => {});
+
     window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedCustomer } }));
     return updatedCustomer;
   }

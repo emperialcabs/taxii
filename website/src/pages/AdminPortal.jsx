@@ -42,7 +42,10 @@ import {
 } from '../services/firebaseService';
 import {
   saveInquiryToTiDB,
-  loadAllInquiriesFromTiDB
+  loadAllInquiriesFromTiDB,
+  saveCustomerToTiDB,
+  loadAllCustomersFromTiDB,
+  initTiDBTables
 } from '../services/tidbService';
 
 export const INITIAL_VEHICLES = [
@@ -122,7 +125,7 @@ export default function AdminPortal() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // State — start empty, Firestore will populate on mount
+  // State — start empty, Firestore & TiDB will populate on mount
   const [inquiries, setInquiries] = useState([]);
   const [firestoreLoading, setFirestoreLoading] = useState(true);
 
@@ -202,10 +205,14 @@ export default function AdminPortal() {
   const fetchCloudData = async () => {
     setFirestoreLoading(true);
     try {
-      const [fsInquiries, fsCustomers, tidbInquiries] = await Promise.all([
-        loadAllInquiriesFromFirestore(),
-        loadAllCustomersFromFirestore(),
-        loadAllInquiriesFromTiDB().catch(() => [])
+      // Ensure TiDB tables & schema are created and ready
+      initTiDBTables().catch(() => {});
+
+      const [fsInquiries, fsCustomers, tidbInquiries, tidbCustomers] = await Promise.all([
+        loadAllInquiriesFromFirestore().catch(() => []),
+        loadAllCustomersFromFirestore().catch(() => []),
+        loadAllInquiriesFromTiDB().catch(() => []),
+        loadAllCustomersFromTiDB().catch(() => [])
       ]);
 
       // Read local storage as fallback/supplement
@@ -217,6 +224,9 @@ export default function AdminPortal() {
         const c = localStorage.getItem('cabsy_customers');
         if (c) localCustomers = JSON.parse(c);
       } catch (err) {}
+
+      // Clean demo customers from local cache
+      localCustomers = (localCustomers || []).filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
 
       // Merge Firestore + TiDB + local inquiries (dedup by id)
       const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
@@ -234,18 +244,21 @@ export default function AdminPortal() {
 
       setInquiries(mergedInquiries);
 
-      // Merge customers
-      const mergedCustomers = [...(fsCustomers || [])];
-      const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email).filter(Boolean));
+      // Merge customers from Firestore + TiDB Cloud + Local
+      const mergedCustomers = [...(fsCustomers || []), ...(tidbCustomers || [])];
+      const custKeys = new Set(mergedCustomers.map(c => c.phone || c.email || c.id).filter(Boolean));
       (localCustomers || []).forEach(lc => {
-        const k = lc.phone || lc.email;
+        const k = lc.phone || lc.email || lc.id;
         if (!k || !custKeys.has(k)) {
           mergedCustomers.push(lc);
           if (k) custKeys.add(k);
         }
       });
 
-      setCustomers(mergedCustomers);
+      // Filter out demo entries if present
+      const cleanCustomers = mergedCustomers.filter(c => c && c.email !== 'ankit.mehta@customer.com' && c.email !== 'bhavin.patel@customer.com' && c.id !== 'CUST-303' && c.id !== 'CUST-316');
+
+      setCustomers(cleanCustomers);
     } catch (e) {
       console.warn('Cloud load error:', e);
     } finally {
@@ -396,29 +409,37 @@ export default function AdminPortal() {
   // Helper to auto sync customer
   const autoSyncCustomer = (name, phone, fareAmount) => {
     if (!name) return;
+    let targetCustomer = null;
     setCustomers(prev => {
       const existingIndex = prev.findIndex(c => c.name.toLowerCase() === name.toLowerCase() || c.phone === phone);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          totalRides: updated[existingIndex].totalRides + 1,
-          totalSpent: updated[existingIndex].totalSpent + Number(fareAmount)
+          totalRides: (updated[existingIndex].totalRides || 0) + 1,
+          totalSpent: (updated[existingIndex].totalSpent || 0) + Number(fareAmount)
         };
+        targetCustomer = updated[existingIndex];
         return updated;
       } else {
         const newCust = {
           id: 'CUST-' + Math.floor(300 + Math.random() * 600),
           name: name,
-          phone: phone || '+1 (555) ' + Math.floor(100 + Math.random() * 899) + '-9900',
+          phone: phone || '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
           email: name.toLowerCase().replace(/\s+/g, '.') + '@customer.com',
           totalRides: 1,
           totalSpent: Number(fareAmount),
           joined: new Date().toISOString().split('T')[0]
         };
+        targetCustomer = newCust;
         return [newCust, ...prev];
       }
     });
+
+    if (targetCustomer) {
+      saveCustomerToTiDB(targetCustomer).catch(() => {});
+      saveCustomerToFirestore(targetCustomer).catch(() => {});
+    }
   };
 
   // Calculations
@@ -526,6 +547,7 @@ export default function AdminPortal() {
     };
     setCustomers([createdCustomer, ...customers]);
     saveCustomerToFirestore(createdCustomer).catch(() => {});
+    saveCustomerToTiDB(createdCustomer).catch(() => {});
     setNewCustomerForm({ name: '', phone: '', email: '' });
     setAddCustomerModal(false);
   };
