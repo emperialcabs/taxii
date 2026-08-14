@@ -113,9 +113,27 @@ export const deleteInquiryFromMySQL = async (inquiryId) => {
 };
 
 /**
+ * Delete customer profile from Hostinger MySQL database
+ */
+export const deleteCustomerFromMySQL = async (customerId) => {
+  if (!customerId) return false;
+  const res = await sendRequest('deleteCustomer', { id: customerId });
+  return res.success;
+};
+
+/**
  * Purge demo data from Hostinger MySQL database
  */
 export const purgeDemoDataFromMySQL = async () => {
   const res = await sendRequest('purgeDemoData');
   return res.success;
 };
+
+/**
+ * Purge ALL inquiries and customers from Hostinger MySQL database
+ */
+export const purgeAllDataFromMySQL = async () => {
+  const res = await sendRequest('purgeAllData');
+  return res.success;
+};
+

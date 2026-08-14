@@ -6,6 +6,8 @@ import {
   loadAllCustomersFromMySQL,
   initMySQLTables,
   purgeDemoDataFromMySQL,
+  purgeAllDataFromMySQL,
+  deleteCustomerFromMySQL,
   updateInquiryStatusInMySQL
 } from '../services/mysqlService';
 import db from '../services/dbService';
@@ -646,6 +648,34 @@ export default function AdminPortal() {
   const handleSaveSettings = (e) => {
     e.preventDefault();
     alert('Website Settings updated successfully! Changes saved to production state.');
+  };
+
+  // Database Wipe / Purge Handlers
+  const handlePurgeDemoDatabaseData = async () => {
+    if (window.confirm("Purge demo and test records from Hostinger Remote MySQL Database?")) {
+      try {
+        await purgeDemoDataFromMySQL();
+        alert("Demo data successfully purged from Hostinger Remote MySQL.");
+        window.location.reload();
+      } catch (err) {
+        alert("Failed to purge demo data: " + err.message);
+      }
+    }
+  };
+
+  const handlePurgeAllDatabaseData = async () => {
+    if (window.confirm("⚠️ DANGER: Are you sure you want to PERMANENTLY PURGE ALL inquiries and customer profiles from Hostinger Remote MySQL database? This will clear all booking data.")) {
+      try {
+        await purgeAllDataFromMySQL();
+        localStorage.removeItem('cabsy_inquiries');
+        localStorage.removeItem('cabsy_customers');
+        setInquiries([]);
+        setCustomers([]);
+        alert("All inquiries and customer directory records have been completely purged from Hostinger Remote MySQL Database.");
+      } catch (err) {
+        alert("Failed to purge database data: " + err.message);
+      }
+    }
   };
 
   // IF NOT AUTHENTICATED: RENDER PIN SECURITY UNLOCK SCREEN
@@ -1599,6 +1629,19 @@ export default function AdminPortal() {
                 <button type="submit" className="btn btn-primary">
                   <Save size={16} /> Save All Website Settings
                 </button>
+              </div>
+
+              <div className="purge-section mt-5 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ color: '#ef4444' }}>System & Database Maintenance</h3>
+                <p className="text-muted text-sm mb-3">Purge demo records or completely reset all inquiries and customer data stored in Hostinger Remote MySQL Database.</p>
+                <div className="flex gap-3 flex-wrap">
+                  <button type="button" className="btn btn-outline" onClick={handlePurgeDemoDatabaseData}>
+                    <RefreshCw size={16} /> Purge Demo & Test Records
+                  </button>
+                  <button type="button" className="btn btn-danger" style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none' }} onClick={handlePurgeAllDatabaseData}>
+                    <Trash2 size={16} /> Wipe All System Data
+                  </button>
+                </div>
               </div>
             </form>
           </div>

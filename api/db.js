@@ -216,9 +216,22 @@ export async function handleMySQLRequest(action, data = {}) {
         return { success: true, id: custId };
       }
 
+      case 'deleteCustomer': {
+        const { id } = data;
+        if (!id) return { success: false, error: 'Missing customer ID' };
+        await executeQuery('DELETE FROM customers WHERE id = ? OR email = ? OR phone = ?', [id, id, id]);
+        return { success: true };
+      }
+
       case 'purgeDemoData': {
-        await executeQuery("DELETE FROM customers WHERE email LIKE '%@customer.com' OR email LIKE '%@client.com' OR name IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe');");
-        await executeQuery("DELETE FROM inquiries WHERE customerName IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe') OR customerEmail LIKE '%@customer.com';");
+        await executeQuery("DELETE FROM customers WHERE email LIKE '%@customer.com' OR email LIKE '%@client.com' OR email LIKE '%test%' OR name IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe', 'Test Google Rider');");
+        await executeQuery("DELETE FROM inquiries WHERE customerName IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe', 'Test Google Rider') OR customerEmail LIKE '%@customer.com' OR customerEmail LIKE '%test%';");
+        return { success: true };
+      }
+
+      case 'purgeAllData': {
+        await executeQuery('TRUNCATE TABLE inquiries;');
+        await executeQuery('TRUNCATE TABLE customers;');
         return { success: true };
       }
 
