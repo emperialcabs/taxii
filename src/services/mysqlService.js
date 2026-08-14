@@ -2,14 +2,13 @@
 // Host: srv1671.hstgr.io | Database: u889282535_taxi | Central Backend API: taxii-yth5.vercel.app
 
 const getApiEndpoints = () => {
-  const endpoints = [];
-  if (typeof window !== 'undefined') {
-    // Relative endpoint for same-domain deployment
-    endpoints.push('/api/db');
+  const endpoints = ['/api/db'];
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const currentOrigin = `${window.location.origin}/api/db`;
+    if (!endpoints.includes(currentOrigin)) {
+      endpoints.push(currentOrigin);
+    }
   }
-  // Central Production Vercel Serverless API Endpoint
-  endpoints.push('https://taxii-yth5.vercel.app/api/db');
-  endpoints.push('https://cabsy-taxi-website.vercel.app/api/db');
   return endpoints;
 };
 

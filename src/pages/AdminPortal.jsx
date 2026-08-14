@@ -178,6 +178,7 @@ export default function AdminPortal() {
   const [customerDetailModal, setCustomerDetailModal] = useState({ open: false, customer: null });
   const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
   const [receiptModal, setReceiptModal] = useState({ open: false, inquiry: null });
+  const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
   const [companyShare, setCompanyShare] = useState(() => {
     const saved = localStorage.getItem('cabsy_company_share');
     return saved ? Number(saved) : 20;
