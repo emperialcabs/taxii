@@ -1,3 +1,4 @@
+// Empire Cab Mobile User Experience & Navigation Engine v1.0.8
 import React, { useState, useEffect } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
