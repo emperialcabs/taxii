@@ -1,32 +1,52 @@
 // Hostinger Remote MySQL Database Service Engine for Empire Cab Ecosystem
-// Host: srv1671.hstgr.io | Database: u889282535_taxi | User: u889282535_taxi
+// Host: srv1671.hstgr.io | Database: u889282535_taxi | Central Backend API: taxii-yth5.vercel.app
 
-const getApiEndpoint = () => {
-  if (typeof window !== 'undefined' && (window.location.protocol === 'file:' || window.Capacitor)) {
-    return 'https://cabsy-taxi-website.vercel.app/api/db';
+const getApiEndpoints = () => {
+  const endpoints = [];
+  if (typeof window !== 'undefined') {
+    // Relative endpoint for same-domain deployment
+    endpoints.push('/api/db');
   }
-  return '/api/db';
+  // Central Production Vercel Serverless API Endpoint
+  endpoints.push('https://taxii-yth5.vercel.app/api/db');
+  endpoints.push('https://cabsy-taxi-website.vercel.app/api/db');
+  return endpoints;
 };
 
 const sendRequest = async (action, data = {}) => {
-  try {
-    const endpoint = getApiEndpoint();
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ action, data })
-    });
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      throw new Error(errJson.error || `HTTP ${res.status}`);
+  const endpoints = getApiEndpoints();
+  let lastError = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action, data })
+      });
+
+      if (!res.ok) {
+        continue; // Try next endpoint if HTTP fails or gets rewritten
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        continue; // Not JSON (e.g. index.html rewrite), try next endpoint
+      }
+
+      const json = await res.json();
+      if (json && json.success !== undefined) {
+        return json;
+      }
+    } catch (err) {
+      lastError = err;
     }
-    return await res.json();
-  } catch (err) {
-    console.warn(`Hostinger MySQL [${action}] failed:`, err.message || err);
-    return { success: false, error: err.message || String(err) };
   }
+
+  console.warn(`Hostinger MySQL [${action}] failed across endpoints:`, lastError);
+  return { success: false, error: lastError ? (lastError.message || String(lastError)) : 'All endpoints failed' };
 };
 
 /**

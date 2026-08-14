@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 
-// Hostinger Remote MySQL Database Connection Pool
-const pool = mysql.createPool({
+// Hostinger Remote MySQL Database Connection Pool Configuration
+const poolConfig = {
   host: process.env.MYSQL_HOST || 'srv1671.hstgr.io',
   user: process.env.MYSQL_USER || 'u889282535_taxi',
   password: process.env.MYSQL_PASSWORD || 'Mahadev909099',
@@ -10,12 +10,29 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 10000
-});
+  connectTimeout: 10000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000
+};
+
+let pool = mysql.createPool(poolConfig);
+
+async function executeQuery(sql, params = []) {
+  try {
+    return await pool.query(sql, params);
+  } catch (err) {
+    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
+      console.warn('MySQL connection lost. Re-creating pool...', err.code);
+      pool = mysql.createPool(poolConfig);
+      return await pool.query(sql, params);
+    }
+    throw err;
+  }
+}
 
 // Table Schema Initializer
 async function ensureTablesExist() {
-  await pool.query(`
+  await executeQuery(`
     CREATE TABLE IF NOT EXISTS inquiries (
       id VARCHAR(64) PRIMARY KEY,
       customerName VARCHAR(255),
@@ -36,7 +53,7 @@ async function ensureTablesExist() {
     );
   `);
 
-  await pool.query(`
+  await executeQuery(`
     CREATE TABLE IF NOT EXISTS customers (
       id VARCHAR(64) PRIMARY KEY,
       name VARCHAR(255),
@@ -65,7 +82,7 @@ export async function handleMySQLRequest(action, data = {}) {
       }
 
       case 'getInquiries': {
-        const [rows] = await pool.query('SELECT * FROM inquiries ORDER BY created_at DESC');
+        const [rows] = await executeQuery('SELECT * FROM inquiries ORDER BY created_at DESC');
         return { success: true, inquiries: rows };
       }
 
@@ -90,8 +107,9 @@ export async function handleMySQLRequest(action, data = {}) {
             timestamp = VALUES(timestamp),
             date = VALUES(date);
         `;
+        const inqId = id || `INQ-${Date.now()}`;
         const params = [
-          id || `INQ-${Date.now()}`,
+          inqId,
           customerName || 'Customer',
           customerPhone || '',
           customerEmail || '',
@@ -107,17 +125,44 @@ export async function handleMySQLRequest(action, data = {}) {
           timestamp || new Date().toISOString(),
           date || new Date().toLocaleDateString('en-US')
         ];
-        await pool.query(sql, params);
-        return { success: true, id: params[0] };
+        await executeQuery(sql, params);
+
+        // Auto-register/update customer record whenever an inquiry is submitted
+        if (customerName) {
+          const custEmail = customerEmail || (customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in');
+          const custId = `CUST-${(customerPhone || custEmail).replace(/[^a-z0-9]/gi, '_')}`;
+          const custSql = `
+            INSERT INTO customers (id, name, phone, email, totalRides, totalSpent, registeredAt, lastLogin, status)
+            VALUES (?, ?, ?, ?, 1, ?, ?, ?, 'Active')
+            ON DUPLICATE KEY UPDATE
+              name = VALUES(name),
+              phone = IF(VALUES(phone) != '', VALUES(phone), phone),
+              email = IF(VALUES(email) != '', VALUES(email), email),
+              totalRides = totalRides + 1,
+              totalSpent = totalSpent + VALUES(totalSpent),
+              lastLogin = VALUES(lastLogin);
+          `;
+          await executeQuery(custSql, [
+            custId,
+            customerName,
+            customerPhone || '',
+            custEmail,
+            Number(fare || 0),
+            new Date().toLocaleDateString('en-US'),
+            new Date().toISOString()
+          ]).catch(() => {});
+        }
+
+        return { success: true, id: inqId };
       }
 
       case 'updateInquiryStatus': {
         const { id, status, driver } = data;
         if (!id) return { success: false, error: 'Missing inquiry ID' };
         if (driver) {
-          await pool.query('UPDATE inquiries SET status = ?, driver = ? WHERE id = ?', [status, driver, id]);
+          await executeQuery('UPDATE inquiries SET status = ?, driver = ? WHERE id = ?', [status, driver, id]);
         } else {
-          await pool.query('UPDATE inquiries SET status = ? WHERE id = ?', [status, id]);
+          await executeQuery('UPDATE inquiries SET status = ? WHERE id = ?', [status, id]);
         }
         return { success: true };
       }
@@ -125,12 +170,12 @@ export async function handleMySQLRequest(action, data = {}) {
       case 'deleteInquiry': {
         const { id } = data;
         if (!id) return { success: false, error: 'Missing inquiry ID' };
-        await pool.query('DELETE FROM inquiries WHERE id = ?', [id]);
+        await executeQuery('DELETE FROM inquiries WHERE id = ?', [id]);
         return { success: true };
       }
 
       case 'getCustomers': {
-        const [rows] = await pool.query('SELECT * FROM customers ORDER BY created_at DESC');
+        const [rows] = await executeQuery('SELECT * FROM customers ORDER BY created_at DESC');
         return { success: true, customers: rows };
       }
 
@@ -138,19 +183,17 @@ export async function handleMySQLRequest(action, data = {}) {
         const { id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status } = data;
         if (!name && !phone && !email) return { success: false, error: 'Empty customer profile' };
         
-        const custId = id || `CUST-${Math.floor(10000 + Math.random() * 89999)}`;
+        const custId = id || (email ? `CUST-${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}` : (phone ? `CUST-${phone.replace(/\D/g, '')}` : `CUST-${Math.floor(10000 + Math.random() * 89999)}`));
         const sql = `
           INSERT INTO customers (id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE
             name = VALUES(name),
-            phone = VALUES(phone),
-            email = VALUES(email),
-            photoURL = VALUES(photoURL),
+            phone = IF(VALUES(phone) != '', VALUES(phone), phone),
+            email = IF(VALUES(email) != '', VALUES(email), email),
+            photoURL = IF(VALUES(photoURL) IS NOT NULL, VALUES(photoURL), photoURL),
             profession = VALUES(profession),
             area = VALUES(area),
-            totalRides = VALUES(totalRides),
-            totalSpent = VALUES(totalSpent),
             registeredAt = VALUES(registeredAt),
             lastLogin = VALUES(lastLogin),
             status = VALUES(status);
@@ -169,13 +212,13 @@ export async function handleMySQLRequest(action, data = {}) {
           lastLogin || new Date().toISOString(),
           status || 'Active'
         ];
-        await pool.query(sql, params);
+        await executeQuery(sql, params);
         return { success: true, id: custId };
       }
 
       case 'purgeDemoData': {
-        await pool.query("DELETE FROM customers WHERE email LIKE '%@customer.com' OR email LIKE '%@client.com' OR name IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe');");
-        await pool.query("DELETE FROM inquiries WHERE customerName IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe') OR customerEmail LIKE '%@customer.com';");
+        await executeQuery("DELETE FROM customers WHERE email LIKE '%@customer.com' OR email LIKE '%@client.com' OR name IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe');");
+        await executeQuery("DELETE FROM inquiries WHERE customerName IN ('Ankit Mehta', 'Bhavin Patel', 'Website Guest', 'John Doe') OR customerEmail LIKE '%@customer.com';");
         return { success: true };
       }
 
@@ -193,7 +236,7 @@ export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
