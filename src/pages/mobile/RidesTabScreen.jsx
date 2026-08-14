@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { INITIAL_VEHICLES } from '../AdminPortal';
+import { loadAllInquiriesFromMySQL, updateInquiryStatusInMySQL, saveInquiryToMySQL } from '../../services/mysqlService';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -21,29 +22,32 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     return INITIAL_VEHICLES;
   };
 
-  // Load real user inquiries from localStorage ONLY (NO DEMO DATA & NO DUPLICATES)
-  const loadInquiries = () => {
+  // Load real user inquiries directly from Hostinger MySQL Central Database
+  const loadInquiries = async () => {
     try {
-      const saved = localStorage.getItem('cabsy_inquiries');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          // Deduplicate by ID
-          const seen = new Set();
-          const unique = parsed.filter(item => {
-            const idKey = item.id || `${item.customerPhone}-${item.timestamp || item.scheduledTime}`;
-            if (seen.has(idKey)) return false;
-            seen.add(idKey);
-            return true;
-          });
-          setInquiries(unique);
-          return;
+      const mysqlData = await loadAllInquiriesFromMySQL().catch(() => []);
+      let list = Array.isArray(mysqlData) && mysqlData.length > 0 ? mysqlData : [];
+      if (list.length === 0) {
+        const saved = localStorage.getItem('cabsy_inquiries');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) list = parsed;
         }
       }
+      // Deduplicate by ID
+      const seen = new Set();
+      const unique = list.filter(item => {
+        const idKey = item.id || `${item.customerPhone}-${item.timestamp || item.scheduledTime}`;
+        if (seen.has(idKey)) return false;
+        seen.add(idKey);
+        return true;
+      });
+      setInquiries(unique);
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(unique));
+      return;
     } catch (e) {
-      console.error("Failed to parse cabsy_inquiries", e);
+      console.error("Failed to fetch inquiries from Hostinger MySQL", e);
     }
-    // Clean empty state - NO DEMO/DUMMY DATA
     setInquiries([]);
   };
 
@@ -66,6 +70,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     if (!window.confirm("Are you sure you want to cancel this booking inquiry?")) return;
 
     try {
+      updateInquiryStatusInMySQL(inqId, 'Cancelled').catch(() => {});
       const updatedList = inquiries.map(item => {
         if (item.id === inqId || (item.createdAt && item.createdAt === inqId)) {
           return { ...item, status: 'Cancelled' };
@@ -90,6 +95,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
   const handleSaveEdit = (e) => {
     e.preventDefault();
     try {
+      saveInquiryToMySQL(editForm).catch(() => {});
       const updatedList = inquiries.map(item => {
         if (item.id === editForm.id || (item.createdAt && item.createdAt === editForm.createdAt)) {
           return { ...item, ...editForm };

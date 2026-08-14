@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import db from '../../services/dbService';
+import { saveCustomerToMySQL } from '../../services/mysqlService';
 
 export default function AccountDetailScreen({ onBack, onSave }) {
   const [profile, setProfile] = useState(() => {
@@ -46,6 +47,7 @@ export default function AccountDetailScreen({ onBack, onSave }) {
       localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
       localStorage.setItem('taxigo_onboarded', 'true');
       db.saveCustomer(profile);
+      saveCustomerToMySQL(profile).catch(() => {});
     } catch (err) {}
     setSavedSuccess(true);
     setTimeout(() => {
