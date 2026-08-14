@@ -438,9 +438,8 @@ export default function AdminPortal() {
     return () => window.removeEventListener('cabsy-new-inquiry', handleNewInquiry);
   }, []);
 
-  // ✅ On first mount: load from Firestore AND backfill customers from localStorage inquiries
+  // ✅ On first mount: backfill customers from localStorage inquiries
   useEffect(() => {
-    // 1. Backfill customers from localStorage inquiries (immediate, synchronous)
     try {
       const saved = localStorage.getItem('cabsy_inquiries');
       if (saved) {
@@ -452,54 +451,6 @@ export default function AdminPortal() {
         });
       }
     } catch (e) {}
-
-    // 2. Load ALL inquiries from Firestore and merge with localStorage
-    loadAllInquiriesFromFirestore().then(firestoreInquiries => {
-      if (!firestoreInquiries || firestoreInquiries.length === 0) return;
-      try {
-        const localRaw = localStorage.getItem('cabsy_inquiries');
-        const localList = localRaw ? JSON.parse(localRaw) : [];
-        const existingIds = new Set(localList.map(i => i.id || i.firestoreId).filter(Boolean));
-        const fresh = firestoreInquiries.filter(i => !existingIds.has(i.id) && !existingIds.has(i.firestoreId));
-        if (fresh.length > 0) {
-          const merged = [...fresh, ...localList];
-          localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
-          setInquiries(merged);
-          // Auto-sync customer records from Firestore inquiries
-          merged.forEach(inq => {
-            if (inq.customerName) {
-              autoSyncCustomer(inq.customerName, inq.customerPhone, inq.status === 'Confirmed' ? inq.fare : 0);
-            }
-          });
-        }
-      } catch (e) { console.warn('Firestore merge error:', e); }
-    }).catch(e => console.warn('Firestore load failed (offline):', e));
-
-    // 3. Load ALL customers from Firestore and merge into Customer Directory
-    loadAllCustomersFromFirestore().then(firestoreCustomers => {
-      if (!firestoreCustomers || firestoreCustomers.length === 0) return;
-      setCustomers(prev => {
-        const existingIds = new Set(prev.map(c => c.email || c.phone).filter(Boolean));
-        const fresh = firestoreCustomers.filter(c => {
-          const key = (c.email || c.phone || '').toLowerCase().trim();
-          return key && !existingIds.has(key);
-        });
-        if (fresh.length === 0) return prev;
-        // Normalize Firestore customer shape to match Admin Portal's schema
-        const normalized = fresh.map(c => ({
-          id: c.id || c.firestoreId || ('CUST-' + Math.floor(10000 + Math.random() * 90000)),
-          name: c.name || 'Rider',
-          phone: c.phone || '-',
-          email: c.email || '-',
-          totalRides: c.totalRides || 0,
-          totalSpent: c.totalSpentNum || 0,
-          joined: c.registeredAt || c.joined || new Date().toISOString().split('T')[0],
-        }));
-        return [...normalized, ...prev];
-      });
-    }).catch(e => console.warn('Firestore customers load failed (offline):', e));
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle PIN submit
@@ -552,10 +503,9 @@ export default function AdminPortal() {
 
     if (targetCustomer) {
       saveCustomerToTiDB(targetCustomer).catch(() => {});
-      saveCustomerToFirestore(targetCustomer).catch(() => {});
     }
 
-    // Persistent sync to TiDB & Firestore
+    // Persistent sync to TiDB
     try {
       db.saveCustomer({ name, phone });
     } catch (e) {}
@@ -584,13 +534,13 @@ export default function AdminPortal() {
 
     setInquiries(updatedInquiries);
 
-    // Sync status to Firestore & TiDB
-    if (assignModal.inquiry.firestoreId || assignModal.inquiry.id) {
-      updateInquiryStatusInFirestore(
-        assignModal.inquiry.firestoreId || assignModal.inquiry.id,
+    // Sync status to TiDB Cloud SQL
+    if (assignModal.inquiry.id) {
+      updateInquiryStatusInTiDB(
+        assignModal.inquiry.id,
         'Confirmed',
         driverObj.name
-      );
+      ).catch(() => {});
     }
 
     // Update driver earnings and trip count
@@ -613,8 +563,8 @@ export default function AdminPortal() {
   const handleCancelInquiry = (inquiryId) => {
     setInquiries(prev => {
       const target = prev.find(i => i.id === inquiryId);
-      if (target && (target.firestoreId || target.id)) {
-        updateInquiryStatusInFirestore(target.firestoreId || target.id, 'Cancelled');
+      if (target && target.id) {
+        updateInquiryStatusInTiDB(target.id, 'Cancelled').catch(() => {});
       }
       return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
     });
