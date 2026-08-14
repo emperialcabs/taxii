@@ -675,6 +675,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .admin-table td {
@@ -682,6 +683,8 @@
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.9rem;
   color: #334155;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .route-cell {

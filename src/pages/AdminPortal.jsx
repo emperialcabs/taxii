@@ -1429,16 +1429,17 @@ export default function AdminPortal() {
                         <td><strong className="text-green">₹{Number(cust.totalSpent).toFixed(2)}</strong></td>
                         <td><small className="text-muted">{cust.joined}</small></td>
                         <td>
-                          <div className="flex gap-2 align-center">
+                          <div className="flex gap-2 align-center" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                             <button 
                               className="btn btn-sm btn-outline flex align-center gap-1"
+                              style={{ whiteSpace: 'nowrap' }}
                               onClick={() => setCustomerDetailModal({ open: true, customer: cust })}
                             >
                               <Eye size={13} /> View Profile & Trips
                             </button>
                             <button 
                               className="btn btn-sm flex align-center gap-1"
-                              style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                              style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px', whiteSpace: 'nowrap' }}
                               onClick={() => handleDeleteCustomer(cust.id || cust.email)}
                               title="Delete Customer Profile"
                             >
