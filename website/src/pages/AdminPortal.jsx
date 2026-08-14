@@ -34,20 +34,14 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 import {
-  loadAllInquiriesFromFirestore,
-  loadAllCustomersFromFirestore,
-  updateInquiryStatusInFirestore,
-  saveCustomerToFirestore,
-  saveInquiryToFirestore,
-  purgeDemoDataFromFirestore
-} from '../services/firebaseService';
-import {
   saveInquiryToTiDB,
   loadAllInquiriesFromTiDB,
   saveCustomerToTiDB,
   loadAllCustomersFromTiDB,
   initTiDBTables,
-  purgeDemoDataFromTiDB
+  purgeDemoDataFromTiDB,
+  updateInquiryStatusInTiDB,
+  getTiDBConnectionConfig
 } from '../services/tidbService';
 
 export const INITIAL_VEHICLES = [
@@ -203,7 +197,7 @@ export default function AdminPortal() {
   const [newVehicleForm, setNewVehicleForm] = useState({ name: '', passengers: '1 - 4 Passenger', rate: '2.50', status: 'Active', image: '', description: '' });
   const [newDestForm, setNewDestForm] = useState({ name: '', pickup: '', dropoff: '', distanceKm: 15 });
 
-  // ── Load real data from Firestore & TiDB Cloud (cross-domain safe) ──
+  // ── Load real data from TiDB Cloud Database ──
   const fetchCloudData = async () => {
     setFirestoreLoading(true);
     try {
@@ -211,11 +205,8 @@ export default function AdminPortal() {
       initTiDBTables().catch(() => {});
       // Purge demo records from Cloud DB in background
       purgeDemoDataFromTiDB().catch(() => {});
-      purgeDemoDataFromFirestore().catch(() => {});
 
-      const [fsInquiries, fsCustomers, tidbInquiries, tidbCustomers] = await Promise.all([
-        loadAllInquiriesFromFirestore().catch(() => []),
-        loadAllCustomersFromFirestore().catch(() => []),
+      const [tidbInquiries, tidbCustomers] = await Promise.all([
         loadAllInquiriesFromTiDB().catch(() => []),
         loadAllCustomersFromTiDB().catch(() => [])
       ]);
@@ -252,13 +243,13 @@ export default function AdminPortal() {
         return true;
       };
 
-      // Merge Firestore + TiDB + local inquiries (dedup by id)
-      const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
-      const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
+      // Merge TiDB + local inquiries (dedup by id)
+      const mergedInquiries = [...(tidbInquiries || [])];
+      const existingIds = new Set(mergedInquiries.map(i => i.id).filter(Boolean));
       
       (localInquiries || []).forEach(localItem => {
         if (localItem && (localItem.id || localItem.customerName)) {
-          const itemKey = localItem.id || localItem.firestoreId;
+          const itemKey = localItem.id;
           if (!itemKey || !existingIds.has(itemKey)) {
             mergedInquiries.push(localItem);
             if (itemKey) existingIds.add(itemKey);
@@ -269,12 +260,12 @@ export default function AdminPortal() {
       const cleanInquiries = mergedInquiries.filter(isRealInquiry);
       setInquiries(cleanInquiries);
 
-      // Merge customers from Firestore + TiDB Cloud + Local + extracted from Real Inquiries
-      const allCustomerSources = [...(fsCustomers || []), ...(tidbCustomers || []), ...(localCustomers || [])];
+      // Merge customers from TiDB Cloud + Local + extracted from Real Inquiries
+      const allCustomerSources = [...(tidbCustomers || []), ...(localCustomers || [])];
       const realCustomers = allCustomerSources.filter(isRealCustomer);
       const custKeys = new Set(realCustomers.map(c => (c.phone || c.email || c.id || '').toLowerCase().trim()).filter(Boolean));
 
-      // Extract customer profiles from real inquiries so every active rider (like Spider Man) is present in Customer Directory
+      // Extract customer profiles from real inquiries so every active rider is present in Customer Directory
       cleanInquiries.forEach(inq => {
         if (inq.customerName) {
           const pKey = (inq.customerPhone || inq.customerEmail || inq.customerName).toLowerCase().trim();
@@ -295,7 +286,7 @@ export default function AdminPortal() {
 
       setCustomers(realCustomers);
     } catch (e) {
-      console.warn('Cloud load error:', e);
+      console.warn('TiDB load error:', e);
     } finally {
       setFirestoreLoading(false);
     }
@@ -473,7 +464,6 @@ export default function AdminPortal() {
 
     if (targetCustomer) {
       saveCustomerToTiDB(targetCustomer).catch(() => {});
-      saveCustomerToFirestore(targetCustomer).catch(() => {});
     }
   };
 
@@ -515,10 +505,8 @@ export default function AdminPortal() {
 
     autoSyncCustomer(assignModal.inquiry.customerName, assignModal.inquiry.customerPhone, assignModal.inquiry.fare);
 
-    // Sync status change to Firestore & TiDB
-    if (assignModal.inquiry.firestoreId) {
-      updateInquiryStatusInFirestore(assignModal.inquiry.firestoreId, 'Confirmed', driverObj.name);
-    }
+    // Sync status change to TiDB Cloud SQL Database
+    updateInquiryStatusInTiDB(assignModal.inquiry.id, 'Confirmed', driverObj.name).catch(() => {});
     saveInquiryToTiDB({
       ...assignModal.inquiry,
       status: 'Confirmed',
@@ -529,13 +517,11 @@ export default function AdminPortal() {
   };
 
   const handleCancelInquiry = (inquiryId) => {
-    const target = inquiries.find(i => i.id === inquiryId || i.firestoreId === inquiryId);
-    setInquiries(prev => prev.map(i => (i.id === inquiryId || i.firestoreId === inquiryId) ? { ...i, status: 'Cancelled' } : i));
+    const target = inquiries.find(i => i.id === inquiryId);
+    setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i));
     
     if (target) {
-      if (target.firestoreId) {
-        updateInquiryStatusInFirestore(target.firestoreId, 'Cancelled');
-      }
+      updateInquiryStatusInTiDB(inquiryId, 'Cancelled').catch(() => {});
       saveInquiryToTiDB({ ...target, status: 'Cancelled' }).catch(() => {});
     }
   };

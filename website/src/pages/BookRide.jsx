@@ -13,8 +13,7 @@ import {
 } from 'lucide-react';
 import { INITIAL_VEHICLES } from './AdminPortal';
 
-import { saveInquiryToFirestore } from '../services/firebaseService';
-import { saveInquiryToTiDB } from '../services/tidbService';
+import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
 
 const DEFAULT_PLACES = [
   'Downtown Terminal',
@@ -164,9 +163,15 @@ export default function BookRide() {
     const updatedInquiries = [newInquiry, ...inquiriesList];
     localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
 
-    // Save to Cloud Databases (Firestore & TiDB)
-    saveInquiryToFirestore(newInquiry).catch(() => {});
+    // Save to TiDB Cloud Database
     saveInquiryToTiDB(newInquiry).catch(() => {});
+    saveCustomerToTiDB({
+      name: customerName,
+      phone: customerPhone,
+      email: customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in',
+      totalRides: 1,
+      totalSpent: parseFloat(calculatedFare)
+    }).catch(() => {});
 
     // Dispatch events to notify Admin Portal in real time
     window.dispatchEvent(new Event('storage'));

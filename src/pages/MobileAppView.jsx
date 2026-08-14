@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
-import { saveInquiryToFirestore, saveCustomerToFirestore } from '../services/firebaseService';
 import { saveInquiryToTiDB, saveCustomerToTiDB } from '../services/tidbService';
 
 // Import Modular Mobile Screen Components
@@ -125,12 +124,8 @@ export default function MobileAppView() {
     // 2. Save into dbService for local history
     db.saveInquiry(newInquiry);
 
-    // 3. ✅ Save to Firestore (persists across devices & re-logins)
-    saveInquiryToFirestore(newInquiry).catch(e => console.warn('Firestore inquiry save failed:', e));
+    // 3. Save directly to TiDB Cloud Database
     saveInquiryToTiDB(newInquiry).catch(e => console.warn('TiDB inquiry save failed:', e));
-
-    // 4. ✅ Update customer record in Firestore & TiDB Cloud
-    saveCustomerToFirestore(userProf).catch(e => console.warn('Firestore customer save failed:', e));
     saveCustomerToTiDB(userProf).catch(e => console.warn('TiDB customer save failed:', e));
 
     // 5. Dispatch events to notify Admin Portal in real time

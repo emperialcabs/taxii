@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  loadAllInquiriesFromFirestore, 
-  loadAllCustomersFromFirestore, 
-  updateInquiryStatusInFirestore, 
-  saveCustomerToFirestore,
-  saveInquiryToFirestore,
-  purgeDemoDataFromFirestore
-} from '../services/firebaseService';
 import {
   saveInquiryToTiDB,
   loadAllInquiriesFromTiDB,
   saveCustomerToTiDB,
   loadAllCustomersFromTiDB,
   initTiDBTables,
-  purgeDemoDataFromTiDB
+  purgeDemoDataFromTiDB,
+  updateInquiryStatusInTiDB,
+  getTiDBConnectionConfig
 } from '../services/tidbService';
 import db from '../services/dbService';
 import { 
@@ -227,7 +221,7 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // ── Load real data from Firestore & TiDB Cloud (cross-domain safe) ──
+  // ── Load real data from TiDB Cloud Database ──
   useEffect(() => {
     const loadFromCloud = async () => {
       setFirestoreLoading(true);
@@ -236,11 +230,8 @@ export default function AdminPortal() {
         initTiDBTables().catch(() => {});
         // Purge demo data in background
         purgeDemoDataFromTiDB().catch(() => {});
-        purgeDemoDataFromFirestore().catch(() => {});
 
-        const [fsInquiries, fsCustomers, tidbInquiries, tidbCustomers] = await Promise.all([
-          loadAllInquiriesFromFirestore().catch(() => []),
-          loadAllCustomersFromFirestore().catch(() => []),
+        const [tidbInquiries, tidbCustomers] = await Promise.all([
           loadAllInquiriesFromTiDB().catch(() => []),
           loadAllCustomersFromTiDB().catch(() => [])
         ]);
@@ -275,12 +266,12 @@ export default function AdminPortal() {
           return true;
         };
 
-        // Merge inquiries
-        const mergedInquiries = [...(fsInquiries || []), ...(tidbInquiries || [])];
-        const existingIds = new Set(mergedInquiries.map(i => i.id || i.firestoreId).filter(Boolean));
+        // Merge inquiries from TiDB + local
+        const mergedInquiries = [...(tidbInquiries || [])];
+        const existingIds = new Set(mergedInquiries.map(i => i.id).filter(Boolean));
         (localInquiries || []).forEach(localItem => {
           if (localItem && (localItem.id || localItem.customerName)) {
-            const itemKey = localItem.id || localItem.firestoreId;
+            const itemKey = localItem.id;
             if (!itemKey || !existingIds.has(itemKey)) {
               mergedInquiries.push(localItem);
               if (itemKey) existingIds.add(itemKey);
@@ -291,12 +282,12 @@ export default function AdminPortal() {
         const cleanInquiries = mergedInquiries.filter(isRealInquiry);
         setInquiries(cleanInquiries);
 
-        // Merge customers from Firestore + TiDB Cloud + Local + extracted from Real Inquiries
-        const allCustomerSources = [...(fsCustomers || []), ...(tidbCustomers || []), ...(localCustomers || [])];
+        // Merge customers from TiDB Cloud + Local + extracted from Real Inquiries
+        const allCustomerSources = [...(tidbCustomers || []), ...(localCustomers || [])];
         const realCustomers = allCustomerSources.filter(isRealCustomer);
         const custKeys = new Set(realCustomers.map(c => (c.phone || c.email || c.id || '').toLowerCase().trim()).filter(Boolean));
 
-        // Extract customer profiles from real inquiries so every active rider (like Spider Man) is present in Customer Directory
+        // Extract customer profiles from real inquiries so every active rider is present in Customer Directory
         cleanInquiries.forEach(inq => {
           if (inq.customerName) {
             const pKey = (inq.customerPhone || inq.customerEmail || inq.customerName).toLowerCase().trim();
@@ -318,7 +309,7 @@ export default function AdminPortal() {
         setCustomers(realCustomers);
 
       } catch (e) {
-        console.warn('Cloud load failed, using localStorage fallback:', e);
+        console.warn('TiDB Cloud load failed:', e);
       } finally {
         setFirestoreLoading(false);
       }

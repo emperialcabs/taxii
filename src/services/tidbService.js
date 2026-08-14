@@ -237,3 +237,24 @@ export const purgeDemoDataFromTiDB = async () => {
     return false;
   }
 };
+
+/**
+ * Update inquiry status in TiDB Cloud SQL database
+ */
+export const updateInquiryStatusInTiDB = async (inquiryId, status, driverName) => {
+  if (!inquiryId) return false;
+  const config = getTiDBConnectionConfig();
+  if (!config.username || !config.password) return false;
+  try {
+    const conn = connect(config);
+    if (driverName) {
+      await conn.execute("UPDATE inquiries SET status = ?, driver = ? WHERE id = ? OR id = ?;", [status, driverName, inquiryId, `INQ-${inquiryId}`]);
+    } else {
+      await conn.execute("UPDATE inquiries SET status = ? WHERE id = ? OR id = ?;", [status, inquiryId, `INQ-${inquiryId}`]);
+    }
+    return true;
+  } catch (e) {
+    console.warn('TiDB updateInquiryStatus error:', e);
+    return false;
+  }
+};

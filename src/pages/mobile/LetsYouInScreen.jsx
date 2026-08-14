@@ -1,32 +1,39 @@
 import React, { useState } from 'react';
 import db from '../../services/dbService';
-import { signInWithGoogle, saveCustomerToFirestore, loadUserInquiriesFromFirestore } from '../../services/firebaseService';
+import { signInWithGoogle } from '../../services/firebaseService';
+import { saveCustomerToTiDB, loadAllInquiriesFromTiDB } from '../../services/tidbService';
 
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
 
-  // ── After login: save profile to Firestore & TiDB Cloud AND restore past trips ──
-  const syncWithFirestore = async (profile) => {
+  // ── After login: save profile to TiDB Cloud Database AND restore past trips ──
+  const syncWithTiDB = async (profile) => {
     try {
-      // 1. Save profile to Firestore and TiDB Cloud (creates doc/row if new, merges if existing)
-      await saveCustomerToFirestore(profile);
-      import('../../services/tidbService.js').then(m => m.saveCustomerToTiDB && m.saveCustomerToTiDB(profile)).catch(() => {});
+      // 1. Save profile directly to TiDB Cloud Database
+      await saveCustomerToTiDB(profile).catch(() => {});
 
-      // 2. Pull user's past trip history from Firestore
-      const firestoreInquiries = await loadUserInquiriesFromFirestore(profile.phone, profile.email);
-      if (firestoreInquiries && firestoreInquiries.length > 0) {
+      // 2. Pull user's past trip history from TiDB Cloud Database
+      const tidbInquiries = await loadAllInquiriesFromTiDB().catch(() => []);
+      const userPhoneKey = (profile.phone || '').replace(/\D/g, '');
+      const userEmailKey = (profile.email || '').toLowerCase().trim();
+
+      const userInquiries = (tidbInquiries || []).filter(i => {
+        const iPhone = (i.customerPhone || '').replace(/\D/g, '');
+        const iEmail = (i.customerEmail || '').toLowerCase().trim();
+        return (userPhoneKey && iPhone && userPhoneKey === iPhone) || (userEmailKey && iEmail && userEmailKey === iEmail);
+      });
+
+      if (userInquiries && userInquiries.length > 0) {
         const localRaw = localStorage.getItem('cabsy_inquiries');
         const localList = localRaw ? JSON.parse(localRaw) : [];
-        // Merge: avoid duplicates by id or firestoreId
-        const existingIds = new Set(localList.map(i => i.id || i.firestoreId).filter(Boolean));
-        const fresh = firestoreInquiries.filter(i => !existingIds.has(i.id) && !existingIds.has(i.firestoreId));
+        const existingIds = new Set(localList.map(i => i.id).filter(Boolean));
+        const fresh = userInquiries.filter(i => !existingIds.has(i.id));
         const merged = [...fresh, ...localList];
         localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
-        // Notify Admin Portal and RidesTabScreen of new data
         window.dispatchEvent(new Event('storage'));
       }
     } catch (e) {
-      console.warn('Firestore sync on login failed (offline mode):', e);
+      console.warn('TiDB sync on login failed:', e);
     }
   };
 
@@ -49,8 +56,8 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
         localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
         db.saveCustomer(realProfile);
-        // ✅ Save to Firestore + restore past trips
-        await syncWithFirestore(realProfile);
+        // ✅ Save to TiDB Cloud Database + restore past trips
+        await syncWithTiDB(realProfile);
       } catch(e) {}
 
       setLoading(false);
@@ -73,7 +80,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       try {
         localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
         localStorage.setItem('taxigo_onboarded', 'true');
-        await syncWithFirestore(fallbackProfile);
+        await syncWithTiDB(fallbackProfile);
       } catch(e) {}
       if (onGoogleSignIn) {
         onGoogleSignIn(fallbackProfile);
