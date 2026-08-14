@@ -91,14 +91,29 @@ export default function MobileAppView() {
   const completeOnboarding = () => {
     try {
       localStorage.setItem('taxigo_onboarded', 'true');
+      localStorage.setItem('taxigo_profile_completed', 'true');
     } catch (e) { }
     setAppStage('APP_HOME');
+  };
+
+  // Skip profile setup for returning users (2nd+ time login)
+  const proceedAfterAuth = () => {
+    try {
+      const isCompleted = localStorage.getItem('taxigo_profile_completed') === 'true';
+      const saved = localStorage.getItem('cabsy_user_profile');
+      if (isCompleted || (saved && JSON.parse(saved).name)) {
+        completeOnboarding();
+        return;
+      }
+    } catch (e) {}
+    setAppStage('CREATE_PROFILE');
   };
 
   const handleLogout = () => {
     try {
       localStorage.removeItem('cabsy_user_profile');
       localStorage.removeItem('taxigo_onboarded');
+      localStorage.removeItem('taxigo_profile_completed');
     } catch (e) { }
     setSelectedGoogleAccount(null);
     setPhoneNumber('');

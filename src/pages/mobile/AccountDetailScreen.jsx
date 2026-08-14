@@ -55,6 +55,7 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
     try {
       localStorage.setItem('cabsy_user_profile', JSON.stringify(finalProfile));
       localStorage.setItem('taxigo_onboarded', 'true');
+      localStorage.setItem('taxigo_profile_completed', 'true');
       db.saveCustomer(finalProfile);
       await saveCustomerToMySQL(finalProfile).catch(() => {});
       window.dispatchEvent(new Event('storage'));
