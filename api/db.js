@@ -30,6 +30,21 @@ async function executeQuery(sql, params = []) {
   }
 }
 
+function getStandardCustomerId(email, phone) {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+  if (cleanEmail && !cleanEmail.endsWith('@empirecab.in')) {
+    return `CUST-${cleanEmail.replace(/[^a-z0-9]/g, '_')}`;
+  }
+  if (cleanPhone) {
+    return `CUST-${cleanPhone}`;
+  }
+  if (cleanEmail) {
+    return `CUST-${cleanEmail.replace(/[^a-z0-9]/g, '_')}`;
+  }
+  return `CUST-guest_${Date.now()}`;
+}
+
 // Table Schema Initializer
 async function ensureTablesExist() {
   await executeQuery(`
@@ -130,7 +145,7 @@ export async function handleMySQLRequest(action, data = {}) {
         // Auto-register/update customer record whenever an inquiry is submitted
         if (customerName) {
           const custEmail = customerEmail || (customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in');
-          const custId = `CUST-${(customerPhone || custEmail).replace(/[^a-z0-9]/gi, '_')}`;
+          const custId = getStandardCustomerId(custEmail, customerPhone);
           const custSql = `
             INSERT INTO customers (id, name, phone, email, totalRides, totalSpent, registeredAt, lastLogin, status)
             VALUES (?, ?, ?, ?, 1, ?, ?, ?, 'Active')
@@ -176,14 +191,33 @@ export async function handleMySQLRequest(action, data = {}) {
 
       case 'getCustomers': {
         const [rows] = await executeQuery('SELECT * FROM customers ORDER BY created_at DESC');
-        return { success: true, customers: rows };
+        const map = new Map();
+        (rows || []).forEach(row => {
+          const key = (row.email || row.phone || row.id || '').toLowerCase().trim();
+          if (!key) return;
+          if (!map.has(key)) {
+            map.set(key, { ...row });
+          } else {
+            const existing = map.get(key);
+            existing.totalRides = Math.max(Number(existing.totalRides || 0), Number(row.totalRides || 0));
+            existing.totalSpent = Math.max(Number(existing.totalSpent || 0), Number(row.totalSpent || 0));
+            if (!existing.phone && row.phone) existing.phone = row.phone;
+            if (!existing.email && row.email) existing.email = row.email;
+          }
+        });
+        return { success: true, customers: Array.from(map.values()) };
       }
 
       case 'saveCustomer': {
         const { id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status } = data;
         if (!name && !phone && !email) return { success: false, error: 'Empty customer profile' };
         
-        const custId = id || (email ? `CUST-${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}` : (phone ? `CUST-${phone.replace(/\D/g, '')}` : `CUST-${Math.floor(10000 + Math.random() * 89999)}`));
+        let custId = id || getStandardCustomerId(email, phone);
+        if (email) {
+          const [byEmail] = await executeQuery('SELECT id FROM customers WHERE LOWER(email) = ? LIMIT 1', [email.toLowerCase().trim()]).catch(() => [[]]);
+          if (byEmail && byEmail.length > 0) custId = byEmail[0].id;
+        }
+        
         const sql = `
           INSERT INTO customers (id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

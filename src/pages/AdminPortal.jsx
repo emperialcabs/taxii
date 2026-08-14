@@ -237,7 +237,21 @@ export default function AdminPortal() {
         ]);
 
         setInquiries(Array.isArray(mysqlInquiries) ? mysqlInquiries : []);
-        setCustomers(Array.isArray(mysqlCustomers) ? mysqlCustomers : []);
+        const map = new Map();
+        (mysqlCustomers || []).forEach(row => {
+          const key = (row.email || row.phone || row.id || '').toLowerCase().trim();
+          if (!key) return;
+          if (!map.has(key)) {
+            map.set(key, { ...row });
+          } else {
+            const existing = map.get(key);
+            existing.totalRides = Math.max(Number(existing.totalRides || 0), Number(row.totalRides || 0));
+            existing.totalSpent = Math.max(Number(existing.totalSpent || 0), Number(row.totalSpent || 0));
+            if (!existing.phone && row.phone) existing.phone = row.phone;
+            if (!existing.email && row.email) existing.email = row.email;
+          }
+        });
+        setCustomers(Array.from(map.values()));
       } catch (e) {
         console.warn('Hostinger MySQL load error:', e);
       } finally {
