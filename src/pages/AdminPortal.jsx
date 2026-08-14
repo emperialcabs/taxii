@@ -8,6 +8,7 @@ import {
   purgeDemoDataFromMySQL,
   purgeAllDataFromMySQL,
   deleteCustomerFromMySQL,
+  deleteInquiryFromMySQL,
   updateInquiryStatusInMySQL
 } from '../services/mysqlService';
 import db from '../services/dbService';
@@ -222,101 +223,30 @@ export default function AdminPortal() {
     reader.readAsDataURL(file);
   };
 
-  // ── Load real data from Hostinger MySQL Database ──
+  // ── Load real data dynamically from Hostinger MySQL Database ──
   useEffect(() => {
     const loadFromCloud = async () => {
       setFirestoreLoading(true);
       try {
-        // Auto initialize Hostinger MySQL tables and schema
+        // Auto initialize Hostinger MySQL tables and schema if not present
         initMySQLTables().catch(() => {});
-        // Purge demo data in background
-        purgeDemoDataFromMySQL().catch(() => {});
 
         const [mysqlInquiries, mysqlCustomers] = await Promise.all([
           loadAllInquiriesFromMySQL().catch(() => []),
           loadAllCustomersFromMySQL().catch(() => [])
         ]);
 
-        let localInquiries = [];
-        let localCustomers = [];
-        try {
-          const s = localStorage.getItem('cabsy_inquiries');
-          if (s) localInquiries = JSON.parse(s);
-          const c = localStorage.getItem('cabsy_customers');
-          if (c) localCustomers = JSON.parse(c);
-        } catch (err) {}
-
-        const isRealInquiry = (i) => {
-          if (!i) return false;
-          const name = (i.customerName || '').toLowerCase().trim();
-          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name === 'john doe') return false;
-          return true;
-        };
-
-        const isRealCustomer = (c) => {
-          if (!c) return false;
-          const name = (c.name || '').toLowerCase().trim();
-          const email = (c.email || '').toLowerCase().trim();
-          const id = (c.id || c.firestoreId || '').toLowerCase().trim();
-          if (name.includes('ankit mehta') || name.includes('bhavin patel') || name.includes('website guest') || name === 'john doe') return false;
-          if (email.includes('ankit.mehta') || email.includes('bhavin.patel')) return false;
-          if (id === 'cust-303' || id === 'cust-316' || id === 'cust-714' || id === 'cust-432') return false;
-          return true;
-        };
-
-        // Merge inquiries from Hostinger MySQL + local
-        const mergedInquiries = [...(mysqlInquiries || [])];
-        const existingIds = new Set(mergedInquiries.map(i => i.id).filter(Boolean));
-        (localInquiries || []).forEach(localItem => {
-          if (localItem && (localItem.id || localItem.customerName)) {
-            const itemKey = localItem.id;
-            if (!itemKey || !existingIds.has(itemKey)) {
-              mergedInquiries.push(localItem);
-              if (itemKey) existingIds.add(itemKey);
-            }
-          }
-        });
-
-        const cleanInquiries = mergedInquiries.filter(isRealInquiry);
-        setInquiries(cleanInquiries);
-
-        // Merge customers from Hostinger MySQL + Local + extracted from Real Inquiries
-        const allCustomerSources = [...(mysqlCustomers || []), ...(localCustomers || [])];
-        const realCustomers = allCustomerSources.filter(isRealCustomer);
-        const custKeys = new Set(realCustomers.map(c => (c.phone || c.email || c.id || '').toLowerCase().trim()).filter(Boolean));
-
-        // Extract customer profiles from real inquiries so every active rider is present in Customer Directory
-        cleanInquiries.forEach(inq => {
-          if (inq.customerName) {
-            const pKey = (inq.customerPhone || inq.customerEmail || inq.customerName).toLowerCase().trim();
-            if (pKey && !custKeys.has(pKey)) {
-              custKeys.add(pKey);
-              realCustomers.push({
-                id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-                name: inq.customerName,
-                phone: inq.customerPhone || '-',
-                email: inq.customerEmail || (inq.customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in'),
-                totalRides: 1,
-                totalSpent: Number(inq.fare || 0),
-                joined: inq.date || new Date().toISOString().split('T')[0]
-              });
-            }
-          }
-        });
-
-        setCustomers(realCustomers);
-
+        setInquiries(Array.isArray(mysqlInquiries) ? mysqlInquiries : []);
+        setCustomers(Array.isArray(mysqlCustomers) ? mysqlCustomers : []);
       } catch (e) {
-        console.warn('Hostinger MySQL Cloud load failed:', e);
+        console.warn('Hostinger MySQL load error:', e);
       } finally {
         setFirestoreLoading(false);
       }
     };
-    loadFromCloud();
 
-    // Poll Cloud database every 10s & listen for real-time customer registrations
+    loadFromCloud();
     const pollInterval = setInterval(loadFromCloud, 10000);
-    const handleSyncEvent = () => loadFromCloud();
 
     window.addEventListener('storage', handleSyncEvent);
     window.addEventListener('taxigo_db_sync', handleSyncEvent);
@@ -575,6 +505,38 @@ export default function AdminPortal() {
       }
       return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
     });
+  };
+
+  const handleDeleteInquiry = (inquiryId) => {
+    if (!inquiryId) return;
+    if (window.confirm("Are you sure you want to delete this inquiry record permanently?")) {
+      deleteInquiryFromMySQL(inquiryId).catch(() => {});
+      setInquiries(prev => prev.filter(i => i.id !== inquiryId));
+      try {
+        const saved = localStorage.getItem('cabsy_inquiries');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const filtered = parsed.filter(i => i.id !== inquiryId);
+          localStorage.setItem('cabsy_inquiries', JSON.stringify(filtered));
+        }
+      } catch (e) {}
+    }
+  };
+
+  const handleDeleteCustomer = (customerId) => {
+    if (!customerId) return;
+    if (window.confirm("Are you sure you want to delete this customer profile from directory?")) {
+      deleteCustomerFromMySQL(customerId).catch(() => {});
+      setCustomers(prev => prev.filter(c => c.id !== customerId && c.email !== customerId && c.phone !== customerId));
+      try {
+        const saved = localStorage.getItem('cabsy_customers');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const filtered = parsed.filter(c => c.id !== customerId && c.email !== customerId && c.phone !== customerId);
+          localStorage.setItem('cabsy_customers', JSON.stringify(filtered));
+        }
+      } catch (e) {}
+    }
   };
 
   // Add Driver
