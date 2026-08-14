@@ -1418,10 +1418,6 @@ export default function AdminPortal() {
                       <strong>{drv.phone}</strong>
                     </div>
                     <div className="detail-row">
-                      <span className="text-muted">Assigned Car:</span>
-                      <strong>{drv.vehicle}</strong>
-                    </div>
-                    <div className="detail-row">
                       <span className="text-muted">Rating:</span>
                       <strong className="text-yellow">★ {drv.rating}</strong>
                     </div>
