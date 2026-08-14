@@ -3,6 +3,7 @@ import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
+import { db } from '../../services/dbService';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
   // Load saved profile from localStorage
@@ -27,6 +28,92 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   const [customerAddress, setCustomerAddress] = useState('Locating address...');
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [isLocating, setIsLocating] = useState(true);
+
+  // Notification Modal State & Live Updates
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [userNotifs, setUserNotifs] = useState([]);
+
+  useEffect(() => {
+    const loadNotifs = () => {
+      const notifs = [];
+
+      try {
+        const inquiries = db.getInquiries();
+        const userInquiries = inquiries.filter(i => 
+          (userProfile?.phone && i.customerPhone === userProfile.phone) ||
+          (userProfile?.email && i.customerEmail === userProfile.email) ||
+          (userProfile?.name && i.customerName?.toLowerCase() === userProfile.name?.toLowerCase())
+        );
+
+        if (userInquiries.length > 0) {
+          userInquiries.forEach(inq => {
+            if (inq.status === 'Confirmed') {
+              notifs.push({
+                id: `inq-conf-${inq.id}`,
+                type: 'inquiry',
+                icon: '🎉',
+                title: `Booking Confirmed (${inq.id})`,
+                desc: `Your trip from ${inq.pickup} to ${inq.dropoff} is confirmed! Driver: ${inq.driver || 'Assigned'}`,
+                time: inq.date || 'Today',
+                read: false
+              });
+            } else if (inq.status === 'Pending') {
+              notifs.push({
+                id: `inq-pend-${inq.id}`,
+                type: 'inquiry',
+                icon: '⏳',
+                title: `Ride Inquiry Pending (${inq.id})`,
+                desc: `Inquiry for ${inq.vehicle} (₹${inq.fare}) is under review by Empire Cab dispatchers.`,
+                time: inq.date || 'Just now',
+                read: false
+              });
+            } else if (inq.status === 'Cancelled') {
+              notifs.push({
+                id: `inq-canc-${inq.id}`,
+                type: 'inquiry',
+                icon: '❌',
+                title: `Ride Inquiry Cancelled (${inq.id})`,
+                desc: `Your booking request for ${inq.pickup} was cancelled.`,
+                time: inq.date || 'Recent',
+                read: true
+              });
+            }
+          });
+        }
+      } catch (e) {}
+
+      notifs.push({
+        id: 'sys-gps',
+        type: 'system',
+        icon: '📍',
+        title: 'GPS Live Location Active',
+        desc: `Current pickup spot set near ${customerAddress}`,
+        time: 'Active Now',
+        read: true
+      });
+
+      notifs.push({
+        id: 'sys-offer',
+        type: 'offer',
+        icon: '🚕',
+        title: 'Outstation Flat Rate Special',
+        desc: 'Book intercity rides to Ahmedabad Airport, Vadodara & Surat at lowest guaranteed fares!',
+        time: 'Empire Cab',
+        read: true
+      });
+
+      setUserNotifs(notifs);
+    };
+
+    loadNotifs();
+
+    window.addEventListener('storage', loadNotifs);
+    window.addEventListener('taxigo_ride_booked', loadNotifs);
+    return () => {
+      window.removeEventListener('storage', loadNotifs);
+      window.removeEventListener('taxigo_ride_booked', loadNotifs);
+    };
+  }, [customerAddress, userProfile]);
 
   useEffect(() => {
     try {
@@ -128,28 +215,71 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
           {/* Floating Top Controls */}
           <div className="map-floating-header">
+            {/* Left Control: Profile Button */}
             <div 
               className="floating-icon-btn" 
-              onClick={() => {
-                setIsLocating(true);
-                getBestLiveLocation().then(res => {
-                  if (res) updateLocation({ lat: res.lat, lng: res.lng }, res.address);
-                  setIsLocating(false);
-                });
+              onClick={() => setActiveTab && setActiveTab('account')}
+              title="My Account Profile"
+              style={{
+                background: '#FFFFFF',
+                border: '1.5px solid #E2E8F0',
+                padding: '6px 14px',
+                borderRadius: '24px',
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#0F172A',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
+                width: 'auto'
               }}
-              title="Recenter Map"
-              style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A' }}
             >
-              🎯
+              {userPhoto ? (
+                <img src={userPhoto} alt="User" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ fontSize: '15px' }}>👤</span>
+              )}
+              <span style={{ fontFamily: 'Space Grotesk' }}>Profile</span>
             </div>
+
+            {/* Center Control: Live GPS Indicator */}
             <div style={{ background: '#FFFFFF', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1.5px solid #E2E8F0', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#22C55E' }}>●</span> GPS Live
             </div>
-            {userPhoto ? (
-              <img className="floating-user-avatar" src={userPhoto} alt="User" />
-            ) : (
-              <div className="floating-user-avatar" style={{ background: '#F1F5F9', border: '1.5px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>{userName.charAt(0)}</div>
-            )}
+
+            {/* Right Control: Notification Bell Button */}
+            <div 
+              className="floating-icon-btn" 
+              onClick={() => {
+                setIsNotifOpen(true);
+                // Mark all as read when opened
+                setUserNotifs(prev => prev.map(n => ({ ...n, read: true })));
+              }}
+              title="Notifications & Updates"
+              style={{
+                position: 'relative',
+                background: '#FFFFFF',
+                border: '1.5px solid #E2E8F0',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
+              }}
+            >
+              🔔
+              {userNotifs.filter(n => !n.read).length > 0 && (
+                <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: '#FFFFFF', fontSize: '10px', fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFFFFF' }}>
+                  {userNotifs.filter(n => !n.read).length}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Bottom Expandable Trip Sheet */}
@@ -200,6 +330,65 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           </div>
         </div>
       </div>
+
+      {/* Notifications & Live Updates Modal Overlay */}
+      {isNotifOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FFFFFF', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', padding: '24px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '22px' }}>🔔</span>
+                <h2 style={{ fontFamily: 'League Spartan', fontSize: '22px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
+                  Notifications & Live Updates
+                </h2>
+              </div>
+              <button onClick={() => setIsNotifOpen(false)} style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#0F172A', fontWeight: 'bold' }}>✕</button>
+            </div>
+
+            {/* Notification List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', maxHeight: '420px', paddingRight: '4px' }}>
+              {userNotifs.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔔</div>
+                  <p style={{ fontWeight: '700', margin: 0 }}>No new notifications</p>
+                  <small>All ride updates and announcements will appear here.</small>
+                </div>
+              ) : (
+                userNotifs.map((notif, idx) => (
+                  <div 
+                    key={idx}
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '16px',
+                      background: notif.type === 'inquiry' ? '#F0FDF4' : '#F8FAFC',
+                      border: `1.5px solid ${notif.type === 'inquiry' ? '#BBF7D0' : '#E2E8F0'}`,
+                      display: 'flex',
+                      gap: '12px',
+                      alignItems: 'flex-start'
+                    }}
+                  >
+                    <div style={{ fontSize: '20px', marginTop: '2px' }}>{notif.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <strong style={{ fontFamily: 'Space Grotesk', fontSize: '15px', color: '#0F172A' }}>{notif.title}</strong>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>{notif.time}</span>
+                      </div>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#334155', lineHeight: '1.4' }}>{notif.desc}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button 
+              onClick={() => setIsNotifOpen(false)}
+              style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '4px', boxShadow: '0 6px 20px rgba(52, 211, 153, 0.35)' }}
+            >
+              Close Updates
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Location Search Modal Overlay */}
       {isSearchOpen && (
