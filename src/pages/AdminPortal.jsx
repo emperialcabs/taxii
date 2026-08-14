@@ -10,8 +10,14 @@ import {
   deleteCustomerFromMySQL,
   deleteInquiryFromMySQL,
   updateInquiryStatusInMySQL,
-  updateInquiryRewardInMySQL
 } from '../services/mysqlService';
+import { 
+  notifyAdmin, 
+  notifyCustomer, 
+  getAdminNotifications, 
+  initEcosystemScheduler, 
+  requestNotificationPermission 
+} from '../services/notificationEngine';
 import db from '../services/dbService';
 import { 
   LayoutDashboard, 
@@ -223,27 +229,66 @@ export default function AdminPortal() {
       localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
     } catch (e) {}
 
+    // Send Direct Push & App Notification to Customer
+    notifyCustomer({
+      type: 'reward',
+      title: '🎁 Wallet Reward Credited!',
+      body: `Congratulations! You received ₹${rewardAmount} wallet reward credit from Empire Cab for trip ${inq.id}!`,
+      customerPhone: inq.customerPhone,
+      customerEmail: inq.customerEmail
+    });
+
     window.dispatchEvent(new Event('storage'));
     alert(`Successfully credited ₹${rewardAmount} reward to ${inq.customerName}'s wallet!`);
     setRewardModal({ open: false, inquiry: null, amount: 100 });
   };
 
   // Notification System State
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 (₹65.00)', time: '2 mins ago', read: false },
-    { id: 2, type: 'driver', title: 'Fleet Driver Active', desc: 'Alex Morgan status changed to On Duty', time: '12 mins ago', read: false },
-    { id: 3, type: 'revenue', title: 'Daily Revenue Target', desc: 'Dispatch revenue crossed ₹1,450.00 today', time: '1 hour ago', read: true }
-  ]);
+  const [notifications, setNotifications] = useState(() => {
+    const list = getAdminNotifications();
+    if (list && list.length > 0) return list;
+    return [
+      { id: 1, type: 'inquiry', title: 'New Ride Inquiry INQ-9012', desc: 'Downtown Terminal to Airport T3 (₹65.00)', time: '2 mins ago', read: false },
+      { id: 2, type: 'driver', title: 'Fleet Driver Active', desc: 'Alex Morgan status changed to On Duty', time: '12 mins ago', read: false }
+    ];
+  });
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+
+  useEffect(() => {
+    requestNotificationPermission();
+    initEcosystemScheduler();
+
+    const syncAdminNotifs = () => {
+      const fresh = getAdminNotifications();
+      if (fresh && fresh.length > 0) {
+        setNotifications(fresh);
+      }
+    };
+
+    window.addEventListener('taxigo_admin_notif', syncAdminNotifs);
+    window.addEventListener('storage', syncAdminNotifs);
+    return () => {
+      window.removeEventListener('taxigo_admin_notif', syncAdminNotifs);
+      window.removeEventListener('storage', syncAdminNotifs);
+    };
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleMarkAllRead = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
+    try {
+      const updated = notifications.map(n => ({ ...n, read: true }));
+      localStorage.setItem('cabsy_admin_notifications', JSON.stringify(updated));
+    } catch (e) {}
   };
 
   const handleClearNotif = (id) => {
     setNotifications(notifications.filter(n => n.id !== id));
+    try {
+      const updated = notifications.filter(n => n.id !== id);
+      localStorage.setItem('cabsy_admin_notifications', JSON.stringify(updated));
+    } catch (e) {}
   };
 
   // Form inputs
@@ -558,6 +603,16 @@ export default function AdminPortal() {
     }));
 
     autoSyncCustomer(assignModal.inquiry.customerName, assignModal.inquiry.customerPhone, assignModal.inquiry.fare);
+    
+    // Direct notification to customer for booking confirmation & driver assignment
+    notifyCustomer({
+      type: 'confirmed',
+      title: '✅ Ride Booking Confirmed!',
+      body: `Your booking for ${assignModal.inquiry.pickup} → ${assignModal.inquiry.dropoff} is confirmed! Driver: ${driverObj.name} (${driverObj.plate})`,
+      customerPhone: assignModal.inquiry.customerPhone,
+      customerEmail: assignModal.inquiry.customerEmail
+    });
+
     setAssignModal({ open: false, inquiry: null });
   };
 
@@ -576,6 +631,15 @@ export default function AdminPortal() {
       try {
         db.saveInquiry({ ...targetInq, status: 'In Progress' });
       } catch (e) {}
+
+      // Direct notification to customer on trip start
+      notifyCustomer({
+        type: 'trip_started',
+        title: '▶ Your Ride Has Started!',
+        body: `Driver ${targetInq.driver || 'Empire Cab'} has started your trip to ${targetInq.dropoff}. Live map tracking is now active!`,
+        customerPhone: targetInq.customerPhone,
+        customerEmail: targetInq.customerEmail
+      });
     }
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('taxigo_trip_started', { detail: { id: inquiryId } }));
@@ -596,6 +660,15 @@ export default function AdminPortal() {
       try {
         db.saveInquiry({ ...targetInq, status: 'Completed' });
       } catch (e) {}
+
+      // Direct notification to customer on trip completion
+      notifyCustomer({
+        type: 'trip_completed',
+        title: '🏁 Trip Completed!',
+        body: `Thank you for riding with Empire Cab! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
+        customerPhone: targetInq.customerPhone,
+        customerEmail: targetInq.customerEmail
+      });
     }
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('taxigo_trip_completed', { detail: { id: inquiryId } }));
@@ -606,6 +679,13 @@ export default function AdminPortal() {
       const target = prev.find(i => i.id === inquiryId);
       if (target && target.id) {
         updateInquiryStatusInMySQL(target.id, 'Cancelled').catch(() => {});
+        notifyCustomer({
+          type: 'cancelled',
+          title: '❌ Booking Cancelled',
+          body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by Empire Cab dispatch.`,
+          customerPhone: target.customerPhone,
+          customerEmail: target.customerEmail
+        });
       }
       return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
     });

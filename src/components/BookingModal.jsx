@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import db from '../services/dbService';
 import { INITIAL_VEHICLES } from '../pages/AdminPortal';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
+import { notifyAdmin } from '../services/notificationEngine';
 import './BookingModal.css';
 
 export default function BookingModal({ isOpen, onClose }) {
@@ -63,7 +64,7 @@ export default function BookingModal({ isOpen, onClose }) {
       alert("You already have an active ride in progress. Cannot book a second ride!");
       return;
     }
-    db.saveInquiry({
+    const newInq = {
       customerName: 'Web Passenger',
       customerPhone: '+91 98765 00000',
       pickup: pickup || 'Downtown Terminal',
@@ -73,7 +74,16 @@ export default function BookingModal({ isOpen, onClose }) {
       status: 'Pending',
       driver: 'Unassigned',
       date: new Date().toLocaleString('en-IN')
+    };
+    db.saveInquiry(newInq);
+
+    // Send Phone/Desktop Push Notification & Bell Notif to Admin
+    notifyAdmin({
+      type: 'inquiry',
+      title: '🚖 New Ride Inquiry Received!',
+      body: `New booking for ${newInq.customerName}: ${newInq.pickup} → ${newInq.dropoff} (₹${parseFloat(estimatedFare).toFixed(2)})`
     });
+
     setSubmitted(true);
   };
 

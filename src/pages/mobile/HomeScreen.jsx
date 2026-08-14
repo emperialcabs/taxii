@@ -4,6 +4,7 @@ import { getCoordsForPlace } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
+import { getCustomerNotifications } from '../../services/notificationEngine';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
   // Load saved profile from localStorage
@@ -37,6 +38,29 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
     const loadNotifs = () => {
       const notifs = [];
 
+      // 1. Direct Push Notifications from Admin / Engine
+      const directNotifs = getCustomerNotifications(userProfile?.phone, userProfile?.email);
+      if (directNotifs && directNotifs.length > 0) {
+        directNotifs.forEach(dn => {
+          let icon = '🔔';
+          if (dn.type === 'reward') icon = '🎁';
+          else if (dn.type === 'trip_started') icon = '▶';
+          else if (dn.type === 'trip_completed') icon = '🏁';
+          else if (dn.type === 'confirmed') icon = '✅';
+          else if (dn.type === 'cancelled') icon = '❌';
+
+          notifs.push({
+            id: dn.id,
+            type: dn.type || 'inquiry',
+            icon,
+            title: dn.title,
+            desc: dn.desc || dn.body,
+            time: dn.time || 'Just now',
+            read: dn.read || false
+          });
+        });
+      }
+
       try {
         const inquiries = db.getInquiries();
         const userInquiries = inquiries.filter(i => 
@@ -47,7 +71,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
         if (userInquiries.length > 0) {
           userInquiries.forEach(inq => {
-            if (inq.status === 'Confirmed') {
+            if (inq.status === 'Confirmed' && !notifs.some(n => n.id === `inq-conf-${inq.id}`)) {
               notifs.push({
                 id: `inq-conf-${inq.id}`,
                 type: 'inquiry',
@@ -57,7 +81,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
                 time: inq.date || 'Today',
                 read: false
               });
-            } else if (inq.status === 'Pending') {
+            } else if (inq.status === 'Pending' && !notifs.some(n => n.id === `inq-pend-${inq.id}`)) {
               notifs.push({
                 id: `inq-pend-${inq.id}`,
                 type: 'inquiry',
@@ -66,16 +90,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
                 desc: `Inquiry for ${inq.vehicle} (₹${inq.fare}) is under review by Empire Cab dispatchers.`,
                 time: inq.date || 'Just now',
                 read: false
-              });
-            } else if (inq.status === 'Cancelled') {
-              notifs.push({
-                id: `inq-canc-${inq.id}`,
-                type: 'inquiry',
-                icon: '❌',
-                title: `Ride Inquiry Cancelled (${inq.id})`,
-                desc: `Your booking request for ${inq.pickup} was cancelled.`,
-                time: inq.date || 'Recent',
-                read: true
               });
             }
           });
@@ -92,16 +106,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
         read: true
       });
 
-      notifs.push({
-        id: 'sys-offer',
-        type: 'offer',
-        icon: '🚕',
-        title: 'Outstation Flat Rate Special',
-        desc: 'Book intercity rides to Ahmedabad Airport, Vadodara & Surat at lowest guaranteed fares!',
-        time: 'Empire Cab',
-        read: true
-      });
-
       setUserNotifs(notifs);
     };
 
@@ -109,9 +113,11 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
 
     window.addEventListener('storage', loadNotifs);
     window.addEventListener('taxigo_ride_booked', loadNotifs);
+    window.addEventListener('taxigo_customer_notif', loadNotifs);
     return () => {
       window.removeEventListener('storage', loadNotifs);
       window.removeEventListener('taxigo_ride_booked', loadNotifs);
+      window.removeEventListener('taxigo_customer_notif', loadNotifs);
     };
   }, [customerAddress, userProfile]);
 

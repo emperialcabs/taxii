@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
 import { saveInquiryToMySQL, saveCustomerToMySQL } from '../services/mysqlService';
+import { notifyAdmin } from '../services/notificationEngine';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -167,7 +168,15 @@ export default function MobileAppView() {
     // 1. Save into dbService (single source of truth for localStorage inquiries)
     db.saveInquiry(newInquiry);
 
-    // 2. Save directly to Hostinger MySQL Database
+    // 2. Trigger System Push & Admin Bell Notification
+    notifyAdmin({
+      type: 'inquiry',
+      title: `🚖 New Ride Inquiry ${newInquiryId}`,
+      body: `Customer ${userProf.name} requested ${newInquiry.pickup} → ${newInquiry.dropoff} (₹${totalFareNum})`,
+      extraData: { inquiryId: newInquiryId }
+    });
+
+    // 3. Save directly to Hostinger MySQL Database
     saveInquiryToMySQL(newInquiry).catch(e => console.warn('MySQL inquiry save failed:', e));
     saveCustomerToMySQL(userProf).catch(e => console.warn('MySQL customer save failed:', e));
 
