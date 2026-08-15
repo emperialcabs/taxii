@@ -35,9 +35,17 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTH (REAL GOOGLE OAUTH 2.0 FLOW)
-// ─────────────────────────────────────────────────────────────────────────────
+const isNativeApp = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    Capacitor.isNativePlatform() ||
+    Boolean(window.Capacitor?.isNative) ||
+    window.Capacitor?.platform === 'android' ||
+    window.Capacitor?.platform === 'ios' ||
+    (typeof navigator !== 'undefined' && /Capacitor|Android.*wv/i.test(navigator.userAgent))
+  );
+};
+
 export const handleGoogleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
@@ -59,25 +67,31 @@ export const handleGoogleRedirectResult = async () => {
 export const signInWithGoogle = async () => {
   googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-  // 1. Try Native Google Auth if on native Capacitor container
-  if (Capacitor.isNativePlatform()) {
+  // 1. Native Mobile App Flow: Opens Native Android Account Chooser Sheet (Inside App, No Chrome)
+  if (isNativeApp() || window.Capacitor) {
     try {
-      GoogleAuth.initialize();
+      GoogleAuth.initialize({
+        clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+        grantOfflineAccess: true
+      });
       const googleUser = await GoogleAuth.signIn();
       if (googleUser && googleUser.email) {
         return {
-          name: googleUser.displayName || googleUser.givenName || googleUser.email?.split('@')[0] || 'Rider',
+          name: googleUser.displayName || googleUser.givenName || googleUser.name || googleUser.email?.split('@')[0] || 'Rider',
           email: googleUser.email,
           photoURL: googleUser.imageUrl || null,
           uid: googleUser.id || 'goog_' + Date.now()
         };
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth failed/cancelled, falling back to Web OAuth:", nativeErr);
+      console.warn("Native Google Auth picker cancelled or error:", nativeErr);
+      if (nativeErr?.message?.includes('cancelled') || nativeErr?.code === '12501' || nativeErr === 'user cancelled') {
+        throw new Error("Sign-in cancelled.");
+      }
     }
   }
 
-  // 2. Real Web Google OAuth Flow via Popup or Redirect
+  // 2. Web Browser Flow (When opened in desktop web browser)
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -88,7 +102,6 @@ export const signInWithGoogle = async () => {
       uid: user.uid
     };
   } catch (popupErr) {
-    // If popup blocked or cancelled by browser policy, perform full-page Google OAuth redirect
     if (
       popupErr.code === 'auth/popup-blocked' ||
       popupErr.code === 'auth/popup-closed-by-user' ||
