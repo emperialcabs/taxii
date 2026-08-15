@@ -3,7 +3,7 @@ import db from '../../services/dbService';
 import { signInWithGoogle, handleGoogleRedirectResult } from '../../services/firebaseService';
 import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 
-export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
+export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoToCreateAccount, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
 
   // ── 1. Check if user just returned from Google OAuth Redirect ──
@@ -81,6 +81,8 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     setLoading(false);
     if (onGoogleSignIn) {
       onGoogleSignIn(realProfile);
+    } else if (onGoToCreateAccount) {
+      onGoToCreateAccount();
     } else {
       onNext();
     }
@@ -93,15 +95,25 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       if (googleUser && googleUser.email) {
         await completeGoogleSignIn(googleUser.name, googleUser.email, googleUser.photoURL, googleUser.uid);
       } else {
-        if (onNext) onNext();
+        if (onGoToCreateAccount) {
+          onGoToCreateAccount();
+        } else if (onNext) {
+          onNext();
+        }
       }
     } catch (err) {
       console.warn("Google Auth handler:", err);
-      if (onNext) onNext();
+      if (onGoToCreateAccount) {
+        onGoToCreateAccount();
+      } else if (onNext) {
+        onNext();
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const goToCreateAccount = onGoToCreateAccount || onNext;
 
   return (
     <div className="real-mobile-app">
@@ -176,7 +188,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
           </button>
 
           <p className="let-you-footer-txt" style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748B', fontWeight: '600' }}>
-            Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={onNext}>Sign up</span>
+            Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={goToCreateAccount}>Sign up</span>
           </p>
         </div>
       </div>

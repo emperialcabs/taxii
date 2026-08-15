@@ -270,6 +270,7 @@ export default function MobileAppView() {
           phoneNumber={phoneNumber}
           setPhoneNumber={setPhoneNumber}
           onNext={() => setAppStage('OTP_VERIFY')}
+          onGoToCreateAccount={() => setAppStage('CREATE_PROFILE')}
           onGoogleSignIn={(acc) => {
             if (acc) setSelectedGoogleAccount(acc);
             proceedAfterAuth();
