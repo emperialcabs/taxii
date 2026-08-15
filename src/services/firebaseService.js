@@ -67,11 +67,13 @@ export const handleGoogleRedirectResult = async () => {
 export const signInWithGoogle = async () => {
   googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-  // 1. Native Mobile App Flow: Opens Native Android Account Chooser Sheet (Inside App, No Chrome)
+  // 1. Native Mobile App Flow: Opens Native Account Chooser Sheet on iOS and Android (Inside App, No Safari/Chrome tab)
   if (isNativeApp() || window.Capacitor) {
     try {
       GoogleAuth.initialize({
         clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+        serverClientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+        iosClientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
         grantOfflineAccess: true
       });
       const googleUser = await GoogleAuth.signIn();
