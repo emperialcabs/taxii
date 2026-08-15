@@ -60,22 +60,19 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
       const savedPhone = localStorage.getItem('cabsy_user_phone') || '';
       const source = googleData || (base.email ? base : null);
 
-      if (source) {
-        setProfile(prev => {
-          const emailVal = source.email || prev.email || '';
-          let nameVal = source.name || prev.name || '';
-          if ((!nameVal || nameVal === 'Google User') && emailVal) {
-            nameVal = formatNameFromEmail(emailVal);
-          }
-          return {
-            ...prev,
-            name: nameVal || prev.name,
-            email: emailVal || prev.email,
-            phone: source.phone || prev.phone || savedPhone || '',
-            photoURL: source.photoURL || prev.photoURL || null
-          };
-        });
+      const emailVal = source?.email || base.email || '';
+      let nameVal = source?.name || base.name || '';
+      if ((!nameVal || nameVal === 'Google User' || nameVal === 'Google Rider') && emailVal) {
+        nameVal = formatNameFromEmail(emailVal);
       }
+
+      setProfile(prev => ({
+        ...prev,
+        name: nameVal || prev.name || '',
+        email: emailVal || prev.email || '',
+        phone: source?.phone || prev.phone || base.phone || savedPhone || '',
+        photoURL: source?.photoURL || prev.photoURL || base.photoURL || null
+      }));
     } catch (e) {}
   }, [googleData]);
 

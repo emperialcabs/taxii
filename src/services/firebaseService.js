@@ -46,20 +46,6 @@ const isNativeApp = () => {
 };
 
 export const handleGoogleRedirectResult = async () => {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result && result.user) {
-      const user = result.user;
-      return {
-        name: user.displayName || user.email?.split('@')[0] || 'Rider',
-        email: user.email,
-        photoURL: user.photoURL,
-        uid: user.uid
-      };
-    }
-  } catch (e) {
-    console.warn("Google Redirect Result check error:", e);
-  }
   return null;
 };
 
@@ -101,24 +87,7 @@ export const signInWithGoogle = async () => {
     }
   }
 
-  // 2. Web Browser Popup Flow (Stays inside app without opening external Chrome)
-  try {
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    if (user) {
-      return {
-        name: user.displayName || user.email?.split('@')[0] || 'Rider',
-        email: user.email,
-        photoURL: user.photoURL,
-        uid: user.uid
-      };
-    }
-  } catch (popupErr) {
-    console.warn("Firebase Google Auth popup error/blocked:", popupErr);
-  }
-
-  // 3. Robust Fallback User Profile if Auth popup/native plugin is blocked on device
+  // 2. Clean In-App Flow (Never launch Chrome or external popup windows)
   try {
     const savedProfile = localStorage.getItem('cabsy_user_profile');
     if (savedProfile) {
@@ -129,12 +98,7 @@ export const signInWithGoogle = async () => {
     }
   } catch(e) {}
 
-  return {
-    name: 'Google Rider',
-    email: 'user.taxigo@gmail.com',
-    photoURL: null,
-    uid: 'goog_' + Date.now()
-  };
+  return null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
