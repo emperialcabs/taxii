@@ -203,11 +203,20 @@ export default function MobileAppView() {
     setAppStage('INQUIRY_SUBMITTED');
   };
 
-  // Tab Switcher Router in App Home
+  // Tab Switcher Router in App Home - Persistent Tab Mounting (Zero Flickering / Blinking)
   const renderTabContent = () => {
-    switch (activeTab) {
-      case 'rides':
-        return (
+    return (
+      <div className="mobile-tabs-keep-alive-wrapper" style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <div style={{ display: activeTab === 'home' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
+          <HomeScreen
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onStartBooking={() => setAppStage('SELECT_LOCATION_LIST')}
+            onOpenTracking={() => setAppStage('TRACKING')}
+          />
+        </div>
+
+        <div style={{ display: activeTab === 'rides' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
           <RidesTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -216,16 +225,16 @@ export default function MobileAppView() {
               setAppStage('SELECT_LOCATION_LIST');
             }}
           />
-        );
-      case 'wallet':
-        return (
+        </div>
+
+        <div style={{ display: activeTab === 'wallet' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
           <WalletTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
-        );
-      case 'account':
-        return (
+        </div>
+
+        <div style={{ display: activeTab === 'account' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
           <AccountTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -237,18 +246,9 @@ export default function MobileAppView() {
               if (target === 'notification') setAppStage('NOTIFICATION_OPT');
             }}
           />
-        );
-      case 'home':
-      default:
-        return (
-          <HomeScreen
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            onStartBooking={() => setAppStage('SELECT_LOCATION_LIST')}
-            onOpenTracking={() => setAppStage('TRACKING')}
-          />
-        );
-    }
+        </div>
+      </div>
+    );
   };
 
   // Modular View Orchestrator
