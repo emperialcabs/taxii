@@ -1,5 +1,9 @@
 {
   "appId": "com.cabsy.ridebooking",
   "appName": "Empire Cab",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://taxii-three.vercel.app",
+    "cleartext": true
+  }
 }
