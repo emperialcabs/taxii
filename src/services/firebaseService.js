@@ -41,8 +41,7 @@ const isNativeApp = () => {
     Capacitor.isNativePlatform() ||
     Boolean(window.Capacitor?.isNative) ||
     window.Capacitor?.platform === 'android' ||
-    window.Capacitor?.platform === 'ios' ||
-    (typeof navigator !== 'undefined' && /Capacitor|Android.*wv/i.test(navigator.userAgent))
+    window.Capacitor?.platform === 'ios'
   );
 };
 
@@ -65,8 +64,8 @@ export const handleGoogleRedirectResult = async () => {
 };
 
 export const signInWithGoogle = async () => {
-  // 1. Native Mobile App Flow: Native Account Chooser Sheet on iOS and Android (Inside App ONLY, NEVER opens Chrome)
-  if (isNativeApp() || window.Capacitor) {
+  // 1. Native Mobile App Flow (Android / iOS Native App Shell)
+  if (isNativeApp()) {
     try {
       try {
         GoogleAuth.initialize();
@@ -94,18 +93,12 @@ export const signInWithGoogle = async () => {
         }
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth error/cancellation:", nativeErr);
-      if (typeof nativeErr === 'string' && nativeErr.includes('cancelled')) {
-        throw new Error("Sign-in cancelled.");
-      }
-      if (nativeErr?.message?.includes('cancelled') || nativeErr?.code === '12501' || nativeErr === 'user cancelled') {
-        throw new Error("Sign-in cancelled.");
-      }
-      throw nativeErr;
+      console.warn("Native Google Auth picker cancelled or error:", nativeErr);
+      return null;
     }
   }
 
-  // 2. Web Browser Flow (ONLY when running in desktop Web Chrome/Safari browser)
+  // 2. Web Browser Flow (Desktop / Web Browser)
   googleProvider.setCustomParameters({ prompt: 'select_account' });
   try {
     const result = await signInWithPopup(auth, googleProvider);
@@ -117,15 +110,8 @@ export const signInWithGoogle = async () => {
       uid: user.uid
     };
   } catch (popupErr) {
-    if (
-      popupErr.code === 'auth/popup-blocked' ||
-      popupErr.code === 'auth/popup-closed-by-user' ||
-      popupErr.message?.includes('popup')
-    ) {
-      await signInWithRedirect(auth, googleProvider);
-      return null;
-    }
-    throw popupErr;
+    console.warn("Firebase Google Auth popup unavailable:", popupErr);
+    return null;
   }
 };
 

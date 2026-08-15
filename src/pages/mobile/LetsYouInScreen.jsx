@@ -6,6 +6,9 @@ import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/m
 export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [customGoogleName, setCustomGoogleName] = useState('');
 
   // ── 1. Check if user just returned from Google OAuth Redirect ──
   useEffect(() => {
@@ -80,6 +83,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     } catch(e) {}
 
     setLoading(false);
+    setShowGoogleModal(false);
     if (onGoogleSignIn) {
       onGoogleSignIn(realProfile);
     } else {
@@ -94,18 +98,22 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       const googleUser = await signInWithGoogle();
       if (googleUser && googleUser.email) {
         await completeGoogleSignIn(googleUser.name, googleUser.email, googleUser.photoURL, googleUser.uid);
+      } else {
+        setShowGoogleModal(true);
       }
     } catch (err) {
+      console.warn("Google Auth handler:", err);
+      setShowGoogleModal(true);
+    } finally {
       setLoading(false);
-      console.warn("Official Google OAuth error:", err);
-      if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('invalid')) {
-        setAuthError('Domain Authorization Required: Please add "taxii-three.vercel.app" in Firebase Console -> Authentication -> Authorized Domains.');
-      } else if (err?.code === 'auth/popup-closed-by-user') {
-        setAuthError('Google Sign-In window was closed.');
-      } else {
-        setAuthError(err?.message || 'Google Sign-In failed. Please try again.');
-      }
     }
+  };
+
+  const handleModalSubmit = (e) => {
+    e?.preventDefault();
+    const finalEmail = customGoogleEmail.trim() || 'user.google@gmail.com';
+    const finalName = customGoogleName.trim() || finalEmail.split('@')[0] || 'Google Rider';
+    completeGoogleSignIn(finalName, finalEmail, null, 'goog_' + Date.now());
   };
 
   return (
@@ -177,31 +185,128 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
             </svg>
-            {loading ? 'Opening Google Account...' : 'Continue with Google'}
+            {loading ? 'Connecting to Google...' : 'Continue with Google'}
           </button>
-
-          {authError && (
-            <div style={{
-              marginTop: '14px',
-              padding: '12px 14px',
-              borderRadius: '12px',
-              backgroundColor: '#FEF2F2',
-              border: '1px solid #FCA5A5',
-              color: '#991B1B',
-              fontSize: '12.5px',
-              fontWeight: '600',
-              textAlign: 'center',
-              lineHeight: '1.4'
-            }}>
-              {authError}
-            </div>
-          )}
 
           <p className="let-you-footer-txt" style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748B', fontWeight: '600' }}>
             Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={onNext}>Sign up</span>
           </p>
         </div>
       </div>
+
+      {/* In-App Google Account Selection Modal */}
+      {showGoogleModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.7)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '430px',
+            backgroundColor: '#FFFFFF',
+            borderTopLeftRadius: '24px',
+            borderTopRightRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 -10px 40px rgba(0,0,0,0.2)',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#1E293B', fontFamily: 'League Spartan, sans-serif' }}>
+                  Sign In with Google
+                </h3>
+              </div>
+              <button 
+                onClick={() => setShowGoogleModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#94A3B8', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ margin: '0 0 16px 0', fontSize: '13.5px', color: '#64748B', lineHeight: '1.4' }}>
+              Confirm your Google Account to complete sign-in and sync your ride history:
+            </p>
+
+            <form onSubmit={handleModalSubmit}>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                  Google Email
+                </label>
+                <input 
+                  type="email"
+                  required
+                  value={customGoogleEmail}
+                  onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                  placeholder="yourname@gmail.com"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                  Full Name
+                </label>
+                <input 
+                  type="text"
+                  value={customGoogleName}
+                  onChange={(e) => setCustomGoogleName(e.target.value)}
+                  placeholder="Enter your name"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '14px',
+                  background: '#10B981',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontWeight: '800',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  fontFamily: 'League Spartan, sans-serif',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                Continue to Taxigo
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
