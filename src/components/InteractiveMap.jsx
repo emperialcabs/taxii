@@ -179,6 +179,11 @@ export default function InteractiveMap({
   const estMins = distKm ? Math.max(12, Math.round(distKm * 1.5)) : null;
 
   const activePolyline = liveRoadLine || routePolyline;
+  const rawPositions = Array.isArray(activePolyline) ? activePolyline : [];
+  const safePositions = rawPositions
+    .filter(p => p && typeof p.lat === 'number' && !isNaN(p.lat) && typeof p.lng === 'number' && !isNaN(p.lng))
+    .map(p => [p.lat, p.lng]);
+  const hasPolyline = safePositions.length >= 2;
 
   return (
     <div className="interactive-google-map-container" style={{ ...style, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' }}>
@@ -281,14 +286,14 @@ export default function InteractiveMap({
           )}
 
           {/* Google Maps Style Royal Blue Navigation Route Line */}
-          {Array.isArray(activePolyline) && activePolyline.length > 0 ? (
+          {hasPolyline ? (
             <>
               <Polyline 
-                positions={activePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
+                positions={safePositions} 
                 pathOptions={{ color: '#1E40AF', weight: 9, opacity: 0.7, lineCap: 'round', lineJoin: 'round' }} 
               />
               <Polyline 
-                positions={activePolyline.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number').map(p => [p.lat, p.lng])} 
+                positions={safePositions} 
                 pathOptions={{ color: '#2563EB', weight: 6, opacity: 1.0, lineCap: 'round', lineJoin: 'round' }} 
               />
             </>
