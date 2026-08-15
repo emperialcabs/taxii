@@ -45,59 +45,67 @@ const isNativeApp = () => {
   );
 };
 
-export const handleGoogleRedirectResult = async () => {
-  return null;
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// GOOGLE SIGN-IN — Production-grade native flow
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Attempt native Google Sign-In on Android/iOS.
+ * Returns { name, email, photoURL, uid } or null if cancelled/failed.
+ * On native: triggers Android system account picker (real phone accounts).
+ * Falls through to in-app fallback modal if native fails.
+ */
 export const signInWithGoogle = async () => {
-  // 1. Native Mobile App Flow — Triggers Native Android / iOS System Account Picker Sheet
+  // ── Native Android/iOS: Real device account picker ──
   if (isNativeApp()) {
     try {
+      // Initialize the native plugin (safe to call multiple times)
       try {
         GoogleAuth.initialize({
-          clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+          clientId: '256291841083-ueibs1i67ue9dbpjas60ak2vbn37ubc2.apps.googleusercontent.com',
           scopes: ['profile', 'email'],
           grantOfflineAccess: true,
         });
-      } catch (e) {}
+      } catch (initErr) {
+        console.log('[GoogleAuth] init note:', initErr?.message || initErr);
+      }
 
+      // This triggers the native Android system bottom-sheet account picker
+      // showing all real Google accounts logged into the phone.
+      // Requires SHA-1 registered in Firebase Console to work natively.
       const googleUser = await GoogleAuth.signIn();
 
       if (googleUser) {
         const email = (
-          googleUser.email || 
-          googleUser.authentication?.email || 
+          googleUser.email ||
+          googleUser.authentication?.email ||
           (googleUser.id ? `user_${googleUser.id.slice(-6)}@gmail.com` : null)
         );
         const name = (
-          googleUser.displayName || 
-          googleUser.name || 
-          (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}` : '').trim() || 
+          googleUser.displayName ||
+          googleUser.name ||
+          (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}`.trim() : '') ||
           (email ? email.split('@')[0] : 'Google User')
         );
         const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
         const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
 
-        if (email || name) {
-          return { name, email: email || 'user@gmail.com', photoURL, uid };
-        }
+        return { name, email: email || '', photoURL, uid };
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth account picker error or cancelled:", nativeErr);
+      // User cancelled the picker, or SHA-1 not registered (will fall through)
+      console.warn('[GoogleAuth] Native sign-in failed:', nativeErr?.message || nativeErr);
     }
   }
 
-  // 2. Clean Fallback Profile from Local Storage
-  try {
-    const savedProfile = localStorage.getItem('cabsy_user_profile');
-    if (savedProfile) {
-      const parsed = JSON.parse(savedProfile);
-      if (parsed && (parsed.email || parsed.name)) {
-        return parsed;
-      }
-    }
-  } catch(e) {}
+  // ── Return null: LetsYouInScreen will show the in-app fallback picker ──
+  return null;
+};
 
+/**
+ * No-op: redirect result handler disabled (we don't use web redirects)
+ */
+export const handleGoogleRedirectResult = async () => {
   return null;
 };
 
@@ -188,92 +196,57 @@ export const saveInquiryToFirestore = async (inquiry) => {
 };
 
 /**
- * Load all inquiries for a specific user (by phone or email) from Firestore.
- * Falls back to empty array on error/offline.
- */
-export const loadUserInquiriesFromFirestore = async (phone, email) => {
-  if (!phone && !email) return [];
-  try {
-    const userKey = phone || email;
-    const userDocId = String(userKey).toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const inqColRef = collection(db, 'cabsy_customers', userDocId, 'inquiries');
-    const q = query(inqColRef, orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
-  } catch (e) {
-    console.warn('Firestore loadUserInquiries failed (offline?):', e);
-    return [];
-  }
-};
-
-/**
- * Load ALL inquiries (for Admin Portal) from Firestore.
+ * Load all ride inquiries from Firestore (admin view).
  */
 export const loadAllInquiriesFromFirestore = async () => {
   try {
-    const snap = await getDocs(collection(db, 'cabsy_inquiries'));
-    return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+    const ref = collection(db, 'cabsy_inquiries');
+    const snapshot = await getDocs(ref);
+    return snapshot.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
   } catch (e) {
-    console.warn('Firestore loadAllInquiries failed (offline?):', e);
+    console.warn('Firestore loadAllInquiries failed:', e);
     return [];
   }
 };
 
 /**
- * Update the status of an inquiry in Firestore (e.g. Confirmed, Cancelled).
+ * Load ride inquiries for a specific user from their sub-collection.
  */
-export const updateInquiryStatusInFirestore = async (firestoreId, status, driverName) => {
+export const loadUserInquiriesFromFirestore = async (email, phone) => {
+  if (!email && !phone) return [];
+  try {
+    const userDocId = (email || phone).toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const ref = collection(db, 'cabsy_customers', userDocId, 'inquiries');
+    const snapshot = await getDocs(ref);
+    return snapshot.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+  } catch (e) {
+    console.warn('Firestore loadUserInquiries failed:', e);
+    return [];
+  }
+};
+
+/**
+ * Update a ride inquiry's status (e.g., Confirmed, In Progress, Completed).
+ */
+export const updateInquiryStatus = async (firestoreId, newStatus) => {
   if (!firestoreId) return;
   try {
     const ref = doc(db, 'cabsy_inquiries', firestoreId);
-    await updateDoc(ref, {
-      status,
-      ...(driverName ? { driver: driverName } : {}),
-      updatedAt: serverTimestamp()
-    });
+    await updateDoc(ref, { status: newStatus, updatedAt: serverTimestamp() });
   } catch (e) {
-    console.warn('Firestore updateInquiryStatus failed (offline?):', e);
+    console.warn('Firestore updateInquiryStatus failed:', e);
   }
 };
 
 /**
- * Load ALL customer profiles from Firestore (for Admin Portal Customer Directory).
+ * Delete a ride inquiry from Firestore.
  */
-export const loadAllCustomersFromFirestore = async () => {
+export const deleteInquiryFromFirestore = async (firestoreId) => {
+  if (!firestoreId) return;
   try {
-    const snap = await getDocs(collection(db, 'cabsy_customers'));
-    return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+    const ref = doc(db, 'cabsy_inquiries', firestoreId);
+    await deleteDoc(ref);
   } catch (e) {
-    console.warn('Firestore loadAllCustomers failed (offline?):', e);
-    return [];
+    console.warn('Firestore deleteInquiry failed:', e);
   }
 };
-
-/**
- * Purge demo customer documents from Firestore
- */
-export const purgeDemoDataFromFirestore = async () => {
-  try {
-    const snap = await getDocs(collection(db, 'cabsy_customers'));
-    for (const docSnap of snap.docs) {
-      const data = docSnap.data();
-      const name = (data.name || '').toLowerCase();
-      const email = (data.email || '').toLowerCase();
-      if (
-        name.includes('ankit mehta') ||
-        name.includes('bhavin patel') ||
-        name.includes('website guest') ||
-        name.includes('john doe') ||
-        email.endsWith('@customer.com') ||
-        email.endsWith('@client.com') ||
-        docSnap.id.includes('ankit') ||
-        docSnap.id.includes('bhavin')
-      ) {
-        await deleteDoc(doc(db, 'cabsy_customers', docSnap.id));
-      }
-    }
-  } catch (e) {
-    console.warn('Firestore purgeDemoData error:', e);
-  }
-};
-

@@ -273,7 +273,10 @@ export default function MobileAppView() {
           onGoToCreateAccount={() => setAppStage('CREATE_PROFILE')}
           onGoogleSignIn={(acc) => {
             if (acc) setSelectedGoogleAccount(acc);
-            proceedAfterAuth();
+            // LetsYouInScreen already checked Firestore:
+            // - Returning user: profile_completed=true → go to APP_HOME
+            // - New user: goes to CREATE_PROFILE via onGoToCreateAccount
+            completeOnboarding();
           }}
           onBack={() => setAppStage('ONBOARDING')}
         />

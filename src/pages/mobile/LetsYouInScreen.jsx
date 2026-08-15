@@ -1,106 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import db from '../../services/dbService';
-import { signInWithGoogle, handleGoogleRedirectResult } from '../../services/firebaseService';
+import { signInWithGoogle, loadCustomerFromFirestore, saveCustomerToFirestore } from '../../services/firebaseService';
 import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 
-export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedGoogleAccount, setSelectedGoogleAccount, onNext, onGoToCreateAccount, onGoogleSignIn, onBack }) {
+// ─── Utility: derive a clean display name from an email ──────────────────────
+const formatNameFromEmail = (email) => {
+  if (!email || !email.includes('@')) return '';
+  return email.split('@')[0]
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+};
+
+export default function LetsYouInScreen({
+  phoneNumber, setPhoneNumber,
+  selectedGoogleAccount, setSelectedGoogleAccount,
+  onNext, onGoToCreateAccount, onGoogleSignIn, onBack
+}) {
   const [loading, setLoading] = useState(false);
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [showFallbackPicker, setShowFallbackPicker] = useState(false);
   const [customEmail, setCustomEmail] = useState('');
 
-  // ── 1. Check if user just returned from Google OAuth Redirect ──
-  useEffect(() => {
-    const checkRedirect = async () => {
-      try {
-        const user = await handleGoogleRedirectResult();
-        if (user && user.email) {
-          await completeGoogleSignIn(user.name, user.email, user.photoURL, user.uid);
-        }
-      } catch (e) {
-        console.warn("Error checking Google redirect result:", e);
-      }
-    };
-    checkRedirect();
-  }, []);
+  // ─── After Google gives us user data: check Firestore, route accordingly ──
+  const processGoogleUser = async (googleData) => {
+    if (!googleData || !googleData.email) return;
 
-  // ── 2. After login: save profile to Hostinger MySQL Database AND restore past trips ──
-  const syncWithMySQL = async (profile) => {
+    const email = googleData.email;
+    let name = googleData.name || '';
+    if (!name || name === 'Google User') {
+      name = formatNameFromEmail(email);
+    }
+    const photoURL = googleData.photoURL || null;
+    const uid = googleData.uid || 'goog_' + Date.now();
+
+    // ── 1. Check Firestore: does this user already exist? ──
+    let existingProfile = null;
     try {
-      await saveCustomerToMySQL(profile).catch(() => {});
-
-      const mysqlInquiries = await loadAllInquiriesFromMySQL().catch(() => []);
-      const userPhoneKey = (profile.phone || '').replace(/\D/g, '');
-      const userEmailKey = (profile.email || '').toLowerCase().trim();
-
-      const userInquiries = (mysqlInquiries || []).filter(i => {
-        const iPhone = (i.customerPhone || '').replace(/\D/g, '');
-        const iEmail = (i.customerEmail || '').toLowerCase().trim();
-        return (userPhoneKey && iPhone && userPhoneKey === iPhone) || (userEmailKey && iEmail && userEmailKey === iEmail);
-      });
-
-      if (userInquiries && userInquiries.length > 0) {
-        const localRaw = localStorage.getItem('cabsy_inquiries');
-        const localList = localRaw ? JSON.parse(localRaw) : [];
-        const existingIds = new Set(localList.map(i => i.id).filter(Boolean));
-        const fresh = userInquiries.filter(i => !existingIds.has(i.id));
-        const merged = [...fresh, ...localList];
-        localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
-        window.dispatchEvent(new Event('storage'));
-      }
+      existingProfile = await loadCustomerFromFirestore(email);
     } catch (e) {
-      console.warn('MySQL sync on login failed:', e);
-    }
-  };
-
-  const completeGoogleSignIn = async (name, email, photoURL, uid) => {
-    let displayName = name;
-    if ((!displayName || displayName === 'Google User' || displayName === 'Google Rider') && email && email.includes('@')) {
-      const username = email.split('@')[0];
-      displayName = username
-        .split(/[._-]/)
-        .filter(Boolean)
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(' ');
+      console.warn('[Auth] Firestore lookup failed:', e);
     }
 
-    if (phoneNumber) {
+    if (existingProfile && existingProfile.name && existingProfile.email) {
+      // ── RETURNING USER: restore full profile, skip profile screen, go home ──
+      const restoredProfile = {
+        ...existingProfile,
+        lastLogin: new Date().toISOString()
+      };
+
       try {
-        localStorage.setItem('cabsy_user_phone', phoneNumber);
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(restoredProfile));
+        localStorage.setItem('cabsy_user_phone', restoredProfile.phone || '');
+        localStorage.setItem('taxigo_onboarded', 'true');
+        localStorage.setItem('taxigo_profile_completed', 'true');
+
+        // Update last login in Firestore
+        saveCustomerToFirestore(restoredProfile).catch(() => {});
+        saveCustomerToMySQL(restoredProfile).catch(() => {});
+        db.saveCustomer(restoredProfile);
+
+        // Restore past trip history from MySQL
+        await restoreTrips(restoredProfile);
+
+        window.dispatchEvent(new Event('storage'));
       } catch (e) {}
+
+      setLoading(false);
+      if (setSelectedGoogleAccount) setSelectedGoogleAccount(restoredProfile);
+
+      // Direct to home — skip profile creation
+      if (onGoogleSignIn) {
+        onGoogleSignIn(restoredProfile);
+      } else if (onNext) {
+        onNext();
+      }
+      return;
     }
 
-    const realProfile = {
+    // ── NEW USER: save basic profile, go to Complete Profile screen ──
+    const newProfile = {
       id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-      name: displayName || 'Rider',
-      email: email || '',
+      name: name,
+      email: email,
       phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '',
-      photoURL: photoURL || null,
-      uid: uid || 'goog_' + Date.now(),
-      profession: 'Rider',
-      area: 'Bhavnagar, Gujarat',
+      photoURL: photoURL,
+      uid: uid,
+      profession: '',
+      area: '',
       registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       status: 'Active',
       lastLogin: new Date().toISOString()
     };
 
     try {
-      localStorage.setItem('cabsy_user_profile', JSON.stringify(realProfile));
+      localStorage.setItem('cabsy_user_profile', JSON.stringify(newProfile));
       localStorage.setItem('taxigo_onboarded', 'true');
-      
-      await saveCustomerToMySQL(realProfile).catch(() => {});
-      db.saveCustomer(realProfile);
+
+      saveCustomerToFirestore(newProfile).catch(() => {});
+      saveCustomerToMySQL(newProfile).catch(() => {});
+      db.saveCustomer(newProfile);
 
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: realProfile } }));
-
-      await syncWithMySQL(realProfile);
-    } catch(e) {}
+    } catch (e) {}
 
     setLoading(false);
-    setShowGoogleModal(false);
-    if (setSelectedGoogleAccount) {
-      setSelectedGoogleAccount(realProfile);
-    }
+    if (setSelectedGoogleAccount) setSelectedGoogleAccount(newProfile);
+
+    // Go to Complete Profile screen with auto-filled data
     if (onGoToCreateAccount) {
       onGoToCreateAccount();
     } else if (onNext) {
@@ -108,25 +115,68 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedG
     }
   };
 
+  // ─── Restore trip history from MySQL for returning user ──
+  const restoreTrips = async (profile) => {
+    try {
+      const mysqlInquiries = await loadAllInquiriesFromMySQL().catch(() => []);
+      const userPhone = (profile.phone || '').replace(/\D/g, '');
+      const userEmail = (profile.email || '').toLowerCase().trim();
+
+      const userTrips = (mysqlInquiries || []).filter(i => {
+        const iPhone = (i.customerPhone || '').replace(/\D/g, '');
+        const iEmail = (i.customerEmail || '').toLowerCase().trim();
+        return (userPhone && iPhone && userPhone === iPhone) ||
+               (userEmail && iEmail && userEmail === iEmail);
+      });
+
+      if (userTrips.length > 0) {
+        const localRaw = localStorage.getItem('cabsy_inquiries');
+        const localList = localRaw ? JSON.parse(localRaw) : [];
+        const existingIds = new Set(localList.map(i => i.id).filter(Boolean));
+        const fresh = userTrips.filter(i => !existingIds.has(i.id));
+        const merged = [...fresh, ...localList];
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(merged));
+        window.dispatchEvent(new Event('storage'));
+      }
+    } catch (e) {
+      console.warn('[Auth] Trip restore failed:', e);
+    }
+  };
+
+  // ─── Main handler: "Continue with Google" button ──
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
+      // Try native device account picker first
       const googleUser = await signInWithGoogle();
-      if (googleUser && googleUser.email && !googleUser.email.includes('user.taxigo@gmail.com')) {
-        await completeGoogleSignIn(googleUser.name, googleUser.email, googleUser.photoURL, googleUser.uid);
+
+      if (googleUser && googleUser.email) {
+        // Native sign-in succeeded — process the user
+        await processGoogleUser(googleUser);
       } else {
-        // Show in-app Google account selection sheet to choose account seamlessly without Chrome redirect
-        setShowGoogleModal(true);
+        // Native failed (SHA-1 not registered or user cancelled)
+        // Show in-app fallback account picker
+        setShowFallbackPicker(true);
         setLoading(false);
       }
     } catch (err) {
-      setShowGoogleModal(true);
+      console.warn('[Auth] Google auth error:', err);
+      setShowFallbackPicker(true);
       setLoading(false);
     }
   };
 
-  const handleAccountSelect = (email, name) => {
-    completeGoogleSignIn(name, email, null, 'goog_' + Date.now());
+  // ─── Fallback picker: user selects/types an email ──
+  const handleFallbackSelect = async (email) => {
+    if (!email || !email.includes('@')) return;
+    setShowFallbackPicker(false);
+    setLoading(true);
+    await processGoogleUser({
+      name: formatNameFromEmail(email),
+      email: email,
+      photoURL: null,
+      uid: 'goog_' + Date.now()
+    });
   };
 
   const goToCreateAccount = onGoToCreateAccount || onNext;
@@ -149,7 +199,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedG
 
         {/* White Curved Bottom Sheet Content */}
         <div className="let-you-white-bottom-sheet">
-          <h1 className="let-you-title">Let’s You In</h1>
+          <h1 className="let-you-title">Let's You In</h1>
 
           <div className="phone-input-wrapper">
             <span className="flag-icon-span">🇮🇳 +91</span>
@@ -170,7 +220,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedG
             ────── OR ──────
           </div>
 
-          {/* Official Google OAuth Sign In Button */}
+          {/* Google Sign-In Button */}
           <button 
             type="button"
             disabled={loading}
@@ -200,42 +250,29 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedG
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
             </svg>
-            {loading ? 'Connecting Google...' : 'Continue with Google'}
+            {loading ? 'Signing in...' : 'Continue with Google'}
           </button>
 
           <p className="let-you-footer-txt" style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748B', fontWeight: '600' }}>
-            Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={goToCreateAccount}>Sign up</span>
+            Don't have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={goToCreateAccount}>Sign up</span>
           </p>
         </div>
       </div>
 
-      {/* ── Native In-App Google Account Picker Modal ── */}
-      {showGoogleModal && (
+      {/* ── Fallback In-App Account Picker (only shows if native picker failed) ── */}
+      {showFallbackPicker && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(15, 23, 42, 0.65)',
-          backdropFilter: 'blur(4px)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          animation: 'fadeIn 0.2s ease-out'
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+          zIndex: 9999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
         }}>
           <div style={{
-            background: '#FFFFFF',
-            width: '100%',
-            maxWidth: '500px',
-            borderTopLeftRadius: '28px',
-            borderTopRightRadius: '28px',
-            padding: '24px 24px 36px 24px',
-            boxSizing: 'border-box',
+            background: '#FFFFFF', width: '100%', maxWidth: '500px',
+            borderTopLeftRadius: '28px', borderTopRightRadius: '28px',
+            padding: '24px 24px 36px', boxSizing: 'border-box',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'
           }}>
-            {/* Modal Header */}
+            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24">
@@ -244,92 +281,57 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedG
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', fontFamily: 'League Spartan', color: '#0F172A' }}>Choose a Google Account</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', fontFamily: 'League Spartan', color: '#0F172A' }}>
+                  Sign in with Google
+                </h3>
               </div>
               <button 
-                onClick={() => setShowGoogleModal(false)}
+                onClick={() => setShowFallbackPicker(false)}
                 style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', fontWeight: '800', cursor: 'pointer', color: '#64748B' }}
-              >
-                ✕
-              </button>
+              >✕</button>
             </div>
             
-            <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
-              Select an account to auto-fill your customer profile for Empire Cab
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
+              Enter your Google email to sign in to Empire Cab
             </p>
 
-            {/* Quick Account Options */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-              <div 
-                onClick={() => handleAccountSelect('shakti.parmar@gmail.com', 'Shakti Parmar')}
+            {/* Email Input */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input 
+                type="email" 
+                placeholder="yourname@gmail.com" 
+                value={customEmail}
+                onChange={(e) => setCustomEmail(e.target.value)}
+                autoFocus
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '14px 16px',
-                  borderRadius: '16px',
-                  border: '1.5px solid #10B981',
-                  background: '#F0FDF4',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  flex: 1, padding: '14px 16px', borderRadius: '14px',
+                  border: '1.5px solid #CBD5E1', fontSize: '15px',
+                  fontFamily: 'Space Grotesk', outline: 'none'
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customEmail.includes('@')) {
+                    handleFallbackSelect(customEmail);
+                  }
+                }}
+              />
+              <button 
+                onClick={() => handleFallbackSelect(customEmail)}
+                disabled={!customEmail.includes('@')}
+                style={{
+                  padding: '14px 20px', background: customEmail.includes('@') ? '#10B981' : '#CBD5E1',
+                  color: '#FFFFFF', border: 'none', borderRadius: '14px',
+                  fontWeight: '800', cursor: customEmail.includes('@') ? 'pointer' : 'not-allowed',
+                  fontFamily: 'League Spartan', fontSize: '15px',
+                  transition: 'background 0.2s ease'
                 }}
               >
-                <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#10B981', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                  S
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>Shakti Parmar</div>
-                  <div style={{ fontSize: '13px', color: '#64748B' }}>shakti.parmar@gmail.com</div>
-                </div>
-                <span style={{ color: '#10B981', fontWeight: '800', fontSize: '18px' }}>✓</span>
-              </div>
-
-              <div 
-                onClick={() => handleAccountSelect('empire.rider@gmail.com', 'Empire Rider')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '14px 16px',
-                  borderRadius: '16px',
-                  border: '1.5px solid #E2E8F0',
-                  background: '#FFFFFF',
-                  cursor: 'pointer'
-                }}
-              >
-                <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#4285F4', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                  E
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>Empire Rider</div>
-                  <div style={{ fontSize: '13px', color: '#64748B' }}>empire.rider@gmail.com</div>
-                </div>
-              </div>
+                Sign In →
+              </button>
             </div>
 
-            {/* Custom Google Email Input */}
-            <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>OR USE ANOTHER GOOGLE EMAIL</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input 
-                  type="email" 
-                  placeholder="name@gmail.com" 
-                  value={customEmail}
-                  onChange={(e) => setCustomEmail(e.target.value)}
-                  style={{ flex: 1, padding: '12px 14px', borderRadius: '14px', border: '1.5px solid #CBD5E1', fontSize: '14px', fontFamily: 'Space Grotesk', outline: 'none' }}
-                />
-                <button 
-                  onClick={() => {
-                    if (customEmail && customEmail.includes('@')) {
-                      handleAccountSelect(customEmail, customEmail.split('@')[0]);
-                    }
-                  }}
-                  style={{ padding: '12px 18px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '14px', fontWeight: '800', cursor: 'pointer', fontFamily: 'League Spartan' }}
-                >
-                  Continue →
-                </button>
-              </div>
-            </div>
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: '#94A3B8', textAlign: 'center' }}>
+              Your name and profile picture will be fetched automatically from your account
+            </p>
           </div>
         </div>
       )}
