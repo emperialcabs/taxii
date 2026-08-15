@@ -1372,7 +1372,37 @@ export default function AdminPortal() {
                               </button>
                             )}
 
-
+                            {/* 1-Time Reward Button: Disappears once reward is credited for this trip */}
+                            {(inq.status === 'Confirmed' || inq.status === 'Completed') && (
+                              (inq.rewardIssued === true || inq.rewardIssued == 1 || Number(inq.rewardIssued) === 1) ? (
+                                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#047857', padding: '5px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  ✓ Reward Issued (₹{inq.rewardAmount || 100})
+                                </span>
+                              ) : (
+                                <button 
+                                  className="btn-action-reward"
+                                  title="Give One-Time Wallet Reward to Customer"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    padding: '5px 12px',
+                                    borderRadius: '16px',
+                                    fontFamily: 'League Spartan, sans-serif',
+                                    fontSize: '12px',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
+                                >
+                                  🎁 Give Reward
+                                </button>
+                              )
+                            )}
 
                             {inq.status !== 'Cancelled' && (
                               <button 

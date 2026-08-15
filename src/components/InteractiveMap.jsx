@@ -73,26 +73,42 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
 
   useEffect(() => {
     if (!map || !map._container) return;
-    const timer = setTimeout(() => {
+
+    const refreshMapSize = () => {
       try {
-        if (!map._container) return;
-        map.invalidateSize();
-
-        if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' && center && typeof center.lat === 'number') {
-          const bounds = L.latLngBounds([
-            [center.lat, center.lng],
-            [destination.lat, destination.lng]
-          ]);
-          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
-        } else if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
-          map.flyTo([center.lat, center.lng], zoom || 15, { animate: true, duration: 1.2 });
+        if (map && map._container) {
+          map.invalidateSize();
         }
-      } catch (err) {
-        console.warn("Leaflet map view set notice:", err);
-      }
-    }, 120);
+      } catch (e) {}
+    };
 
-    return () => clearTimeout(timer);
+    refreshMapSize();
+    const t1 = setTimeout(refreshMapSize, 100);
+    const t2 = setTimeout(refreshMapSize, 400);
+    const t3 = setTimeout(refreshMapSize, 1000);
+
+    window.addEventListener('resize', refreshMapSize);
+
+    try {
+      if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' && center && typeof center.lat === 'number') {
+        const bounds = L.latLngBounds([
+          [center.lat, center.lng],
+          [destination.lat, destination.lng]
+        ]);
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+      } else if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
+        map.flyTo([center.lat, center.lng], zoom || 15, { animate: true, duration: 1.0 });
+      }
+    } catch (err) {
+      console.warn("Leaflet map view set notice:", err);
+    }
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('resize', refreshMapSize);
+    };
   }, [center?.lat, center?.lng, destination?.lat, destination?.lng, zoom, map]);
 
   return null;
@@ -204,15 +220,17 @@ export default function InteractiveMap({
           touchZoom={true}
           scrollWheelZoom={true}
           doubleClickZoom={true}
-          style={{ width: '100%', height: '100%', background: '#F8FAFC' }}
+          style={{ width: '100%', height: '100%', background: '#E2E8F0' }}
         >
           <MapRecenter center={{ lat: safeLat, lng: safeLng }} destination={destination} routePolyline={routePolyline} zoom={zoom} />
           
-          {/* Google Maps Vector Vector Tile Layer */}
+          {/* Ultra Fast Multi-Server Google Maps Tile Layer */}
           <TileLayer
-            attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
-            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+            attribution='&copy; Google Maps'
+            url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+            subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
             maxZoom={20}
+            maxNativeZoom={20}
           />
 
           {/* User GPS Location Marker */}
