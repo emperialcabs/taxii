@@ -3,6 +3,20 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Safely patch Leaflet DomUtil to prevent uncaught TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+if (typeof L !== 'undefined' && L.DomUtil && !L.DomUtil._patchedLeafletPos) {
+  L.DomUtil._patchedLeafletPos = true;
+  const origGetPos = L.DomUtil.getPosition;
+  L.DomUtil.getPosition = function (el) {
+    if (!el) return new L.Point(0, 0);
+    try {
+      return origGetPos.call(L.DomUtil, el) || new L.Point(0, 0);
+    } catch (err) {
+      return new L.Point(0, 0);
+    }
+  };
+}
+
 // Custom DivIcons for high visual appeal without image loading failures
 const createUserPinIcon = (label = "Your Location") => {
   return L.divIcon({
@@ -54,9 +68,10 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !map._container) return;
     const timer = setTimeout(() => {
       try {
+        if (!map._container) return;
         map.invalidateSize();
 
         if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' && center && typeof center.lat === 'number') {

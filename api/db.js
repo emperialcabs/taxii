@@ -251,7 +251,7 @@ export async function handleMySQLRequest(action, data = {}) {
 
       case 'saveCustomer': {
         const { id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status } = data;
-        if (!name && !phone && !email) return { success: false, error: 'Empty customer profile' };
+        if (!name && !phone && !email) return { success: true, message: 'Ignored empty profile sync' };
         
         let custId = id || getStandardCustomerId(email, phone);
         if (email) {
