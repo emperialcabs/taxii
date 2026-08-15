@@ -442,6 +442,12 @@ export default function MobileAppView() {
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onNavigateTab={(tab) => {
+            setActiveTab(tab);
+            setAppStage('APP_HOME');
+          }}
           onCompleteRide={() => setAppStage('RECEIPT')}
         />
       );
