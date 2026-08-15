@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import db from '../../services/dbService';
 import { saveCustomerToMySQL } from '../../services/mysqlService';
 
+const formatNameFromEmail = (email) => {
+  if (!email || !email.includes('@')) return '';
+  const username = email.split('@')[0];
+  return username
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export default function AccountDetailScreen({ onBack, onSave, isCreateMode = false, googleData }) {
-  const [profile, setProfile] = useState(() => {
+  const getInitialProfile = () => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
       const base = saved ? JSON.parse(saved) : {};
+      const savedPhone = localStorage.getItem('cabsy_user_phone') || '';
+
+      const emailVal = googleData?.email || base.email || '';
+      let nameVal = googleData?.name || base.name || '';
+      if ((!nameVal || nameVal === 'Google User') && emailVal) {
+        nameVal = formatNameFromEmail(emailVal);
+      }
+
       return {
         id: base.id || ('CUST-' + Math.floor(10000 + Math.random() * 89999)),
-        name: googleData?.name || base.name || '',
-        email: googleData?.email || base.email || '',
-        phone: base.phone || '',
+        name: nameVal,
+        email: emailVal,
+        phone: googleData?.phone || base.phone || savedPhone || '',
         age: base.age || 26,
         profession: base.profession || 'Rider',
         area: base.area || 'Bhavnagar, Gujarat',
@@ -23,7 +41,7 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
         id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
         name: googleData?.name || '',
         email: googleData?.email || '',
-        phone: '',
+        phone: localStorage.getItem('cabsy_user_phone') || '',
         age: 26,
         profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
@@ -31,7 +49,28 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
         joined: new Date().toISOString().split('T')[0]
       };
     }
-  });
+  };
+
+  const [profile, setProfile] = useState(getInitialProfile);
+
+  useEffect(() => {
+    if (googleData) {
+      setProfile(prev => {
+        const emailVal = googleData.email || prev.email || '';
+        let nameVal = googleData.name || prev.name || '';
+        if ((!nameVal || nameVal === 'Google User') && emailVal) {
+          nameVal = formatNameFromEmail(emailVal);
+        }
+        return {
+          ...prev,
+          name: nameVal || prev.name,
+          email: emailVal || prev.email,
+          phone: googleData.phone || prev.phone || localStorage.getItem('cabsy_user_phone') || '',
+          photoURL: googleData.photoURL || prev.photoURL
+        };
+      });
+    }
+  }, [googleData]);
 
   const [savedSuccess, setSavedSuccess] = useState(false);
 

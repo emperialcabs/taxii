@@ -51,11 +51,27 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
   };
 
   const completeGoogleSignIn = async (name, email, photoURL, uid) => {
+    let displayName = name;
+    if ((!displayName || displayName === 'Google User') && email && email.includes('@')) {
+      const username = email.split('@')[0];
+      displayName = username
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+    }
+
+    if (phoneNumber) {
+      try {
+        localStorage.setItem('cabsy_user_phone', phoneNumber);
+      } catch (e) {}
+    }
+
     const realProfile = {
       id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-      name: name || 'Google User',
+      name: displayName || 'Rider',
       email: email || '',
-      phone: phoneNumber || '',
+      phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '',
       photoURL: photoURL || null,
       uid: uid || 'goog_' + Date.now(),
       profession: 'Rider',
