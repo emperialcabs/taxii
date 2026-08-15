@@ -37,11 +37,9 @@ subprojects {
                 }
             }
         }
-        if (project.plugins.hasPlugin('java')) {
-            project.java {
-                toolchain {
-                    languageVersion = JavaLanguageVersion.of(17)
-                }
+        project.tasks.matching { it.name.startsWith("compile") && it.name.endsWith("Kotlin") }.configureEach {
+            kotlinOptions {
+                jvmTarget = "17"
             }
         }
     }
