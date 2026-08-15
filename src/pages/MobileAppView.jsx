@@ -203,11 +203,21 @@ export default function MobileAppView() {
     setAppStage('INQUIRY_SUBMITTED');
   };
 
-  // Tab Switcher Router in App Home - Persistent Tab Mounting (Zero Flickering / Blinking)
+  // Tab Switcher Router in App Home - Persistent GPU-Accelerated Tab Mounting (Zero Blink / 60FPS)
+  useEffect(() => {
+    if (activeTab === 'home') {
+      // Trigger map resize event when home tab becomes active to prevent Leaflet map blink
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
+
   const renderTabContent = () => {
     return (
-      <div className="mobile-tabs-keep-alive-wrapper" style={{ width: '100%', height: '100%', position: 'relative' }}>
-        <div style={{ display: activeTab === 'home' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
+      <div className="mobile-tabs-keep-alive-wrapper" style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'home' ? 1 : 0, visibility: activeTab === 'home' ? 'visible' : 'hidden', pointerEvents: activeTab === 'home' ? 'auto' : 'none', transform: activeTab === 'home' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
           <HomeScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -216,7 +226,7 @@ export default function MobileAppView() {
           />
         </div>
 
-        <div style={{ display: activeTab === 'rides' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'rides' ? 1 : 0, visibility: activeTab === 'rides' ? 'visible' : 'hidden', pointerEvents: activeTab === 'rides' ? 'auto' : 'none', transform: activeTab === 'rides' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
           <RidesTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -227,14 +237,14 @@ export default function MobileAppView() {
           />
         </div>
 
-        <div style={{ display: activeTab === 'wallet' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'wallet' ? 1 : 0, visibility: activeTab === 'wallet' ? 'visible' : 'hidden', pointerEvents: activeTab === 'wallet' ? 'auto' : 'none', transform: activeTab === 'wallet' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
           <WalletTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
 
-        <div style={{ display: activeTab === 'account' ? 'flex' : 'none', width: '100%', height: '100%', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'account' ? 1 : 0, visibility: activeTab === 'account' ? 'visible' : 'hidden', pointerEvents: activeTab === 'account' ? 'auto' : 'none', transform: activeTab === 'account' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
           <AccountTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}

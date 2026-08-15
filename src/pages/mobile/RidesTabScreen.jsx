@@ -49,14 +49,15 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
         }
       }
 
-      // ── CRITICAL: Filter to show ONLY this user's rides ──
+      // ── CRITICAL: Filter to show ONLY this user's rides (Strict Phone & Email Match) ──
       const userRides = list.filter(item => {
         const iPhone = (item.customerPhone || '').replace(/\D/g, '');
         const iEmail = (item.customerEmail || '').toLowerCase().trim();
-        const iName = (item.customerName || '').toLowerCase().trim();
-        return (userPhone && iPhone && (userPhone.slice(-10) === iPhone.slice(-10))) ||
-               (userEmail && iEmail && userEmail === iEmail) ||
-               (userName && iName && userName === iName);
+
+        const matchesPhone = userPhone && iPhone && (userPhone.slice(-10) === iPhone.slice(-10));
+        const matchesEmail = userEmail && iEmail && (userEmail === iEmail);
+
+        return matchesPhone || matchesEmail;
       });
 
       // Deduplicate by ID

@@ -318,12 +318,18 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                 width: 'auto'
               }}
             >
-              {userPhoto ? (
-                <img src={userPhoto} alt="User" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                <User size={16} color="#0F172A" />
-              )}
-              <span style={{ fontFamily: 'Space Grotesk' }}>Profile</span>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                {userPhoto ? (
+                  <img 
+                    src={userPhoto} 
+                    alt="User" 
+                    onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'block'; }}
+                    style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} 
+                  />
+                ) : null}
+                <User size={14} color="#FFFFFF" style={{ display: userPhoto ? 'none' : 'block' }} />
+              </div>
+              <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A' }}>Profile</span>
             </div>
 
             {/* Center Control: Live GPS Indicator */}
