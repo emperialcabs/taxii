@@ -30,34 +30,29 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isWebSite = location.pathname === '/web' || location.pathname.startsWith('/web');
   const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.startsWith('/app') || location.pathname.startsWith('/mobile');
   
-  const isMobileDomain = hostname.includes('android') || hostname.includes('ios') || hostname.includes('mobile');
+  // Dedicated Mobile Subdomains Only (e.g., m.empirecab.com, app.empirecab.com)
+  const isMobileDomain = hostname.startsWith('m.') || hostname.startsWith('app.') || hostname.startsWith('mobile.');
   
-  // Robust Android & iOS Capacitor Native Detection (Prevents White Screen / Website Leak)
+  // Robust Native Capacitor Check (Only active inside built Android APK or iOS IPA container)
   const isCapacitorNative = typeof window !== 'undefined' && (
-    Boolean(window.Capacitor) ||
     window.location.protocol === 'file:' ||
     window.location.protocol === 'capacitor:' ||
-    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform())
+    Boolean(window.Capacitor?.isNativePlatform?.())
   );
 
   const appMode = (import.meta.env.VITE_APP_MODE || '').toLowerCase();
 
-  // 1. APP 1: Native Android / iOS Build or Mobile Container
-  if (appMode === 'android' || appMode === 'ios' || isCapacitorNative) {
+  // 1. Native Mobile App Mode (For APK/IPA native builds or explicit /app & /mobile paths)
+  if (!isWebSite && (appMode === 'android' || appMode === 'ios' || isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath)) {
     return <MobileAppView platform={appMode || 'android'} />;
   }
 
-  // 2. APP 2: Mobile Domain or Mobile URL path (/app, /mobile)
-  if (isMobileDomain || isMobilePath) {
-    return <MobileAppView />;
-  }
-
-  // 3. APP 3: Admin Portal Route
+  // 2. Admin Portal Route
   if (isAdmin) {
     return <AdminPortal />;
   }
 
-  // 4. APP 4: Desktop Web Portal
+  // 3. Desktop Website (Default layout for main domain & web routes)
   return (
     <div className="app-container">
       <Header onOpenBooking={handleOpenBooking} />
