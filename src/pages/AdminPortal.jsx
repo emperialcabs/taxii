@@ -313,8 +313,8 @@ export default function AdminPortal() {
     window.addEventListener('taxigo_db_sync', syncAdminNotifs);
     window.addEventListener('storage', syncAdminNotifs);
     
-    // Poll Hostinger MySQL every 15s for live cross-device trip updates
-    const interval = setInterval(fetchAllData, 15000);
+    // Poll Hostinger MySQL every 1.5s for instant minor-second live cross-device trip updates
+    const interval = setInterval(fetchAllData, 1500);
 
     return () => {
       window.removeEventListener('taxigo_admin_notif', syncAdminNotifs);

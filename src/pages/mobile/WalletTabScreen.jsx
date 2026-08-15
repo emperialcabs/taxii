@@ -36,7 +36,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
     window.addEventListener('storage', fetchWallet);
     window.addEventListener('taxigo_wallet_updated', fetchWallet);
     window.addEventListener('taxigo_db_sync', fetchWallet);
-    const interval = setInterval(fetchWallet, 4000);
+    const interval = setInterval(fetchWallet, 1500);
     return () => {
       window.removeEventListener('storage', fetchWallet);
       window.removeEventListener('taxigo_wallet_updated', fetchWallet);

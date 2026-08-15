@@ -59,10 +59,15 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     const handleStorageChange = () => loadInquiries();
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('taxigo_ride_booked', handleStorageChange);
+    window.addEventListener('taxigo_db_sync', handleStorageChange);
+
+    const interval = setInterval(loadInquiries, 1500);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('taxigo_ride_booked', handleStorageChange);
+      window.removeEventListener('taxigo_db_sync', handleStorageChange);
+      clearInterval(interval);
     };
   }, []);
 
