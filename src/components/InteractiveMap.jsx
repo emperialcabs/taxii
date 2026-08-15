@@ -39,8 +39,8 @@ const createTaxiPinIcon = (badge = "Driver") => {
     className: 'custom-leaflet-blue-arrow-pin',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
-        <div style="width: 44px; height: 44px; background: #FFFFFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45); border: 3px solid #2563EB;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="#2563EB">
+        <div style="width: 35px; height: 35px; background: #FFFFFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(37, 99, 235, 0.4); border: 2.5px solid #2563EB;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#2563EB">
             <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
           </svg>
         </div>

@@ -10,6 +10,8 @@ import {
   deleteCustomerFromMySQL,
   deleteInquiryFromMySQL,
   updateInquiryStatusInMySQL,
+  updateInquiryRewardInMySQL,
+  saveWalletToMySQL,
 } from '../services/mysqlService';
 import { 
   notifyAdmin, 
