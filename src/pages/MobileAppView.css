@@ -216,7 +216,7 @@
 }
 
 .splash-logo-img { width: 140px; margin-bottom: 24px; }
-.splash-title-txt { fontFamily: 'League Spartan', sans-serif; font-size: 38px; font-weight: 800; color: #1E293B; margin: 0; }
+.splash-title-txt { font-family: 'League Spartan', sans-serif; font-size: 38px; font-weight: 800; color: #1E293B; margin: 0; }
 .splash-tagline-txt { font-size: 16px; color: #64748B; margin-top: 8px; }
 
 /* ONBOARDING SCREEN CONTAINER */

@@ -54,44 +54,42 @@ export function getCoordsForPlace(placeName, defaultCoords = { lat: 21.7645, lng
  * Generates initial highway waypoints around Gulf of Khambhat / major highways
  */
 export function generateRoutePolyline(startPos, endPos) {
-  if (!startPos || !endPos) return [];
+  const safeStart = (startPos && typeof startPos.lat === 'number' && !isNaN(startPos.lat) && typeof startPos.lng === 'number' && !isNaN(startPos.lng)) ? startPos : { lat: 21.7645, lng: 72.1519 };
+  const safeEnd = (endPos && typeof endPos.lat === 'number' && !isNaN(endPos.lat) && typeof endPos.lng === 'number' && !isNaN(endPos.lng)) ? endPos : { lat: 23.0225, lng: 72.5714 };
 
-  // If Bhavnagar to Vadodara / Alkapuri: Route via Dhandhuka & Tarapur highway around gulf
-  const isBhavnagar = startPos.lat < 21.9 && startPos.lng < 72.3;
-  const isVadodara = endPos.lng > 73.0 && endPos.lat > 22.0 && endPos.lat < 22.5;
+  const isBhavnagar = safeStart.lat < 21.9 && safeStart.lng < 72.3;
+  const isVadodara = safeEnd.lng > 73.0 && safeEnd.lat > 22.0 && safeEnd.lat < 22.5;
 
   if (isBhavnagar && isVadodara) {
     return [
-      startPos,
-      { lat: 21.8844, lng: 71.9318 }, // Vallabhipur
-      { lat: 22.3732, lng: 71.9837 }, // Dhandhuka
-      { lat: 22.4215, lng: 72.3115 }, // Fedara
-      { lat: 22.4880, lng: 72.7042 }, // Tarapur
-      { lat: 22.4500, lng: 73.0600 }, // Vasad
-      endPos                          // Vadodara
+      safeStart,
+      { lat: 21.8844, lng: 71.9318 },
+      { lat: 22.3732, lng: 71.9837 },
+      { lat: 22.4215, lng: 72.3115 },
+      { lat: 22.4880, lng: 72.7042 },
+      { lat: 22.4500, lng: 73.0600 },
+      safeEnd
     ];
   }
 
-  // If Bhavnagar to Ahmedabad
-  const isAhmedabad = endPos.lat > 22.9 && endPos.lng < 72.7;
+  const isAhmedabad = safeEnd.lat > 22.9 && safeEnd.lng < 72.7;
   if (isBhavnagar && isAhmedabad) {
     return [
-      startPos,
-      { lat: 21.8844, lng: 71.9318 }, // Vallabhipur
-      { lat: 22.3732, lng: 71.9837 }, // Dhandhuka
-      { lat: 22.6074, lng: 72.1578 }, // Bagodara
-      { lat: 22.8360, lng: 72.3644 }, // Bavla
-      endPos                          // Ahmedabad
+      safeStart,
+      { lat: 21.8844, lng: 71.9318 },
+      { lat: 22.3732, lng: 71.9837 },
+      { lat: 22.6074, lng: 72.1578 },
+      { lat: 22.8360, lng: 72.3644 },
+      safeEnd
     ];
   }
 
-  // General fallback: intermediate 3-point arc
-  const midLat = (startPos.lat + endPos.lat) / 2 + 0.003;
-  const midLng = (startPos.lng + endPos.lng) / 2 - 0.002;
+  const midLat = (safeStart.lat + safeEnd.lat) / 2 + 0.003;
+  const midLng = (safeStart.lng + safeEnd.lng) / 2 - 0.002;
   return [
-    startPos,
+    safeStart,
     { lat: midLat, lng: midLng },
-    endPos
+    safeEnd
   ];
 }
 
