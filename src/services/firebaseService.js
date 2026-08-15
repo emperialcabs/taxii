@@ -68,37 +68,30 @@ export const signInWithGoogle = async () => {
   // 1. Native Mobile App Flow: Native Account Chooser Sheet on iOS and Android (Inside App ONLY, NEVER opens Chrome)
   if (isNativeApp() || window.Capacitor) {
     try {
-      GoogleAuth.initialize({
-        clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
-        serverClientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
-        iosClientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
-        grantOfflineAccess: true
-      });
+      try {
+        GoogleAuth.initialize();
+      } catch (e) {}
 
       const googleUser = await GoogleAuth.signIn();
 
-      if (!googleUser) {
-        throw new Error("Sign-in cancelled.");
-      }
+      if (googleUser) {
+        const email = (
+          googleUser.email || 
+          googleUser.authentication?.email || 
+          (googleUser.id ? `user_${googleUser.id.slice(-6)}@gmail.com` : null)
+        );
+        const name = (
+          googleUser.displayName || 
+          googleUser.name || 
+          (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}` : '').trim() || 
+          (email ? email.split('@')[0] : 'Google User')
+        );
+        const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
+        const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
 
-      const email = (
-        googleUser.email || 
-        googleUser.authentication?.email || 
-        (googleUser.id ? `user_${googleUser.id.slice(-6)}@gmail.com` : null)
-      );
-      const name = (
-        googleUser.displayName || 
-        googleUser.name || 
-        (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}` : '').trim() || 
-        (email ? email.split('@')[0] : 'Google User')
-      );
-      const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
-      const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
-
-      if (email) {
-        return { name, email, photoURL, uid };
-      } else {
-        throw new Error("Could not retrieve email from selected account.");
+        if (email) {
+          return { name, email, photoURL, uid };
+        }
       }
     } catch (nativeErr) {
       console.warn("Native Google Auth error/cancellation:", nativeErr);
