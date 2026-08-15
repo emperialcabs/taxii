@@ -140,7 +140,7 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '26px', fontWeight: '900', color: '#22C55E', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>
-              {etaTimeStr} <span style={{ fontSize: '18px', color: '#22C55E' }}>🌱</span>
+              {etaTimeStr}
             </div>
             <div style={{ color: '#94A3B8', fontSize: '13px', fontWeight: '700', marginTop: '4px', fontFamily: 'Space Grotesk, sans-serif' }}>
               {displayDistKm} km • {arrivalTimeFormatted}

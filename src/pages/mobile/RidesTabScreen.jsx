@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { loadAllInquiriesFromMySQL, updateInquiryStatusInMySQL, saveInquiryToMySQL } from '../../services/mysqlService';
+import { Calendar, Clock3, CheckCircle2, XCircle, Car, ArrowRight, X } from 'lucide-react';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -135,7 +136,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
 
     if (st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed')) {
       return {
-        label: '✅ Approved / Confirmed',
+        label: 'Confirmed',
+        Icon: CheckCircle2,
         bg: '#DCFCE7',
         border: '#86EFAC',
         color: '#15803D',
@@ -144,7 +146,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     }
     if (st.includes('reject') || st.includes('decline') || st.includes('cancel')) {
       return {
-        label: '❌ Cancelled / Rejected',
+        label: 'Cancelled',
+        Icon: XCircle,
         bg: '#FEE2E2',
         border: '#FCA5A5',
         color: '#B91C1C',
@@ -152,7 +155,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
       };
     }
     return {
-      label: '⏳ Pending Approval',
+      label: 'Pending Approval',
+      Icon: Clock3,
       bg: '#F1F5F9',
       border: '#CBD5E1',
       color: '#475569',
@@ -227,7 +231,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
         {/* INQUIRIES LIST (NO DEMO DATA) */}
         {filteredInquiries.length === 0 ? (
           <div style={{ padding: '40px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1.5px solid #E2E8F0', marginTop: '10px', textAlign: 'center' }}>
-            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🚕</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}><Car size={42} color="#94A3B8" /></div>
             <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0' }}>
               No {filter === 'SUCCESS' ? 'Confirmed' : filter === 'REJECT' ? 'Rejected' : ''} Trips Found
             </h3>
@@ -246,10 +250,13 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                 fontWeight: '800',
                 fontSize: '15px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)'
+                boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
             >
-              Book New Trip →
+              Book New Trip <ArrowRight size={16} />
             </button>
           </div>
         ) : (
@@ -295,28 +302,33 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                         borderRadius: '16px',
                         fontSize: '12px',
                         fontWeight: '800',
-                        fontFamily: 'League Spartan'
+                        fontFamily: 'League Spartan',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
+                      {badge.Icon && <badge.Icon size={13} />}
                       {badge.label}
                     </span>
                   </div>
 
                   {/* Date & Time */}
-                  <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '12px', fontFamily: 'Space Grotesk', fontWeight: '600' }}>
-                    📅 {inq.scheduledDate || 'Today'} • {inq.scheduledTime || '04:30 PM'}
+                  <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '12px', fontFamily: 'Space Grotesk', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={14} color="#64748B" />
+                    <span>{inq.scheduledDate || 'Today'} • {inq.scheduledTime || '04:30 PM'}</span>
                   </div>
 
                   {/* Route Box */}
                   <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '14px', marginBottom: '12px', border: '1px solid #F1F5F9' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ color: '#22C55E', fontWeight: 'bold' }}>●</span>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E', flexShrink: 0 }}></span>
                       <span style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'League Spartan' }}>
                         {inq.pickup || inq.pickupLoc || 'Pickup Location'}
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }}></span>
                       <span style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'League Spartan' }}>
                         {inq.dropoff || inq.dropoffLoc || 'Destination Point'}
                       </span>

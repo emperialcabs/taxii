@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
+import { User, ShieldCheck, Bell, FileText, Lock, Headphones, LogOut, Edit3, ChevronRight, X } from 'lucide-react';
 
 export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, onNavigateScreen, onLogout, onBack }) {
   const handleOpenEdit = () => {
@@ -79,8 +80,8 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
                 style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} 
               />
             ) : (
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FFFFFF', color: '#D97706', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-                👤
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FFFFFF', color: '#10B981', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                <User size={30} />
               </div>
             )}
           </div>
@@ -96,9 +97,9 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleOpenEdit(); }}
-            style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
+            style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
-            Edit ✏️
+            <Edit3 size={13} /> Edit
           </button>
         </div>
 
@@ -121,12 +122,12 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
         {/* Settings List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
           {[
-            { id: 'profile', icon: '👤', title: 'Personal Details & Photo', desc: 'Manage name, phone, age & picture' },
-            { id: 'safety', icon: '🛡️', title: 'Safety & Emergency Contacts', desc: 'Share trip details with trusted contacts' },
-            { id: 'notifications', icon: '🔔', title: 'Push Notifications', desc: 'Ride status alerts & offer updates' },
-            { id: 'terms', icon: '📄', title: 'Terms of Service', desc: 'Empire Cab legal guidelines and privacy' },
-            { id: 'privacy', icon: '🔒', title: 'Privacy Policy', desc: 'How your data is protected' },
-            { id: 'support', icon: '🎧', title: '24x7 Customer Support', desc: 'Call or chat with Empire Cab help desk' }
+            { id: 'profile', Icon: User, title: 'Personal Details & Photo', desc: 'Manage name, phone, age & picture' },
+            { id: 'safety', Icon: ShieldCheck, title: 'Safety & Emergency Contacts', desc: 'Share trip details with trusted contacts' },
+            { id: 'notifications', Icon: Bell, title: 'Push Notifications', desc: 'Ride status alerts & offer updates' },
+            { id: 'terms', Icon: FileText, title: 'Terms of Service', desc: 'Empire Cab legal guidelines and privacy' },
+            { id: 'privacy', Icon: Lock, title: 'Privacy Policy', desc: 'How your data is protected' },
+            { id: 'support', Icon: Headphones, title: '24x7 Customer Support', desc: 'Call or chat with Empire Cab help desk' }
           ].map((item) => (
             <div 
               key={item.id} 
@@ -136,12 +137,14 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
               }}
               style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '18px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
             >
-              <div style={{ fontSize: '22px' }}>{item.icon}</div>
+              <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#F1F5F9', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <item.Icon size={20} />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{item.title}</div>
                 <div style={{ fontSize: '12px', color: '#64748B' }}>{item.desc}</div>
               </div>
-              <span style={{ color: '#94A3B8', fontWeight: 'bold' }}>→</span>
+              <ChevronRight size={18} color="#94A3B8" />
             </div>
           ))}
         </div>
@@ -166,7 +169,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
             gap: '8px'
           }}
         >
-          <span>🚪</span> Logout Account
+          <LogOut size={18} /> Logout Account
         </button>
       </div>
 

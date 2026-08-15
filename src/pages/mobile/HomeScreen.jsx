@@ -5,7 +5,7 @@ import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X } from 'lucide-react';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
   // Load saved profile from localStorage
@@ -310,7 +310,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               {userPhoto ? (
                 <img src={userPhoto} alt="User" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: '15px' }}>👤</span>
+                <User size={16} color="#0F172A" />
               )}
               <span style={{ fontFamily: 'Space Grotesk' }}>Profile</span>
             </div>
@@ -339,12 +339,11 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '18px',
                 cursor: 'pointer',
                 boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
               }}
             >
-              🔔
+              <Bell size={18} color="#0F172A" />
               {userNotifs.filter(n => !n.read).length > 0 && (
                 <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: '#FFFFFF', fontSize: '10px', fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFFFFF' }}>
                   {userNotifs.filter(n => !n.read).length}
@@ -375,7 +374,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               >
                 <div>
                   <div style={{ fontSize: '26px', fontWeight: '900', color: '#16A34A', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>
-                    {etaTimeStr} <span style={{ fontSize: '18px' }}>🌱</span>
+                    {etaTimeStr}
                   </div>
                   <div style={{ color: '#64748B', fontSize: '13px', fontWeight: '700', marginTop: '4px', fontFamily: 'Space Grotesk, sans-serif' }}>
                     {displayDistKm} km • {arrivalTimeFormatted}

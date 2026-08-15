@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { db } from '../../services/dbService';
 import { loadWalletFromMySQL } from '../../services/mysqlService';
+import { Wallet } from 'lucide-react';
 
 export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
   const [wallet, setWallet] = useState({ balance: 0, transactions: [] });
@@ -64,7 +65,9 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
           position: 'relative',
           overflow: 'hidden'
         }}>
-          <div style={{ position: 'absolute', right: '-10px', top: '-10px', fontSize: '100px', opacity: 0.15, pointerEvents: 'none' }}>💳</div>
+          <div style={{ position: 'absolute', right: '-10px', top: '-10px', opacity: 0.18, pointerEvents: 'none' }}>
+            <Wallet size={96} color="#FFFFFF" />
+          </div>
           <div style={{ fontSize: '12px', fontWeight: '800', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>Available Taxi Wallet Balance</div>
           <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 0 0' }}>
             ₹{wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
