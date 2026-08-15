@@ -30,52 +30,54 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isWebSite = location.pathname === '/web' || location.pathname.startsWith('/web');
   const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.startsWith('/app') || location.pathname.startsWith('/mobile');
   
-  // Detect domain names (e.g. androidddd.netlify.app, iossss.netlify.app, androidapp-omega.vercel.app)
-  const isMobileDomain = hostname.includes('android') || hostname.includes('ios') || hostname.includes('mobile');
-  const isCapacitorNative = typeof window !== 'undefined' && (window.Capacitor !== undefined || window.location.protocol === 'file:');
+  // Robust Android & iOS Capacitor Native Detection (Prevents White Screen / Website Leak)
+  const isCapacitorNative = typeof window !== 'undefined' && (
+    Boolean(window.Capacitor) ||
+    window.location.protocol === 'file:' ||
+    window.location.protocol === 'capacitor:' ||
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform())
+  );
+
   const appMode = (import.meta.env.VITE_APP_MODE || '').toLowerCase();
 
-  // 1. APP 1: Android App (VITE_APP_MODE = android)
-  if (appMode === 'android') {
-    return <MobileAppView platform="android" />;
+  // 1. APP 1: Native Android / iOS Build or Mobile Container
+  if (appMode === 'android' || appMode === 'ios' || isCapacitorNative) {
+    return <MobileAppView platform={appMode || 'android'} />;
   }
 
-  // 2. APP 2: iOS App (VITE_APP_MODE = ios)
-  if (appMode === 'ios') {
-    return <MobileAppView platform="ios" />;
+  // 2. APP 2: Mobile Domain or Mobile URL path (/app, /mobile)
+  if (isMobileDomain || isMobilePath) {
+    return <MobileAppView />;
   }
 
-  // 3. APP 3: Main Website & Admin Portal (VITE_APP_MODE = website OR default)
-  if (appMode === 'website' || (!isMobileDomain && !isMobilePath && !isCapacitorNative)) {
-    if (isAdmin) {
-      return <AdminPortal />;
-    }
-    return (
-      <div className="app-container">
-        <Header onOpenBooking={handleOpenBooking} />
-        
-        <main className="app-main-content">
-          <Routes>
-            <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
-            <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
-            <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
-            <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
-            <Route path="/book-ride" element={<BookRide />} />
-            <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<AdminPortal />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        <Footer />
-        <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
-      </div>
-    );
+  // 3. APP 3: Admin Portal Route
+  if (isAdmin) {
+    return <AdminPortal />;
   }
 
-  // Fallback for Mobile domain / Capacitor Native
-  return <MobileAppView />;
+  // 4. APP 4: Desktop Web Portal
+  return (
+    <div className="app-container">
+      <Header onOpenBooking={handleOpenBooking} />
+      
+      <main className="app-main-content">
+        <Routes>
+          <Route path="/" element={<Home onOpenBooking={handleOpenBooking} />} />
+          <Route path="/web" element={<Home onOpenBooking={handleOpenBooking} />} />
+          <Route path="/about" element={<About onOpenBooking={handleOpenBooking} />} />
+          <Route path="/services" element={<Services onOpenBooking={handleOpenBooking} />} />
+          <Route path="/book-ride" element={<BookRide />} />
+          <Route path="/faq" element={<Faq onOpenBooking={handleOpenBooking} />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      <Footer />
+      <BookingModal isOpen={isBookingOpen} onClose={handleCloseBooking} />
+    </div>
+  );
 }
 
 class ErrorBoundary extends React.Component {
