@@ -11,6 +11,14 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
 
+  // Get current user profile for filtering
+  const getUserProfile = () => {
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  };
+
   // Helper to load available fleet vehicles from Admin
   const getAvailableVehicles = () => {
     try {
@@ -23,8 +31,13 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     return INITIAL_VEHICLES;
   };
 
-  // Load real user inquiries directly from Hostinger MySQL Central Database
+  // Load ONLY current user's inquiries (not all users)
   const loadInquiries = async () => {
+    const userProfile = getUserProfile();
+    const userPhone = (userProfile?.phone || '').replace(/\D/g, '');
+    const userEmail = (userProfile?.email || '').toLowerCase().trim();
+    const userName = (userProfile?.name || '').toLowerCase().trim();
+
     try {
       const mysqlData = await loadAllInquiriesFromMySQL().catch(() => []);
       let list = Array.isArray(mysqlData) && mysqlData.length > 0 ? mysqlData : [];
@@ -35,16 +48,26 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
           if (Array.isArray(parsed)) list = parsed;
         }
       }
+
+      // ── CRITICAL: Filter to show ONLY this user's rides ──
+      const userRides = list.filter(item => {
+        const iPhone = (item.customerPhone || '').replace(/\D/g, '');
+        const iEmail = (item.customerEmail || '').toLowerCase().trim();
+        const iName = (item.customerName || '').toLowerCase().trim();
+        return (userPhone && iPhone && (userPhone.slice(-10) === iPhone.slice(-10))) ||
+               (userEmail && iEmail && userEmail === iEmail) ||
+               (userName && iName && userName === iName);
+      });
+
       // Deduplicate by ID
       const seen = new Set();
-      const unique = list.filter(item => {
+      const unique = userRides.filter(item => {
         const idKey = item.id || `${item.customerPhone}-${item.timestamp || item.scheduledTime}`;
         if (seen.has(idKey)) return false;
         seen.add(idKey);
         return true;
       });
       setInquiries(unique);
-      localStorage.setItem('cabsy_inquiries', JSON.stringify(unique));
       return;
     } catch (e) {
       console.error("Failed to fetch inquiries from Hostinger MySQL", e);
@@ -61,7 +84,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     window.addEventListener('taxigo_ride_booked', handleStorageChange);
     window.addEventListener('taxigo_db_sync', handleStorageChange);
 
-    const interval = setInterval(loadInquiries, 1500);
+    // Reduced polling from 1.5s to 10s to eliminate lag
+    const interval = setInterval(loadInquiries, 10000);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);

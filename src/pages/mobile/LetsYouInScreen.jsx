@@ -23,7 +23,7 @@ export default function LetsYouInScreen({
   const [customEmail, setCustomEmail] = useState('');
 
   // ─── After Google gives us user data: check Firestore, route accordingly ──
-  const processGoogleUser = async (googleData) => {
+  const processGoogleUser = (googleData) => {
     if (!googleData || !googleData.email) return;
 
     const email = googleData.email;
@@ -34,58 +34,14 @@ export default function LetsYouInScreen({
     const photoURL = googleData.photoURL || null;
     const uid = googleData.uid || 'goog_' + Date.now();
 
-    // ── 1. Check Firestore: does this user already exist? ──
-    let existingProfile = null;
-    try {
-      existingProfile = await loadCustomerFromFirestore(email);
-    } catch (e) {
-      console.warn('[Auth] Firestore lookup failed:', e);
-    }
-
-    if (existingProfile && existingProfile.name && existingProfile.email) {
-      // ── RETURNING USER: restore full profile, skip profile screen, go home ──
-      const restoredProfile = {
-        ...existingProfile,
-        lastLogin: new Date().toISOString()
-      };
-
-      try {
-        localStorage.setItem('cabsy_user_profile', JSON.stringify(restoredProfile));
-        localStorage.setItem('cabsy_user_phone', restoredProfile.phone || '');
-        localStorage.setItem('taxigo_onboarded', 'true');
-        localStorage.setItem('taxigo_profile_completed', 'true');
-
-        // Update last login in Firestore
-        saveCustomerToFirestore(restoredProfile).catch(() => {});
-        saveCustomerToMySQL(restoredProfile).catch(() => {});
-        db.saveCustomer(restoredProfile);
-
-        // Restore past trip history from MySQL
-        await restoreTrips(restoredProfile);
-
-        window.dispatchEvent(new Event('storage'));
-      } catch (e) {}
-
-      setLoading(false);
-      if (setSelectedGoogleAccount) setSelectedGoogleAccount(restoredProfile);
-
-      // Direct to home — skip profile creation
-      if (onGoogleSignIn) {
-        onGoogleSignIn(restoredProfile);
-      } else if (onNext) {
-        onNext();
-      }
-      return;
-    }
-
-    // ── NEW USER: save basic profile, go to Complete Profile screen ──
-    const newProfile = {
+    // ── Build profile instantly from Google data ──
+    const profile = {
       id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-      name: name,
-      email: email,
+      name,
+      email,
       phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '',
-      photoURL: photoURL,
-      uid: uid,
+      photoURL,
+      uid,
       profession: '',
       area: '',
       registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -93,25 +49,52 @@ export default function LetsYouInScreen({
       lastLogin: new Date().toISOString()
     };
 
+    // ── Save to localStorage INSTANTLY (no network wait) ──
     try {
-      localStorage.setItem('cabsy_user_profile', JSON.stringify(newProfile));
+      localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
+      localStorage.setItem('cabsy_user_phone', profile.phone || '');
       localStorage.setItem('taxigo_onboarded', 'true');
-
-      saveCustomerToFirestore(newProfile).catch(() => {});
-      saveCustomerToMySQL(newProfile).catch(() => {});
-      db.saveCustomer(newProfile);
-
       window.dispatchEvent(new Event('storage'));
     } catch (e) {}
 
+    if (setSelectedGoogleAccount) setSelectedGoogleAccount(profile);
     setLoading(false);
-    if (setSelectedGoogleAccount) setSelectedGoogleAccount(newProfile);
 
-    // Go to Complete Profile screen with auto-filled data
-    if (onGoToCreateAccount) {
-      onGoToCreateAccount();
-    } else if (onNext) {
-      onNext();
+    // ── Check Firestore in BACKGROUND for returning user detection ──
+    loadCustomerFromFirestore(email).then(existing => {
+      if (existing && existing.name && existing.phone) {
+        // Merge cloud profile into local
+        const merged = { ...profile, ...existing, lastLogin: new Date().toISOString() };
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(merged));
+        localStorage.setItem('taxigo_profile_completed', 'true');
+        window.dispatchEvent(new Event('storage'));
+      }
+    }).catch(() => {});
+
+    // ── Background: save to Firestore + MySQL (non-blocking) ──
+    saveCustomerToFirestore(profile).catch(() => {});
+    saveCustomerToMySQL(profile).catch(() => {});
+    try { db.saveCustomer(profile); } catch(e) {}
+
+    // ── Background: restore trip history (non-blocking) ──
+    restoreTrips(profile);
+
+    // ── Check if returning user (local check — instant) ──
+    const isProfileCompleted = localStorage.getItem('taxigo_profile_completed') === 'true';
+    if (isProfileCompleted) {
+      // Returning user → go straight to home
+      if (onGoogleSignIn) {
+        onGoogleSignIn(profile);
+      } else if (onNext) {
+        onNext();
+      }
+    } else {
+      // New user → go to complete profile
+      if (onGoToCreateAccount) {
+        onGoToCreateAccount();
+      } else if (onNext) {
+        onNext();
+      }
     }
   };
 
@@ -147,15 +130,10 @@ export default function LetsYouInScreen({
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
-      // Try native device account picker first
       const googleUser = await signInWithGoogle();
-
       if (googleUser && googleUser.email) {
-        // Native sign-in succeeded — process the user
-        await processGoogleUser(googleUser);
+        processGoogleUser(googleUser);
       } else {
-        // Native failed (SHA-1 not registered or user cancelled)
-        // Show in-app fallback account picker
         setShowFallbackPicker(true);
         setLoading(false);
       }
@@ -167,11 +145,11 @@ export default function LetsYouInScreen({
   };
 
   // ─── Fallback picker: user selects/types an email ──
-  const handleFallbackSelect = async (email) => {
+  const handleFallbackSelect = (email) => {
     if (!email || !email.includes('@')) return;
     setShowFallbackPicker(false);
     setLoading(true);
-    await processGoogleUser({
+    processGoogleUser({
       name: formatNameFromEmail(email),
       email: email,
       photoURL: null,
