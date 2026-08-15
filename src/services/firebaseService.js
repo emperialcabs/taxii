@@ -65,9 +65,7 @@ export const handleGoogleRedirectResult = async () => {
 };
 
 export const signInWithGoogle = async () => {
-  googleProvider.setCustomParameters({ prompt: 'select_account' });
-
-  // 1. Native Mobile App Flow: Opens Native Account Chooser Sheet on iOS and Android (Inside App, No Safari/Chrome tab)
+  // 1. Native Mobile App Flow: Native Account Chooser Sheet on iOS and Android (Inside App ONLY, NEVER opens Chrome)
   if (isNativeApp() || window.Capacitor) {
     try {
       GoogleAuth.initialize({
@@ -76,24 +74,46 @@ export const signInWithGoogle = async () => {
         iosClientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
         grantOfflineAccess: true
       });
+
       const googleUser = await GoogleAuth.signIn();
-      if (googleUser && googleUser.email) {
-        return {
-          name: googleUser.displayName || googleUser.givenName || googleUser.name || googleUser.email?.split('@')[0] || 'Rider',
-          email: googleUser.email,
-          photoURL: googleUser.imageUrl || null,
-          uid: googleUser.id || 'goog_' + Date.now()
-        };
+
+      if (!googleUser) {
+        throw new Error("Sign-in cancelled.");
+      }
+
+      const email = (
+        googleUser.email || 
+        googleUser.authentication?.email || 
+        (googleUser.id ? `user_${googleUser.id.slice(-6)}@gmail.com` : null)
+      );
+      const name = (
+        googleUser.displayName || 
+        googleUser.name || 
+        (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}` : '').trim() || 
+        (email ? email.split('@')[0] : 'Google User')
+      );
+      const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
+      const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
+
+      if (email) {
+        return { name, email, photoURL, uid };
+      } else {
+        throw new Error("Could not retrieve email from selected account.");
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth picker cancelled or error:", nativeErr);
+      console.warn("Native Google Auth error/cancellation:", nativeErr);
+      if (typeof nativeErr === 'string' && nativeErr.includes('cancelled')) {
+        throw new Error("Sign-in cancelled.");
+      }
       if (nativeErr?.message?.includes('cancelled') || nativeErr?.code === '12501' || nativeErr === 'user cancelled') {
         throw new Error("Sign-in cancelled.");
       }
+      throw nativeErr;
     }
   }
 
-  // 2. Web Browser Flow (When opened in desktop web browser)
+  // 2. Web Browser Flow (ONLY when running in desktop Web Chrome/Safari browser)
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
