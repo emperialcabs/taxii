@@ -539,6 +539,16 @@
   background-color: #F8FAFC;
 }
 
+.interactive-google-map-container,
+.live-map-viewport .leaflet-container,
+.full-homescreen-map-wrapper .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 350px !important;
+  flex: 1 1 auto !important;
+  z-index: 1 !important;
+}
+
 .map-floating-header {
   position: absolute;
   top: 16px;
