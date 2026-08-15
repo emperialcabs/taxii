@@ -48,5 +48,4 @@ yarn-error.log*
 # Misc
 .cache/
 
-*.apk
-public/*.apk
+
