@@ -30,6 +30,8 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const isWebSite = location.pathname === '/web' || location.pathname.startsWith('/web');
   const isMobilePath = location.pathname === '/app' || location.pathname === '/mobile' || location.pathname.startsWith('/app') || location.pathname.startsWith('/mobile');
   
+  const isMobileDomain = hostname.includes('android') || hostname.includes('ios') || hostname.includes('mobile');
+  
   // Robust Android & iOS Capacitor Native Detection (Prevents White Screen / Website Leak)
   const isCapacitorNative = typeof window !== 'undefined' && (
     Boolean(window.Capacitor) ||
