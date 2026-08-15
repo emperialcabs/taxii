@@ -52,7 +52,8 @@ class DatabaseService {
   getInquiries() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.INQUIRIES);
-      return data ? JSON.parse(data) : [];
+      const list = data ? JSON.parse(data) : [];
+      return Array.isArray(list) ? list.filter(i => i.id !== 'INQ-3376' && i.id !== 3376) : [];
     } catch (e) {
       return [];
     }
