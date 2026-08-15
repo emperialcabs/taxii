@@ -42,19 +42,14 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     return {
-      name: user.displayName || 'Google User',
-      email: user.email || 'user@empirecab.in',
-      photoURL: user.photoURL || null,
-      uid: user.uid || 'goog_' + Date.now()
+      name: user.displayName || user.email?.split('@')[0] || 'Rider',
+      email: user.email,
+      photoURL: user.photoURL,
+      uid: user.uid
     };
   } catch (e) {
-    console.warn("Firebase Google Auth popup skipped or unauthorized domain:", e?.code || e?.message);
-    return {
-      name: 'Google Account User',
-      email: 'google.user@empirecab.in',
-      photoURL: null,
-      uid: 'goog_' + Date.now()
-    };
+    console.error("Firebase Google Auth Error:", e);
+    throw e;
   }
 };
 

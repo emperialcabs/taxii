@@ -37,16 +37,23 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     }
   };
 
+  const [authError, setAuthError] = useState(null);
+
   const handleGoogleAuth = async () => {
     setLoading(true);
+    setAuthError(null);
     try {
       const googleUser = await signInWithGoogle();
+
+      if (!googleUser || !googleUser.email) {
+        throw new Error("Could not obtain user email from Google.");
+      }
 
       const realProfile = {
         id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
         name: googleUser.name || 'Google User',
-        email: googleUser.email || 'user@empirecab.in',
-        phone: phoneNumber || '+91 98765 43210',
+        email: googleUser.email,
+        phone: phoneNumber || '',
         photoURL: googleUser.photoURL || null,
         uid: googleUser.uid || null,
         profession: 'Rider',
@@ -82,33 +89,11 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
       }
     } catch (err) {
       setLoading(false);
-      console.warn("Google Auth handled:", err);
-      const fallbackProfile = {
-        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-        name: 'Google User',
-        email: 'user@empirecab.in',
-        phone: phoneNumber || '+91 98765 43210',
-        photoURL: null,
-        profession: 'Rider',
-        area: 'Bhavnagar, Gujarat',
-        registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        status: 'Active',
-        lastLogin: new Date().toISOString()
-      };
-      try {
-        localStorage.setItem('cabsy_user_profile', JSON.stringify(fallbackProfile));
-        localStorage.setItem('taxigo_onboarded', 'true');
-        await saveCustomerToMySQL(fallbackProfile).catch(() => {});
-        db.saveCustomer(fallbackProfile);
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: fallbackProfile } }));
-        await syncWithMySQL(fallbackProfile);
-      } catch(e) {}
-      if (onGoogleSignIn) {
-        onGoogleSignIn(fallbackProfile);
-      } else {
-        onNext();
-      }
+      console.warn("Google Auth error:", err);
+      const msg = err?.code === 'auth/popup-closed-by-user' 
+        ? 'Sign-in cancelled.' 
+        : 'Google Sign-in failed. Please sign in with your mobile number.';
+      setAuthError(msg);
     }
   };
 
@@ -181,8 +166,24 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
             </svg>
-            {loading ? 'Opening Firebase Auth...' : 'Continue with Google'}
+            {loading ? 'Opening Google Sign-In...' : 'Continue with Google'}
           </button>
+
+          {authError && (
+            <div style={{
+              marginTop: '12px',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              fontSize: '13px',
+              fontWeight: '600',
+              textAlign: 'center'
+            }}>
+              {authError}
+            </div>
+          )}
 
           <p className="let-you-footer-txt" style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748B', fontWeight: '600' }}>
             Don’t have an account? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={onNext}>Sign up</span>
