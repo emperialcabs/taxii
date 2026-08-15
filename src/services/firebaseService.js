@@ -97,11 +97,11 @@ export const signInWithGoogle = async () => {
         }
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth picker skipped, trying Web Auth:", nativeErr);
+      console.warn("Native Google Auth picker skipped:", nativeErr);
     }
   }
 
-  // 2. Web Browser Flow (Desktop / Web Browser)
+  // 2. Web Browser Popup Flow (Stays inside app without opening external Chrome)
   try {
     googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, googleProvider);
@@ -115,13 +115,7 @@ export const signInWithGoogle = async () => {
       };
     }
   } catch (popupErr) {
-    console.warn("Firebase Google Auth popup skipped/blocked:", popupErr);
-    if (popupErr?.code === 'auth/popup-blocked' || popupErr?.code === 'auth/popup-closed-by-user') {
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        return null;
-      } catch (redirectErr) {}
-    }
+    console.warn("Firebase Google Auth popup error/blocked:", popupErr);
   }
 
   // 3. Robust Fallback User Profile if Auth popup/native plugin is blocked on device
