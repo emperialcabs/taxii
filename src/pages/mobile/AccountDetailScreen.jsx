@@ -54,22 +54,29 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
   const [profile, setProfile] = useState(getInitialProfile);
 
   useEffect(() => {
-    if (googleData) {
-      setProfile(prev => {
-        const emailVal = googleData.email || prev.email || '';
-        let nameVal = googleData.name || prev.name || '';
-        if ((!nameVal || nameVal === 'Google User') && emailVal) {
-          nameVal = formatNameFromEmail(emailVal);
-        }
-        return {
-          ...prev,
-          name: nameVal || prev.name,
-          email: emailVal || prev.email,
-          phone: googleData.phone || prev.phone || localStorage.getItem('cabsy_user_phone') || '',
-          photoURL: googleData.photoURL || prev.photoURL
-        };
-      });
-    }
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      const base = saved ? JSON.parse(saved) : {};
+      const savedPhone = localStorage.getItem('cabsy_user_phone') || '';
+      const source = googleData || (base.email ? base : null);
+
+      if (source) {
+        setProfile(prev => {
+          const emailVal = source.email || prev.email || '';
+          let nameVal = source.name || prev.name || '';
+          if ((!nameVal || nameVal === 'Google User') && emailVal) {
+            nameVal = formatNameFromEmail(emailVal);
+          }
+          return {
+            ...prev,
+            name: nameVal || prev.name,
+            email: emailVal || prev.email,
+            phone: source.phone || prev.phone || savedPhone || '',
+            photoURL: source.photoURL || prev.photoURL || null
+          };
+        });
+      }
+    } catch (e) {}
   }, [googleData]);
 
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -110,25 +117,56 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
   };
 
   return (
-    <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
+    <div className="real-mobile-app" style={{ background: '#F8FAFC', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-        <button className="header-back-arrow" onClick={onBack}>←</button>
-        <h2 className="white-header-title">{isCreateMode ? 'Complete Customer Profile' : 'Edit Profile Details'}</h2>
+      <div className="white-header-nav" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        padding: '16px 20px', 
+        background: '#FFFFFF',
+        borderBottom: '1px solid #E2E8F0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10
+      }}>
+        <button 
+          className="header-back-arrow" 
+          onClick={onBack}
+          style={{ 
+            background: '#F1F5F9', 
+            border: 'none', 
+            width: '36px', 
+            height: '36px', 
+            borderRadius: '50%', 
+            fontSize: '18px', 
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#0F172A'
+          }}
+        >
+          ←
+        </button>
+        <h2 className="white-header-title" style={{ fontSize: '18px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan', margin: 0 }}>
+          {isCreateMode ? 'Complete Customer Profile' : 'Edit Profile Details'}
+        </h2>
+        <div style={{ width: '36px' }}></div>
       </div>
 
-      <div className="mobile-screen-body" style={{ padding: '20px 20px 100px 20px' }}>
+      <div className="mobile-screen-body" style={{ padding: '24px 20px 120px 20px', flex: 1, maxWidth: '500px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         {/* Photo Upload Section */}
-        <div style={{ textCenter: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ textCenter: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '28px' }}>
           <div style={{ position: 'relative' }}>
             {profile.photoURL ? (
               <img 
                 src={profile.photoURL} 
                 alt="Avatar" 
-                style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #10B981', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }} 
+                style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #10B981', boxShadow: '0 8px 20px rgba(16,185,129,0.2)' }} 
               />
             ) : (
-              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', boxShadow: '0 6px 18px rgba(16,185,129,0.35)' }}>
+              <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '38px', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}>
                 {profile.name ? profile.name.charAt(0) : 'R'}
               </div>
             )}
@@ -136,20 +174,20 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
               htmlFor="avatar-file-input"
               style={{
                 position: 'absolute',
-                bottom: 0,
-                right: 0,
+                bottom: '2px',
+                right: '2px',
                 background: '#10B981',
                 color: '#FFFFFF',
-                width: '32px',
-                height: '32px',
+                width: '34px',
+                height: '34px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                fontSize: '14px',
-                border: '2px solid #FFFFFF',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                fontSize: '15px',
+                border: '2.5px solid #FFFFFF',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
               }}
             >
               📷
@@ -162,89 +200,113 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
               style={{ display: 'none' }} 
             />
           </div>
-          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
+          <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk', fontWeight: '500' }}>
             Tap camera icon to change picture
           </p>
         </div>
 
         {/* Success Alert */}
         {savedSuccess && (
-          <div style={{ background: '#DCFCE7', border: '1.5px solid #86EFAC', color: '#15803D', padding: '14px', borderRadius: '16px', fontWeight: '800', textAlign: 'center', marginBottom: '20px', fontFamily: 'League Spartan', fontSize: '16px' }}>
+          <div style={{ background: '#DCFCE7', border: '1.5px solid #86EFAC', color: '#15803D', padding: '14px 18px', borderRadius: '16px', fontWeight: '800', textAlign: 'center', marginBottom: '24px', fontFamily: 'League Spartan', fontSize: '16px' }}>
             ✓ Profile Saved Successfully!
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>FULL NAME</label>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>FULL NAME</label>
             <input 
               type="text" 
               required
+              placeholder="Enter your full name"
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A', transition: 'border-color 0.2s' }}
             />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>PHONE NUMBER</label>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>PHONE NUMBER</label>
             <input 
               type="tel" 
               required
+              placeholder="Enter your phone number"
               value={profile.phone}
               onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A', transition: 'border-color 0.2s' }}
             />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>EMAIL ADDRESS</label>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>EMAIL ADDRESS</label>
             <input 
               type="email" 
               required
+              placeholder="Enter your email address"
               value={profile.email}
               onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A', transition: 'border-color 0.2s' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>AGE</label>
+              <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>AGE</label>
               <input 
                 type="number" 
+                placeholder="26"
                 value={profile.age}
                 onChange={(e) => setProfile({ ...profile, age: e.target.value })}
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
               />
             </div>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>PROFESSION</label>
+              <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>PROFESSION</label>
               <input 
                 type="text" 
+                placeholder="Rider"
                 value={profile.profession}
                 onChange={(e) => setProfile({ ...profile, profession: e.target.value })}
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
               />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>CITY & REGION</label>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#475569', letterSpacing: '0.6px', display: 'block', marginBottom: '8px' }}>CITY & REGION</label>
             <input 
               type="text" 
+              placeholder="Bhavnagar, Gujarat"
               value={profile.area}
               onChange={(e) => setProfile({ ...profile, area: e.target.value })}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: '16px', border: '1.5px solid #CBD5E1', fontSize: '15px', fontFamily: 'Space Grotesk', outline: 'none', background: '#FFFFFF', color: '#0F172A' }}
             />
           </div>
 
           <button 
             type="submit"
-            className="taxigo-btn-primary"
-            style={{ marginTop: '10px', width: '100%', padding: '16px', fontSize: '18px' }}
+            style={{ 
+              marginTop: '12px', 
+              width: '100%', 
+              boxSizing: 'border-box', 
+              padding: '16px 20px', 
+              fontSize: '17px', 
+              fontWeight: '800',
+              fontFamily: 'League Spartan',
+              color: '#FFFFFF',
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              border: 'none',
+              borderRadius: '28px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
           >
-            Save Profile Changes →
+            <span>Save Profile & Continue</span>
+            <span style={{ fontSize: '20px' }}>→</span>
           </button>
         </form>
       </div>

@@ -3,7 +3,7 @@ import db from '../../services/dbService';
 import { signInWithGoogle, handleGoogleRedirectResult } from '../../services/firebaseService';
 import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 
-export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, onGoToCreateAccount, onGoogleSignIn, onBack }) {
+export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, selectedGoogleAccount, setSelectedGoogleAccount, onNext, onGoToCreateAccount, onGoogleSignIn, onBack }) {
   const [loading, setLoading] = useState(false);
 
   // ── 1. Check if user just returned from Google OAuth Redirect ──
