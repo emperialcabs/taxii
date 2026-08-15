@@ -16,7 +16,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     } catch (e) { return null; }
   }, []);
 
-  const userName = userProfile?.name?.split(' ')[0] || 'Rider';
+  const userName = userProfile?.name || 'Rider';
   const userPhoto = userProfile?.photoURL || null;
 
   // Time-based greeting
@@ -31,15 +31,26 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [isLocating, setIsLocating] = useState(true);
 
-  // Active Ride Live Sync
+  // Active Ride Live Sync (ONLY for the current logged-in user)
   const [activeRide, setActiveRide] = useState(null);
   useEffect(() => {
     const checkActiveRide = () => {
       try {
         const saved = localStorage.getItem('cabsy_inquiries');
+        const userProfRaw = localStorage.getItem('cabsy_user_profile');
+        const userProf = userProfRaw ? JSON.parse(userProfRaw) : null;
+        const uPhone = userProf?.phone ? String(userProf.phone).replace(/\D/g, '') : '';
+        const uEmail = userProf?.email ? String(userProf.email).toLowerCase().trim() : '';
+
         if (saved) {
           const list = JSON.parse(saved);
-          const current = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          const current = list.find(i => {
+            const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+            const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                            (uEmail && iEmail && uEmail === iEmail);
+            return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          });
           if (current) {
             setActiveRide(current);
             return;

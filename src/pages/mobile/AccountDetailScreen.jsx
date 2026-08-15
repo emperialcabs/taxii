@@ -30,7 +30,7 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
         name: nameVal,
         email: emailVal,
         phone: googleData?.phone || base.phone || savedPhone || '',
-        age: base.age || 26,
+        age: (base.age && Number(base.age) > 0 && Number(base.age) <= 100) ? base.age : 26,
         profession: base.profession || 'Rider',
         area: base.area || 'Bhavnagar, Gujarat',
         photoURL: googleData?.photoURL || base.photoURL || null,
@@ -160,13 +160,13 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
               <img 
                 src={profile.photoURL} 
                 alt="Avatar" 
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                 style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #10B981', boxShadow: '0 8px 20px rgba(16,185,129,0.2)' }} 
               />
-            ) : (
-              <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '38px', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}>
-                {profile.name ? profile.name.charAt(0) : 'R'}
-              </div>
-            )}
+            ) : null}
+            <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: '800', display: profile.photoURL ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '38px', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}>
+              {profile.name ? profile.name.charAt(0).toUpperCase() : 'R'}
+            </div>
             <label 
               htmlFor="avatar-file-input"
               style={{

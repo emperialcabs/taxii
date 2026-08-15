@@ -62,42 +62,43 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
           style={{ 
             background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', 
             borderRadius: '24px', 
-            padding: '20px', 
+            padding: '18px 20px', 
             color: '#FFFFFF',
             boxShadow: '0 12px 28px rgba(52, 211, 153, 0.35)',
             marginBottom: '20px',
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
-            cursor: 'pointer'
+            gap: '14px',
+            cursor: 'pointer',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
             {userProfile.photoURL ? (
               <img 
                 src={userProfile.photoURL} 
                 alt="Profile" 
-                style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} 
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} 
               />
-            ) : (
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FFFFFF', color: '#10B981', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-                <User size={30} />
-              </div>
-            )}
+            ) : null}
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#FFFFFF', color: '#10B981', fontWeight: '800', display: userProfile.photoURL ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #FFFFFF', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+              <User size={28} />
+            </div>
           </div>
 
-          <div style={{ flex: 1 }}>
-            <h3 style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '20px', color: '#FFFFFF', margin: 0 }}>
-              {userProfile.name}
+          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <h3 style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '20px', color: '#FFFFFF', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {userProfile.name || 'Rider'}
             </h3>
-            <p style={{ margin: '2px 0 0 0', fontSize: '13px', opacity: 0.9, fontFamily: 'Space Grotesk' }}>
-              {userProfile.phone} • {userProfile.email}
+            <p style={{ margin: '2px 0 0 0', fontSize: '12px', opacity: 0.95, fontFamily: 'Space Grotesk', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {userProfile.phone || ''} {userProfile.phone && userProfile.email ? '•' : ''} {userProfile.email || ''}
             </p>
           </div>
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleOpenEdit(); }}
-            style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ flexShrink: 0, background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '8px 14px', borderRadius: '14px', fontWeight: '800', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
             <Edit3 size={13} /> Edit
           </button>
@@ -107,15 +108,17 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>AGE</div>
-            <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{userProfile.age || '—'} yrs</div>
+            <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>
+              {(userProfile.age && Number(userProfile.age) > 0 && Number(userProfile.age) <= 100) ? userProfile.age : 26} yrs
+            </div>
           </div>
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>ROLE</div>
-            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userProfile.profession || '—'}</div>
+            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userProfile.profession || 'Rider'}</div>
           </div>
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '12px 10px', textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700' }}>LOCATION</div>
-            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{userProfile.area || '—'}</div>
+            <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userProfile.area || 'Bhavnagar, Gujarat'}</div>
           </div>
         </div>
 
