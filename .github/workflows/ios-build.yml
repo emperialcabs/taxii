@@ -28,7 +28,7 @@ jobs:
         run: |
           npx cap sync ios
           cd ios/App
-          pod install
+          pod install --repo-update
 
       - name: Build iOS App (.xcarchive)
         run: |
