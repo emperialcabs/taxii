@@ -1,5 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import {
   getFirestore,
   doc,
@@ -38,6 +40,26 @@ export const db = getFirestore(app);
 // ─────────────────────────────────────────────────────────────────────────────
 export const signInWithGoogle = async () => {
   try {
+    // 1. Native Mobile App Flow: Opens native Android account chooser sheet
+    if (Capacitor.isNativePlatform() || window.Capacitor?.isNative) {
+      try {
+        GoogleAuth.initialize();
+        const googleUser = await GoogleAuth.signIn();
+        if (googleUser) {
+          return {
+            name: googleUser.displayName || googleUser.givenName || googleUser.email?.split('@')[0] || 'Rider',
+            email: googleUser.email,
+            photoURL: googleUser.imageUrl || null,
+            uid: googleUser.id || 'goog_' + Date.now()
+          };
+        }
+      } catch (nativeErr) {
+        console.warn("Native Google Auth picker cancelled or error:", nativeErr);
+        throw nativeErr;
+      }
+    }
+
+    // 2. Web Browser Flow: Firebase popup window
     googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;

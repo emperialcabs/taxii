@@ -5,5 +5,11 @@
   "server": {
     "url": "https://taxii-three.vercel.app",
     "cleartext": true
+  },
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "forceCodeForRefreshToken": true
+    }
   }
 }
