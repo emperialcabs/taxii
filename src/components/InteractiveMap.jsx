@@ -34,12 +34,16 @@ const createUserPinIcon = (label = "Your Location") => {
   });
 };
 
-const createTaxiPinIcon = (badge = "Taxi") => {
+const createTaxiPinIcon = (badge = "Driver") => {
   return L.divIcon({
-    className: 'custom-leaflet-taxi-pin',
+    className: 'custom-leaflet-blue-arrow-pin',
     html: `
-      <div style="transform: translate(-50%, -50%); background: #10B981; color: #FFFFFF; padding: 6px 14px; border-radius: 20px; font-size: 12px; box-shadow: 0 4px 14px rgba(16,185,129,0.4); display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; font-weight: 800; font-family: 'Space Grotesk', sans-serif; white-space: nowrap; width: max-content;">
-        <span style="margin-right: 4px; font-size: 14px;">🚕</span> ${badge}
+      <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+        <div style="width: 44px; height: 44px; background: #FFFFFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45); border: 3px solid #2563EB;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#2563EB">
+            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+          </svg>
+        </div>
       </div>
     `,
     iconSize: [0, 0],
