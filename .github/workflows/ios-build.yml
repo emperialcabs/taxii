@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: Build iOS IPA & Simulator App
 
 on:
   push:
@@ -30,10 +30,17 @@ jobs:
           cd ios/App
           pod install --repo-update
 
-      - name: Build iOS App (.xcarchive)
+      - name: Build Physical Device iOS App (.xcarchive)
         run: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' -archivePath App.xcarchive archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=15.0 COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Build Appetize.io iOS Simulator Build
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath sim_build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=15.0
+          cd sim_build/Build/Products/Debug-iphonesimulator
+          zip -r ../../../../Taxigo-Simulator.zip App.app
 
       - name: Package .IPA
         run: |
@@ -41,8 +48,14 @@ jobs:
           cp -r ios/App/App.xcarchive/Products/Applications/App.app Payload/ || cp -r ios/App/App.xcarchive/Products/Applications/*.app Payload/
           zip -r Taxigo.ipa Payload
 
-      - name: Upload .IPA Artifact
+      - name: Upload .IPA Artifact (Physical Device)
         uses: actions/upload-artifact@v4
         with:
           name: Taxigo-iOS-IPA
           path: Taxigo.ipa
+
+      - name: Upload Appetize Simulator Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Taxigo-Appetize-Simulator-ZIP
+          path: Taxigo-Simulator.zip
