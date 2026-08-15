@@ -60,7 +60,7 @@ export default function MobileAppView() {
   const [activeTab, setActiveTab] = useState('home');
   const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
-  // Auto-detect Active Ride In Progress and switch customer view to Live Tracking Screen automatically!
+  // Ensure appStage remains on APP_HOME so live ride renders directly on the Home Screen map
   useEffect(() => {
     const syncActiveRideStage = () => {
       try {
@@ -68,8 +68,8 @@ export default function MobileAppView() {
         if (savedInquiries) {
           const list = JSON.parse(savedInquiries);
           const activeRide = list.find(i => i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
-          if (activeRide) {
-            setAppStage('TRACKING');
+          if (activeRide && appStage !== 'APP_HOME') {
+            setAppStage('APP_HOME');
           }
         }
       } catch (e) {}

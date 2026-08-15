@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
-import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
+import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
+import { RotateCcw } from 'lucide-react';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
   // Load saved profile from localStorage
@@ -60,6 +61,36 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const activePickupPos = activeRide ? getCoordsForPlace(activeRide.pickup || activeRide.pickupLoc, userCoords) : null;
   const activeDestPos = activeRide ? getCoordsForPlace(activeRide.dropoff || activeRide.dropoffLoc, userCoords) : null;
   const activePolyline = (activePickupPos && activeDestPos) ? generateRoutePolyline(activePickupPos, activeDestPos) : [];
+
+  // Live GPS Distance & ETA Calculation on Home Screen Map
+  const currentLivePos = userCoords || activePickupPos || { lat: 21.7645, lng: 72.1519 };
+  const realDistKmNum = (activeDestPos && currentLivePos) ? calculateDistanceKm(currentLivePos.lat, currentLivePos.lng, activeDestPos.lat, activeDestPos.lng) : 0;
+  const displayDistKm = realDistKmNum > 0 ? realDistKmNum.toFixed(1) : "0.0";
+  const totalMinsLeft = Math.max(1, Math.round(realDistKmNum * 1.5));
+  const hoursLeft = Math.floor(totalMinsLeft / 60);
+  const minsLeft = totalMinsLeft % 60;
+  const etaTimeStr = hoursLeft > 0 ? `${hoursLeft}h ${minsLeft}m` : `${minsLeft}m`;
+  const arrivalDate = new Date(Date.now() + totalMinsLeft * 60000);
+  const arrivalTimeFormatted = arrivalDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  const handleExitRide = () => {
+    try {
+      const saved = localStorage.getItem('cabsy_inquiries');
+      if (saved) {
+        const list = JSON.parse(saved);
+        const updated = list.map(i => {
+          if (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride') {
+            return { ...i, status: 'Completed' };
+          }
+          return i;
+        });
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('taxigo_trip_started'));
+      }
+    } catch (e) {}
+    setActiveRide(null);
+  };
 
   // Notification Modal State & Live Updates
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -329,53 +360,62 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
             {/* ACTIVE RIDE LIVE CARD ON HOMESCREEN */}
             {activeRide && (
               <div 
-                onClick={() => onOpenTracking && onOpenTracking()}
                 style={{
-                  background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+                  background: '#121827',
                   borderRadius: '20px',
-                  padding: '16px',
+                  padding: '16px 20px',
                   color: '#FFFFFF',
                   marginBottom: '16px',
-                  boxShadow: '0 8px 24px rgba(15, 23, 42, 0.35)',
-                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                   border: '1.5px solid #334155'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#22C55E', fontSize: '14px' }}>●</span>
-                    <span style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '15px', color: '#22C55E' }}>
-                      LIVE TRIP IN PROGRESS
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '26px', fontWeight: '900', color: '#22C55E', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>
+                      {etaTimeStr} <span style={{ fontSize: '18px' }}>🌱</span>
+                    </div>
+                    <div style={{ color: '#94A3B8', fontSize: '13px', fontWeight: '700', marginTop: '4px', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      {displayDistKm} km • {arrivalTimeFormatted}
+                    </div>
                   </div>
-                  <span style={{ fontSize: '12px', background: '#334155', padding: '3px 10px', borderRadius: '12px', color: '#94A3B8', fontWeight: '700' }}>
-                    {activeRide.vehicle || 'SWIFT'}
-                  </span>
-                </div>
 
-                <div style={{ fontSize: '15px', fontWeight: '800', fontFamily: 'League Spartan', color: '#FFFFFF', marginBottom: '4px' }}>
-                  {activeRide.pickup || 'Pickup Point'} ➔ {activeRide.dropoff || 'Destination'}
-                </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button 
+                      onClick={() => setUserCoords({ ...currentLivePos })}
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        background: '#1E293B',
+                        border: '1px solid #334155',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                      title="Re-centre Map"
+                    >
+                      <RotateCcw size={18} color="#FFFFFF" />
+                    </button>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid #334155', paddingTop: '10px' }}>
-                  <div style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'Space Grotesk' }}>
-                    Driver: <strong style={{ color: '#FFFFFF' }}>{activeRide.driver || 'Ramesh Patel'}</strong>
+                    <button 
+                      onClick={handleExitRide}
+                      style={{
+                        background: '#EF4444',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        padding: '10px 22px',
+                        borderRadius: '24px',
+                        fontWeight: '900',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)'
+                      }}
+                    >
+                      Exit
+                    </button>
                   </div>
-                  <button
-                    style={{
-                      background: '#22C55E',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '16px',
-                      fontFamily: 'League Spartan',
-                      fontWeight: '800',
-                      fontSize: '14px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Track Live Ride →
-                  </button>
                 </div>
               </div>
             )}
