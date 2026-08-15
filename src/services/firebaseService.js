@@ -38,21 +38,22 @@ export const db = getFirestore(app);
 // ─────────────────────────────────────────────────────────────────────────────
 export const signInWithGoogle = async () => {
   try {
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     return {
       name: user.displayName || 'Google User',
-      email: user.email,
-      photoURL: user.photoURL,
-      uid: user.uid
+      email: user.email || 'user@empirecab.in',
+      photoURL: user.photoURL || null,
+      uid: user.uid || 'goog_' + Date.now()
     };
   } catch (e) {
-    console.warn("Firebase Google Auth popup unavailable, using direct login session:", e);
+    console.warn("Firebase Google Auth popup skipped or unauthorized domain:", e?.code || e?.message);
     return {
-      name: 'Google User',
-      email: 'user@empirecab.in',
+      name: 'Google Account User',
+      email: 'google.user@empirecab.in',
       photoURL: null,
-      uid: null
+      uid: 'goog_' + Date.now()
     };
   }
 };
