@@ -131,3 +131,13 @@ export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const d = R * c;
   return Math.round(d * 10) / 10;
 }
+
+/**
+ * Estimates Google Maps style driving time in minutes based on real driving speeds
+ */
+export function estimateEtaMins(distKm) {
+  if (!distKm || distKm <= 0) return 0;
+  if (distKm <= 10) return Math.round(distKm * 2.4); // City traffic ~25 km/h
+  if (distKm <= 40) return Math.round(distKm * 1.6); // Suburbs ~37 km/h
+  return Math.round(distKm * 1.25); // Highway driving ~48 km/h
+}

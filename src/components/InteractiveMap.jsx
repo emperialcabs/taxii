@@ -38,8 +38,8 @@ const createTaxiPinIcon = (badge = "Taxi") => {
   return L.divIcon({
     className: 'custom-leaflet-taxi-pin',
     html: `
-      <div style="transform: translate(-50%, -50%); background: #10B981; color: #FFFFFF; padding: 5px 10px; border-radius: 16px; font-size: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3); display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; font-weight: 800; font-family: 'Space Grotesk', sans-serif;">
-        <span style="margin-right: 3px;">●</span> ${badge}
+      <div style="transform: translate(-50%, -50%); background: #10B981; color: #FFFFFF; padding: 6px 14px; border-radius: 20px; font-size: 12px; box-shadow: 0 4px 14px rgba(16,185,129,0.4); display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; font-weight: 800; font-family: 'Space Grotesk', sans-serif; white-space: nowrap; width: max-content;">
+        <span style="margin-right: 4px; font-size: 14px;">🚕</span> ${badge}
       </div>
     `,
     iconSize: [0, 0],
@@ -185,9 +185,11 @@ export default function InteractiveMap({
     .map(p => [p.lat, p.lng]);
   const hasPolyline = safePositions.length >= 2;
 
+  const isSameSpotAsDriver = activeDriverPos && typeof activeDriverPos.lat === 'number' && typeof activeDriverPos.lng === 'number' &&
+    Math.abs(activeDriverPos.lat - safeLat) < 0.0002 && Math.abs(activeDriverPos.lng - safeLng) < 0.0002;
+
   return (
     <div className="interactive-google-map-container" style={{ ...style, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' }}>
-
 
       <MapErrorBoundary center={{ lat: safeLat, lng: safeLng }}>
         <MapContainer
@@ -210,7 +212,7 @@ export default function InteractiveMap({
           />
 
           {/* User GPS Location Marker */}
-          {showUserPin && (
+          {showUserPin && (!isSameSpotAsDriver) && (
             <Marker 
               position={[safeLat, safeLng]} 
               icon={createUserPinIcon(userLabel)}

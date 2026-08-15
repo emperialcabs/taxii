@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
-import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm } from '../../utils/locationCoords';
+import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm, estimateEtaMins } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
@@ -66,7 +66,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const currentLivePos = userCoords || activePickupPos || { lat: 21.7645, lng: 72.1519 };
   const realDistKmNum = (activeDestPos && currentLivePos) ? calculateDistanceKm(currentLivePos.lat, currentLivePos.lng, activeDestPos.lat, activeDestPos.lng) : 0;
   const displayDistKm = realDistKmNum > 0 ? realDistKmNum.toFixed(1) : "0.0";
-  const totalMinsLeft = Math.max(1, Math.round(realDistKmNum * 1.5));
+  const totalMinsLeft = Math.max(1, estimateEtaMins(realDistKmNum));
   const hoursLeft = Math.floor(totalMinsLeft / 60);
   const minsLeft = totalMinsLeft % 60;
   const etaTimeStr = hoursLeft > 0 ? `${hoursLeft}h ${minsLeft}m` : `${minsLeft}m`;
@@ -357,65 +357,33 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           <div className="homescreen-bottom-card">
             <div className="drag-handle-bar" />
 
-            {/* ACTIVE RIDE LIVE CARD ON HOMESCREEN */}
+            {/* ACTIVE RIDE LIVE CARD ON HOMESCREEN (Light Theme, No Buttons) */}
             {activeRide && (
               <div 
                 style={{
-                  background: '#121827',
+                  background: '#FFFFFF',
                   borderRadius: '20px',
                   padding: '16px 20px',
-                  color: '#FFFFFF',
+                  color: '#0F172A',
                   marginBottom: '16px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                  border: '1.5px solid #334155'
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                  border: '1.5px solid #E2E8F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: '26px', fontWeight: '900', color: '#22C55E', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>
-                      {etaTimeStr} <span style={{ fontSize: '18px' }}>🌱</span>
-                    </div>
-                    <div style={{ color: '#94A3B8', fontSize: '13px', fontWeight: '700', marginTop: '4px', fontFamily: 'Space Grotesk, sans-serif' }}>
-                      {displayDistKm} km • {arrivalTimeFormatted}
-                    </div>
+                <div>
+                  <div style={{ fontSize: '26px', fontWeight: '900', color: '#16A34A', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>
+                    {etaTimeStr} <span style={{ fontSize: '18px' }}>🌱</span>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button 
-                      onClick={() => setUserCoords({ ...currentLivePos })}
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        background: '#1E293B',
-                        border: '1px solid #334155',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                      }}
-                      title="Re-centre Map"
-                    >
-                      <RotateCcw size={18} color="#FFFFFF" />
-                    </button>
-
-                    <button 
-                      onClick={handleExitRide}
-                      style={{
-                        background: '#EF4444',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        padding: '10px 22px',
-                        borderRadius: '24px',
-                        fontWeight: '900',
-                        fontSize: '15px',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)'
-                      }}
-                    >
-                      Exit
-                    </button>
+                  <div style={{ color: '#64748B', fontSize: '13px', fontWeight: '700', marginTop: '4px', fontFamily: 'Space Grotesk, sans-serif' }}>
+                    {displayDistKm} km • {arrivalTimeFormatted}
                   </div>
+                </div>
+
+                <div style={{ background: '#F1F5F9', padding: '6px 14px', borderRadius: '16px', fontSize: '12px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ color: '#22C55E' }}>●</span> Live Ride
                 </div>
               </div>
             )}
