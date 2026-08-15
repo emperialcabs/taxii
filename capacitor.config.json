@@ -2,10 +2,6 @@
   "appId": "com.cabsy.ridebooking",
   "appName": "Empire Cab",
   "webDir": "dist",
-  "server": {
-    "url": "https://taxii-three.vercel.app",
-    "cleartext": true
-  },
   "plugins": {
     "GoogleAuth": {
       "scopes": ["profile", "email"],
