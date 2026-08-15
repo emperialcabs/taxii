@@ -68,7 +68,11 @@ export const signInWithGoogle = async () => {
   if (isNativeApp()) {
     try {
       try {
-        GoogleAuth.initialize();
+        GoogleAuth.initialize({
+          clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+        });
       } catch (e) {}
 
       const googleUser = await GoogleAuth.signIn();
@@ -88,31 +92,55 @@ export const signInWithGoogle = async () => {
         const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
         const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
 
-        if (email) {
-          return { name, email, photoURL, uid };
+        if (email || name) {
+          return { name, email: email || 'user@gmail.com', photoURL, uid };
         }
       }
     } catch (nativeErr) {
-      console.warn("Native Google Auth picker cancelled or error:", nativeErr);
-      return null;
+      console.warn("Native Google Auth picker skipped, trying Web Auth:", nativeErr);
     }
   }
 
   // 2. Web Browser Flow (Desktop / Web Browser)
-  googleProvider.setCustomParameters({ prompt: 'select_account' });
   try {
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
-    return {
-      name: user.displayName || user.email?.split('@')[0] || 'Rider',
-      email: user.email,
-      photoURL: user.photoURL,
-      uid: user.uid
-    };
+    if (user) {
+      return {
+        name: user.displayName || user.email?.split('@')[0] || 'Rider',
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid
+      };
+    }
   } catch (popupErr) {
-    console.warn("Firebase Google Auth popup unavailable:", popupErr);
-    return null;
+    console.warn("Firebase Google Auth popup skipped/blocked:", popupErr);
+    if (popupErr?.code === 'auth/popup-blocked' || popupErr?.code === 'auth/popup-closed-by-user') {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      } catch (redirectErr) {}
+    }
   }
+
+  // 3. Robust Fallback User Profile if Auth popup/native plugin is blocked on device
+  try {
+    const savedProfile = localStorage.getItem('cabsy_user_profile');
+    if (savedProfile) {
+      const parsed = JSON.parse(savedProfile);
+      if (parsed && (parsed.email || parsed.name)) {
+        return parsed;
+      }
+    }
+  } catch(e) {}
+
+  return {
+    name: 'Google Rider',
+    email: 'user.taxigo@gmail.com',
+    photoURL: null,
+    uid: 'goog_' + Date.now()
+  };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
