@@ -116,18 +116,20 @@ class DatabaseService {
     const phoneKey = customerProfile.phone ? String(customerProfile.phone).replace(/\D/g, '') : '';
     const emailKey = customerProfile.email ? String(customerProfile.email).toLowerCase().trim() : '';
 
-    const existingIdx = customers.findIndex(c => {
+    const existingIdx = Array.isArray(customers) ? customers.findIndex(c => {
+      if (!c) return false;
       const cPhone = c.phone ? String(c.phone).replace(/\D/g, '') : '';
       const cEmail = c.email ? String(c.email).toLowerCase().trim() : '';
       return (phoneKey && cPhone && phoneKey === cPhone) || (emailKey && cEmail && emailKey === cEmail);
-    });
+    }) : -1;
 
     const inquiries = this.getInquiries();
-    const customerInquiries = inquiries.filter(i => {
+    const customerInquiries = Array.isArray(inquiries) ? inquiries.filter(i => {
+      if (!i) return false;
       const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
       const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
       return (phoneKey && iPhone && phoneKey === iPhone) || (emailKey && iEmail && emailKey === iEmail);
-    });
+    }) : [];
 
     const totalRides = customerInquiries.length;
     const totalSpent = customerInquiries.reduce((sum, i) => sum + (parseFloat(i.fare) || 0), 0);

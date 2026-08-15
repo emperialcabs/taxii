@@ -70,31 +70,31 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
           </div>
           <div style={{ fontSize: '12px', fontWeight: '800', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>Available Taxi Wallet Balance</div>
           <div style={{ fontFamily: 'League Spartan', fontSize: '38px', fontWeight: '800', margin: '8px 0 0 0' }}>
-            ₹{wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            ₹{(wallet?.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </div>
         </div>
 
         {/* Recent Wallet Activity */}
         <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Wallet Transactions</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {wallet.transactions.length === 0 ? (
+          {(!wallet?.transactions || wallet.transactions.length === 0) ? (
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', textOverflow: 'ellipsis', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
               No transactions recorded yet. Completed trips & admin rewards will appear here.
             </div>
           ) : (
-            wallet.transactions.map((txn, idx) => (
+            (wallet.transactions || []).map((txn, idx) => (
               <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748B' }}>{txn.date}</div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn?.title || 'Wallet Transaction'}</div>
+                  <div style={{ fontSize: '12px', color: '#64748B' }}>{txn?.date || 'Today'}</div>
                 </div>
                 <div style={{ 
                   fontFamily: 'League Spartan', 
                   fontWeight: '800', 
                   fontSize: '16px', 
-                  color: txn.type === 'credit' ? '#22C55E' : '#E11D48' 
+                  color: txn?.type === 'credit' ? '#22C55E' : '#E11D48' 
                 }}>
-                  {txn.amount}
+                  {txn?.amount || '₹0'}
                 </div>
               </div>
             ))

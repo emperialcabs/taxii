@@ -33,7 +33,14 @@ export const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
+
+let firestoreInstance = null;
+try {
+  firestoreInstance = getFirestore(app);
+} catch (e) {
+  console.warn('Firestore database initialization warning:', e);
+}
+export const db = firestoreInstance;
 
 const isNativeApp = () => {
   if (typeof window === 'undefined') return false;

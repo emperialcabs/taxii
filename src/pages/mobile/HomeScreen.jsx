@@ -44,16 +44,19 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
         if (saved) {
           const list = JSON.parse(saved);
-          const current = list.find(i => {
-            const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
-            const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
-                            (uEmail && iEmail && uEmail === iEmail);
-            return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-          });
-          if (current) {
-            setActiveRide(current);
-            return;
+          if (Array.isArray(list)) {
+            const current = list.find(i => {
+              if (!i) return false;
+              const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+              const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+              const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                              (uEmail && iEmail && uEmail === iEmail);
+              return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+            });
+            if (current) {
+              setActiveRide(current);
+              return;
+            }
           }
         }
       } catch (e) {}
