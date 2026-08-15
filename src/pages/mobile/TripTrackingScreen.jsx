@@ -63,7 +63,7 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
   const dropoffShortText = typeof actualDropoff === 'string' ? actualDropoff.split(',')[0] : 'Destination';
 
   return (
-    <div className="real-mobile-app" style={{ background: '#0F172A', position: 'relative', height: '100%', overflow: 'hidden' }}>
+    <div className="real-mobile-app" style={{ background: '#0F172A', position: 'relative', width: '100%', height: '100vh', minHeight: '100vh', overflow: 'hidden' }}>
       {/* 1. TOP TURN-BY-TURN GUIDANCE BANNER */}
       <div style={{
         position: 'absolute',
