@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "256291841083",
+    "project_id": "taxi-c2ef8",
+    "storage_bucket": "taxi-c2ef8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256291841083:android:c518df88b67dd86172a81e",
+        "android_client_info": {
+          "package_name": "com.cabsy.ridebooking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0cdfnTx4EZvPLZQPLdpwEbr_DkDKgvl4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

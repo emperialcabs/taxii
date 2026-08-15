@@ -50,6 +50,44 @@ export const handleGoogleRedirectResult = async () => {
 };
 
 export const signInWithGoogle = async () => {
+  // 1. Native Mobile App Flow — Triggers Native Android / iOS System Account Picker Sheet
+  if (isNativeApp()) {
+    try {
+      try {
+        GoogleAuth.initialize({
+          clientId: '256291841083-c518df88b67dd86172a81e.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+        });
+      } catch (e) {}
+
+      const googleUser = await GoogleAuth.signIn();
+
+      if (googleUser) {
+        const email = (
+          googleUser.email || 
+          googleUser.authentication?.email || 
+          (googleUser.id ? `user_${googleUser.id.slice(-6)}@gmail.com` : null)
+        );
+        const name = (
+          googleUser.displayName || 
+          googleUser.name || 
+          (googleUser.givenName ? `${googleUser.givenName} ${googleUser.familyName || ''}` : '').trim() || 
+          (email ? email.split('@')[0] : 'Google User')
+        );
+        const photoURL = googleUser.imageUrl || googleUser.photoUrl || null;
+        const uid = googleUser.id || googleUser.userId || 'goog_' + Date.now();
+
+        if (email || name) {
+          return { name, email: email || 'user@gmail.com', photoURL, uid };
+        }
+      }
+    } catch (nativeErr) {
+      console.warn("Native Google Auth account picker error or cancelled:", nativeErr);
+    }
+  }
+
+  // 2. Clean Fallback Profile from Local Storage
   try {
     const savedProfile = localStorage.getItem('cabsy_user_profile');
     if (savedProfile) {
