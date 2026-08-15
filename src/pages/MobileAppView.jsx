@@ -328,6 +328,7 @@ export default function MobileAppView() {
       return (
         <AccountDetailScreen
           isCreateMode={true}
+          googleData={selectedGoogleAccount}
           onBack={() => setAppStage('LETS_YOU_IN')}
           onSave={(updatedProfile) => {
             if (updatedProfile) {

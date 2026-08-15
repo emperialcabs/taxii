@@ -54,7 +54,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     const realProfile = {
       id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
       name: name || 'Google User',
-      email: email,
+      email: email || '',
       phone: phoneNumber || '',
       photoURL: photoURL || null,
       uid: uid || 'goog_' + Date.now(),
@@ -79,11 +79,12 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     } catch(e) {}
 
     setLoading(false);
-    if (onGoogleSignIn) {
-      onGoogleSignIn(realProfile);
-    } else if (onGoToCreateAccount) {
+    if (setSelectedGoogleAccount) {
+      setSelectedGoogleAccount(realProfile);
+    }
+    if (onGoToCreateAccount) {
       onGoToCreateAccount();
-    } else {
+    } else if (onNext) {
       onNext();
     }
   };
@@ -92,7 +93,7 @@ export default function LetsYouInScreen({ phoneNumber, setPhoneNumber, onNext, o
     setLoading(true);
     try {
       const googleUser = await signInWithGoogle();
-      if (googleUser && googleUser.email) {
+      if (googleUser && (googleUser.email || googleUser.name)) {
         await completeGoogleSignIn(googleUser.name, googleUser.email, googleUser.photoURL, googleUser.uid);
       } else {
         if (onGoToCreateAccount) {

@@ -2,31 +2,32 @@ import React, { useState } from 'react';
 import db from '../../services/dbService';
 import { saveCustomerToMySQL } from '../../services/mysqlService';
 
-export default function AccountDetailScreen({ onBack, onSave, isCreateMode = false }) {
+export default function AccountDetailScreen({ onBack, onSave, isCreateMode = false, googleData }) {
   const [profile, setProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
-      return saved ? JSON.parse(saved) : {
-        id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-        name: '',
-        email: '',
-        phone: '',
-        age: 26,
-        profession: 'Rider',
-        area: 'Bhavnagar, Gujarat',
-        photoURL: null,
-        joined: new Date().toISOString().split('T')[0]
+      const base = saved ? JSON.parse(saved) : {};
+      return {
+        id: base.id || ('CUST-' + Math.floor(10000 + Math.random() * 89999)),
+        name: googleData?.name || base.name || '',
+        email: googleData?.email || base.email || '',
+        phone: base.phone || '',
+        age: base.age || 26,
+        profession: base.profession || 'Rider',
+        area: base.area || 'Bhavnagar, Gujarat',
+        photoURL: googleData?.photoURL || base.photoURL || null,
+        joined: base.joined || new Date().toISOString().split('T')[0]
       };
     } catch (e) {
       return {
         id: 'CUST-' + Math.floor(10000 + Math.random() * 89999),
-        name: '',
-        email: '',
+        name: googleData?.name || '',
+        email: googleData?.email || '',
         phone: '',
         age: 26,
         profession: 'Rider',
         area: 'Bhavnagar, Gujarat',
-        photoURL: null,
+        photoURL: googleData?.photoURL || null,
         joined: new Date().toISOString().split('T')[0]
       };
     }
