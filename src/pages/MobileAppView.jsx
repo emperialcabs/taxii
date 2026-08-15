@@ -245,6 +245,7 @@ export default function MobileAppView() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onStartBooking={() => setAppStage('SELECT_LOCATION_LIST')}
+            onOpenTracking={() => setAppStage('TRACKING')}
           />
         );
     }

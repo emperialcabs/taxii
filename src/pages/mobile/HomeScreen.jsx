@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
-import { getCoordsForPlace } from '../../utils/locationCoords';
+import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
 
-export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) {
+export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
   // Load saved profile from localStorage
   const userProfile = React.useMemo(() => {
     try {
@@ -29,6 +29,37 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
   const [customerAddress, setCustomerAddress] = useState('Locating address...');
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [isLocating, setIsLocating] = useState(true);
+
+  // Active Ride Live Sync
+  const [activeRide, setActiveRide] = useState(null);
+  useEffect(() => {
+    const checkActiveRide = () => {
+      try {
+        const saved = localStorage.getItem('cabsy_inquiries');
+        if (saved) {
+          const list = JSON.parse(saved);
+          const current = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          if (current) {
+            setActiveRide(current);
+            return;
+          }
+        }
+      } catch (e) {}
+      setActiveRide(null);
+    };
+
+    checkActiveRide();
+    window.addEventListener('storage', checkActiveRide);
+    window.addEventListener('taxigo_trip_started', checkActiveRide);
+    return () => {
+      window.removeEventListener('storage', checkActiveRide);
+      window.removeEventListener('taxigo_trip_started', checkActiveRide);
+    };
+  }, []);
+
+  const activePickupPos = activeRide ? getCoordsForPlace(activeRide.pickup || activeRide.pickupLoc, userCoords) : null;
+  const activeDestPos = activeRide ? getCoordsForPlace(activeRide.dropoff || activeRide.dropoffLoc, userCoords) : null;
+  const activePolyline = (activePickupPos && activeDestPos) ? generateRoutePolyline(activePickupPos, activeDestPos) : [];
 
   // Notification Modal State & Live Updates
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -211,9 +242,12 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
         <div className="live-map-viewport" style={{ position: 'relative', overflow: 'hidden' }}>
           {/* Leaflet Interactive Map */}
           <InteractiveMap
-            center={userCoords}
-            zoom={15}
-            userLabel="Your Live Spot"
+            center={activePickupPos || userCoords}
+            zoom={activeRide ? 11 : 15}
+            userLabel={activeRide ? (activeRide.pickup || "Pickup Point") : "Your Live Spot"}
+            destination={activeDestPos}
+            activeDriverPos={activePickupPos}
+            routePolyline={activePolyline}
             onUserLocationChange={(newCoords) => {
               updateLocation(newCoords, `Pinned Spot (${newCoords.lat.toFixed(4)}, ${newCoords.lng.toFixed(4)})`);
             }}
@@ -291,6 +325,61 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking }) 
           {/* Bottom Expandable Trip Sheet */}
           <div className="homescreen-bottom-card">
             <div className="drag-handle-bar" />
+
+            {/* ACTIVE RIDE LIVE CARD ON HOMESCREEN */}
+            {activeRide && (
+              <div 
+                onClick={() => onOpenTracking && onOpenTracking()}
+                style={{
+                  background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+                  borderRadius: '20px',
+                  padding: '16px',
+                  color: '#FFFFFF',
+                  marginBottom: '16px',
+                  boxShadow: '0 8px 24px rgba(15, 23, 42, 0.35)',
+                  cursor: 'pointer',
+                  border: '1.5px solid #334155'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#22C55E', fontSize: '14px' }}>●</span>
+                    <span style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '15px', color: '#22C55E' }}>
+                      LIVE TRIP IN PROGRESS
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '12px', background: '#334155', padding: '3px 10px', borderRadius: '12px', color: '#94A3B8', fontWeight: '700' }}>
+                    {activeRide.vehicle || 'SWIFT'}
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '15px', fontWeight: '800', fontFamily: 'League Spartan', color: '#FFFFFF', marginBottom: '4px' }}>
+                  {activeRide.pickup || 'Pickup Point'} ➔ {activeRide.dropoff || 'Destination'}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid #334155', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'Space Grotesk' }}>
+                    Driver: <strong style={{ color: '#FFFFFF' }}>{activeRide.driver || 'Ramesh Patel'}</strong>
+                  </div>
+                  <button
+                    style={{
+                      background: '#22C55E',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '16px',
+                      fontFamily: 'League Spartan',
+                      fontWeight: '800',
+                      fontSize: '14px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Track Live Ride →
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: '14px' }}>
               <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
               <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: '2px 0 0 0' }}>

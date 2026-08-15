@@ -187,36 +187,7 @@ export default function InteractiveMap({
 
   return (
     <div className="interactive-google-map-container" style={{ ...style, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' }}>
-      {/* Floating Total Distance Badge */}
-      {distKm && (
-        <div 
-          style={{
-            position: 'absolute',
-            top: '14px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#FFFFFF',
-            color: '#1E293B',
-            padding: '6px 14px',
-            borderRadius: '20px',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
-            fontFamily: "'Space Grotesk', 'League Spartan', sans-serif",
-            fontWeight: '700',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            zIndex: 1000,
-            border: '1.5px solid #E2E8F0',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span style={{ fontSize: '14px' }}>🛣️</span>
-          <span style={{ color: '#1E293B', fontWeight: '800' }}>{distKm} KM</span>
-          <span style={{ color: '#CBD5E1' }}>•</span>
-          <span style={{ color: '#22C55E', fontWeight: '800' }}>~{estMins} mins</span>
-        </div>
-      )}
+
 
       <MapErrorBoundary center={{ lat: safeLat, lng: safeLng }}>
         <MapContainer
