@@ -57,11 +57,9 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
   const actualPickup = typeof rawPickup === 'object' ? (rawPickup.label || rawPickup.name || "Bhavnagar, Gujarat") : String(rawPickup || "Bhavnagar, Gujarat");
   const actualDropoff = typeof rawDropoff === 'object' ? (rawDropoff.label || rawDropoff.name || "Ahmedabad Airport (AMD)") : String(rawDropoff || "Ahmedabad Airport (AMD)");
 
-  const pickupPos = getCoordsForPlace(actualPickup, userCoords);
+  const currentLivePos = liveGpsCoords || userCoords || { lat: 21.7645, lng: 72.1519 };
+  const pickupPos = currentLivePos;
   const destPos = getCoordsForPlace(actualDropoff, userCoords);
-
-  // Current live driver/user position: uses device GPS if available, else userCoords or pickupPos
-  const currentLivePos = liveGpsCoords || userCoords || pickupPos || { lat: 21.7645, lng: 72.1519 };
 
   const routePolyline = generateRoutePolyline(currentLivePos, destPos) || [];
 

@@ -82,7 +82,10 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     };
   }, []);
 
-  const activePickupPos = activeRide ? getCoordsForPlace(activeRide.pickup || activeRide.pickupLoc, userCoords) : null;
+  // Route line & pickup position start directly from the user's real live GPS location
+  const activePickupPos = activeRide 
+    ? (userCoords && typeof userCoords.lat === 'number' && !isNaN(userCoords.lat) ? userCoords : getCoordsForPlace(activeRide.pickup || activeRide.pickupLoc, { lat: 21.7645, lng: 72.1519 }))
+    : null;
   const activeDestPos = activeRide ? getCoordsForPlace(activeRide.dropoff || activeRide.dropoffLoc, userCoords) : null;
   const activePolyline = (activePickupPos && activeDestPos) ? generateRoutePolyline(activePickupPos, activeDestPos) : [];
 
