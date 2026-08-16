@@ -290,7 +290,33 @@ export const setupRecaptcha = (containerId = 'recaptcha-container') => {
 };
 
 /**
- * Send OTP SMS to phone number via Firebase Phone Auth.
+ * Send Fast2SMS OTP (India +91)
+ */
+export const sendFast2SMSOTP = async (phoneNumber, code) => {
+  const apiKey = (import.meta.env.VITE_FAST2SMS_API_KEY || localStorage.getItem('fast2sms_api_key') || '').trim();
+  if (!apiKey) return { success: false, reason: 'NO_KEY' };
+
+  const cleanDigits = phoneNumber.replace(/\D/g, '').slice(-10);
+  
+  try {
+    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data && data.return) {
+      console.log('[Fast2SMS] Real SMS sent successfully to:', cleanDigits);
+      return { success: true };
+    } else {
+      console.warn('[Fast2SMS] API error:', data?.message || data);
+      return { success: false, error: data?.message || 'Fast2SMS delivery failed' };
+    }
+  } catch (err) {
+    console.error('[Fast2SMS] Request exception:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Send OTP SMS to phone number via Fast2SMS / Firebase Phone Auth.
  * Phone number must include country code (e.g. +919876543210).
  * Returns { success, error? }
  */
@@ -300,6 +326,22 @@ export const sendPhoneOTP = async (phoneNumber) => {
     formatted = '+91' + formatted.replace(/^0+/, '');
   }
 
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+
+  // 1. Try Fast2SMS if API key is provided
+  const fastRes = await sendFast2SMSOTP(formatted, code);
+  if (fastRes.success) {
+    try {
+      sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
+        phone: formatted,
+        code,
+        expiry: Date.now() + 5 * 60 * 1000
+      }));
+    } catch (err) {}
+    return { success: true, via: 'fast2sms' };
+  }
+
+  // 2. Try Firebase Phone Auth
   try {
     const appVerifier = window.recaptchaVerifier;
     if (appVerifier) {
@@ -308,13 +350,12 @@ export const sendPhoneOTP = async (phoneNumber) => {
       return { success: true, fallback: false };
     }
   } catch (e) {
-    console.warn('[Firebase Phone Auth] Send OTP failed, engaging seamless fallback:', e);
+    console.warn('[Firebase Phone Auth] Send OTP failed, engaging fallback:', e);
     try { if (window.recaptchaVerifier) window.recaptchaVerifier.clear(); } catch (x) {}
     window.recaptchaVerifier = null;
   }
 
-  // Seamless fallback code generation when Firebase Phone Auth operation is disabled in console
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  // 3. Fallback code generation
   try {
     sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
       phone: formatted,
