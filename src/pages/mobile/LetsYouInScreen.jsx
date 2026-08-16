@@ -185,8 +185,6 @@ export default function LetsYouInScreen({
         <div className="let-you-white-bottom-sheet">
           <h1 className="let-you-title">Let's You In</h1>
 
-          <h1 className="let-you-title">Let's You In</h1>
-
           {/* Segmented Control Toggle (Big Company / Uber Style) */}
           <div style={{
             display: 'flex',
@@ -369,28 +367,6 @@ export default function LetsYouInScreen({
             </div>
           )}
 
-          {/* Clean OTP Code Display (No Emojis) */}
-          {emailOtpCode && (
-            <div style={{
-              background: '#F0FDF4',
-              border: '1.5px solid #86EFAC',
-              color: '#166534',
-              padding: '14px 16px',
-              borderRadius: '16px',
-              marginTop: '12px',
-              fontFamily: 'Space Grotesk, sans-serif',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#15803D' }}>
-                {loginMode === 'phone' ? 'Your SMS Verification Code' : 'Your Email Verification Code'}
-              </div>
-              <div style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '6px', color: '#0F172A', margin: '4px 0' }}>{emailOtpCode}</div>
-              <div style={{ fontSize: '11px', color: '#65A30D', fontWeight: '500' }}>
-                Redirecting to OTP verification screen...
-              </div>
-            </div>
-          )}
-
           {/* Send OTP Button */}
           <button
             className="let-you-signin-btn"
@@ -407,18 +383,12 @@ export default function LetsYouInScreen({
                 }
                 setOtpSending(true);
                 try {
-                  // Setup reCAPTCHA container
                   setupRecaptcha('recaptcha-container');
                   const result = await sendPhoneOTP(cleanPhone);
                   if (result.success) {
                     if (setAuthMethod) setAuthMethod('phone');
                     localStorage.setItem('cabsy_user_phone', '+91' + cleanPhone);
-                    if (result.code) {
-                      setEmailOtpCode(result.code);
-                      setTimeout(() => { if (onNext) onNext(); }, 1500);
-                    } else {
-                      if (onNext) onNext();
-                    }
+                    if (onNext) onNext();
                   } else {
                     setOtpError(result.error || 'Failed to send OTP.');
                   }
@@ -437,14 +407,10 @@ export default function LetsYouInScreen({
                 setOtpSending(true);
                 const result = sendEmailOTP(email);
                 if (result.success) {
-                  setEmailOtpCode(result.code);
                   if (setAuthMethod) setAuthMethod('email');
                   if (setAuthEmail) setAuthEmail(email);
                   localStorage.setItem('cabsy_user_email_otp_target', email);
-                  // Navigate to OTP screen after short delay so user can see the code
-                  setTimeout(() => {
-                    if (onNext) onNext();
-                  }, 2000);
+                  if (onNext) onNext();
                 } else {
                   setOtpError(result.error || 'Failed to generate OTP.');
                 }
