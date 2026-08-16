@@ -77,10 +77,25 @@ export default function LocationPermScreen({ onNext, onBack }) {
           )}
         </div>
 
-        <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '16px', width: '100%' }}>
           <button 
             className="notification-allow-btn" 
             onClick={handleEnableGps}
+            style={{
+              width: '100%',
+              height: '56px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #FFAE00 0%, #FF9500 100%)',
+              color: '#FFFFFF',
+              fontSize: '18px',
+              fontWeight: '800',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(255, 174, 0, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
             Allow Access
           </button>
