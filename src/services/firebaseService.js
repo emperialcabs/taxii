@@ -460,20 +460,36 @@ export const verifyPhoneOTP = async (otpCode, phoneNumber) => {
  * Stores the code in sessionStorage with 5-minute expiry.
  * Returns { success, code } — code is returned so the UI can display it for testing.
  */
-export const sendEmailOTP = (email) => {
+export const sendEmailOTP = async (email) => {
   if (!email || !email.includes('@')) {
     return { success: false, error: 'Invalid email address' };
   }
+  const cleanEmail = email.toLowerCase().trim();
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+
   try {
     sessionStorage.setItem('taxigo_email_otp', JSON.stringify({
-      email: email.toLowerCase().trim(),
+      email: cleanEmail,
       code,
       expiry
     }));
   } catch (e) {}
-  console.log(`[Email OTP] Code for ${email}: ${code}`);
+
+  // Call serverless backend proxy (/api/send-email-otp)
+  try {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const apiEndpoint = isLocal ? '/api/send-email-otp' : 'https://taxi-three.vercel.app/api/send-email-otp';
+    await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail, code })
+    });
+  } catch (err) {
+    console.warn('[Email OTP Backend Proxy] Exception:', err);
+  }
+
+  console.log(`[Email OTP] Code for ${cleanEmail}: ${code}`);
   return { success: true, code };
 };
 

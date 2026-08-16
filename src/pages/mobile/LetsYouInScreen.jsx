@@ -405,7 +405,7 @@ export default function LetsYouInScreen({
                   return;
                 }
                 setOtpSending(true);
-                const result = sendEmailOTP(email);
+                const result = await sendEmailOTP(email);
                 if (result.success) {
                   if (setAuthMethod) setAuthMethod('email');
                   if (setAuthEmail) setAuthEmail(email);
