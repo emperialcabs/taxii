@@ -165,6 +165,16 @@ export default function AdminPortal() {
   const [inquiries, setInquiries] = useState([]);
   const [firestoreLoading, setFirestoreLoading] = useState(true);
 
+  // Always sort inquiries by newest first (Newest ID or Newest Timestamp at the top across all tabs)
+  const sortedInquiries = React.useMemo(() => {
+    return [...inquiries].sort((a, b) => {
+      const numA = parseInt(String(a.id).replace(/\D/g, '')) || 0;
+      const numB = parseInt(String(b.id).replace(/\D/g, '')) || 0;
+      if (numA !== numB) return numB - numA;
+      return new Date(b.date || 0) - new Date(a.date || 0);
+    });
+  }, [inquiries]);
+
   const [drivers, setDrivers] = useState(() => {
     const saved = localStorage.getItem('cabsy_drivers');
     return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
@@ -1243,7 +1253,7 @@ export default function AdminPortal() {
                       </tr>
                     </thead>
                     <tbody>
-                      {inquiries.slice(0, 5).map(inq => (
+                      {sortedInquiries.slice(0, 5).map(inq => (
                         <tr key={inq.id}>
                           <td><strong>{inq.id}</strong></td>
                           <td>{inq.customerName}<br /><small className="text-muted">{inq.customerPhone}</small></td>
@@ -1341,7 +1351,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.map(inq => (
+                    {sortedInquiries.map(inq => (
                       <tr key={inq.id}>
                         <td><strong>{inq.id}</strong><br /><small className="text-muted">{inq.date}</small></td>
                         <td>
@@ -1350,7 +1360,7 @@ export default function AdminPortal() {
                         </td>
                         <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
                         <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
-                        <td><span className="pill-badge-sm">{inq.vehicle}</span></td>
+                        <td><span className="pill-badge-sm" style={{ whiteSpace: 'nowrap', fontWeight: '700' }}>{inq.vehicle}</span></td>
                         <td>
                           <strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong>
                           {inq.walletDiscountUsed > 0 && (
@@ -1376,8 +1386,8 @@ export default function AdminPortal() {
                             {inq.status}
                           </span>
                         </td>
-                        <td>
-                          <div className="flex gap-1.5 align-center" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <td style={{ whiteSpace: 'nowrap', minWidth: '340px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
                             <button 
                               className="btn-action-view"
                               title="View Detailed Trip Receipt & Coupon Info"
@@ -1385,14 +1395,15 @@ export default function AdminPortal() {
                                 background: '#EFF6FF',
                                 color: '#1D4ED8',
                                 border: '1px solid #BFDBFE',
-                                padding: '5px 10px',
+                                padding: '6px 12px',
                                 borderRadius: '16px',
                                 fontSize: '12px',
                                 fontWeight: '800',
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '4px',
+                                whiteSpace: 'nowrap'
                               }}
                               onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                             >
@@ -1402,6 +1413,7 @@ export default function AdminPortal() {
                               <button 
                                 className="btn-action-assign"
                                 title="Confirm & Assign Driver"
+                                style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
                                 onClick={() => setAssignModal({ open: true, inquiry: inq })}
                               >
                                 <UserCheck size={14} /> Assign Driver
@@ -1411,7 +1423,7 @@ export default function AdminPortal() {
                             {/* 1-Time Reward Button: Disappears once reward is credited for this trip */}
                             {(inq.status === 'Confirmed' || inq.status === 'Completed') && (
                               (inq.rewardIssued === true || inq.rewardIssued == 1 || Number(inq.rewardIssued) === 1) ? (
-                                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#047857', padding: '5px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#047857', padding: '6px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                                   ✓ Reward Issued (₹{inq.rewardAmount || 100})
                                 </span>
                               ) : (
@@ -1422,16 +1434,16 @@ export default function AdminPortal() {
                                     background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
                                     color: '#FFFFFF',
                                     border: 'none',
-                                    padding: '5px 12px',
+                                    padding: '6px 12px',
                                     borderRadius: '16px',
-                                    fontFamily: 'League Spartan, sans-serif',
                                     fontSize: '12px',
                                     fontWeight: '800',
                                     cursor: 'pointer',
                                     boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '4px'
+                                    gap: '4px',
+                                    whiteSpace: 'nowrap'
                                   }}
                                   onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
                                 >
@@ -1444,6 +1456,7 @@ export default function AdminPortal() {
                               <button 
                                 className="btn-action-cancel"
                                 title="Cancel Booking"
+                                style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
                                 onClick={() => handleCancelInquiry(inq.id)}
                               >
                                 <XCircle size={14} /> Cancel
@@ -1452,6 +1465,7 @@ export default function AdminPortal() {
                             <button 
                               className="btn-action-delete"
                               title="Delete Inquiry Permanently"
+                              style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
                               onClick={() => handleDeleteInquiry(inq.id)}
                             >
                               <Trash2 size={14} /> Delete
@@ -1492,7 +1506,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.filter(i => 
+                    {sortedInquiries.filter(i => 
                       i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
                       i.status === 'On Ride' || 
@@ -1524,18 +1538,18 @@ export default function AdminPortal() {
                             </div>
                           </td>
                           <td>
-                            <span className="plate-badge" style={{ padding: '6px 12px', background: '#F1F5F9', color: '#334155', borderRadius: '8px', fontWeight: '700', fontSize: '0.82rem', display: 'inline-block' }}>
+                            <span className="plate-badge" style={{ padding: '6px 12px', background: '#F1F5F9', color: '#334155', borderRadius: '8px', fontWeight: '700', fontSize: '0.82rem', display: 'inline-block', whiteSpace: 'nowrap' }}>
                               {inq.driver || 'Assigned Driver'}
                             </span>
                           </td>
                           <td><strong className="text-green" style={{ fontSize: '0.95rem', fontWeight: '800' }}>₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
                           <td>
-                            {isConfirmed && <span className="status-tag status-confirmed" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>Confirmed (Ready)</span>}
-                            {isInProgress && <span className="status-tag status-on-ride" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>● Live In Progress</span>}
-                            {isCompletedPendingReward && <span className="status-tag status-active" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>Ride Finished</span>}
+                            {isConfirmed && <span className="status-tag status-confirmed" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Confirmed (Ready)</span>}
+                            {isInProgress && <span className="status-tag status-on-ride" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>● Live In Progress</span>}
+                            {isCompletedPendingReward && <span className="status-tag status-active" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Ride Finished</span>}
                           </td>
-                          <td className="text-right">
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '280px' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'nowrap' }}>
                               {/* 1. START TRIP BUTTON */}
                               {isConfirmed && (
                                 <button 
@@ -1586,7 +1600,7 @@ export default function AdminPortal() {
                       );
                     })}
 
-                    {inquiries.filter(i => 
+                    {sortedInquiries.filter(i => 
                       i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
                       i.status === 'On Ride' || 
@@ -1630,7 +1644,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.filter(i => i.status === 'Completed').map((inq) => (
+                    {sortedInquiries.filter(i => i.status === 'Completed').map((inq) => (
                       <tr key={inq.id}>
                         <td><strong>{inq.id}</strong></td>
                         <td>
@@ -1644,29 +1658,42 @@ export default function AdminPortal() {
                           <small className="text-muted">{inq.date}</small>
                         </td>
                         <td>
-                          <span className="plate-badge">{inq.driver || 'Fulfilled'}</span>
+                          <span className="plate-badge" style={{ whiteSpace: 'nowrap' }}>{inq.driver || 'Fulfilled'}</span>
                         </td>
                         <td><strong className="text-green">₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
                         <td>
                           {inq.rewardIssued ? (
-                            <span className="status-tag status-confirmed">✓ ₹{inq.rewardAmount || 100} Credited</span>
+                            <span className="status-tag status-confirmed" style={{ whiteSpace: 'nowrap' }}>✓ ₹{inq.rewardAmount || 100} Credited</span>
                           ) : (
-                            <span className="status-tag status-pending">Reward Pending</span>
+                            <span className="status-tag status-pending" style={{ whiteSpace: 'nowrap' }}>Reward Pending</span>
                           )}
                         </td>
-                        <td className="text-right">
-                          <button 
-                            className="btn-action-view"
-                            onClick={() => setReceiptModal({ open: true, inquiry: inq })}
-                            title="View Full Trip Details & Receipt"
-                          >
-                            <Eye size={14} /> View Details
-                          </button>
+                        <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '220px' }}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'nowrap' }}>
+                            {(!inq.rewardIssued || Number(inq.rewardIssued) !== 1) && (
+                              <button 
+                                className="btn-action-reward"
+                                onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
+                                title="Assign Wallet Reward to Customer"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                              >
+                                🎁 Reward
+                              </button>
+                            )}
+                            <button 
+                              className="btn-action-view"
+                              onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                              title="View Full Trip Details & Receipt"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                            >
+                              <Eye size={14} /> View Details
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
 
-                    {inquiries.filter(i => i.status === 'Completed').length === 0 && (
+                    {sortedInquiries.filter(i => i.status === 'Completed').length === 0 && (
                       <tr>
                         <td colSpan={7} className="text-center text-muted p-4">
                           No completed success trips in database history yet.
