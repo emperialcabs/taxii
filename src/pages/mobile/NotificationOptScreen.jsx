@@ -53,6 +53,10 @@ export default function NotificationOptScreen({ onNext, onBack }) {
             src={notificationImg} 
             alt="Notification Illustration" 
             style={{ width: '100%', maxWidth: '280px', maxHeight: '240px', margin: '0 auto 20px auto', display: 'block', objectFit: 'contain' }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = notificationImg;
+            }}
           />
           <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '32px', fontWeight: '800', color: '#1E293B', margin: '12px 0 10px 0' }}>
             Notifications

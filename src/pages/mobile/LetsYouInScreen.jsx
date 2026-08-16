@@ -178,7 +178,14 @@ export default function LetsYouInScreen({
           </button>
           
           <div className="let-you-centered-logo-box">
-            <img src={logoSvg} alt="Empire Cab Logo" />
+            <img 
+              src={logoSvg} 
+              alt="Empire Cab Logo" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = logoSvg;
+              }}
+            />
           </div>
         </div>
 

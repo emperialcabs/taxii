@@ -24,6 +24,10 @@ export default function AccountCreatedScreen({ onNext, onBack }) {
             src={accountCreatedImg} 
             alt="Account Created Illustration" 
             style={{ width: '100%', maxWidth: '280px', maxHeight: '240px', margin: '0 auto 20px auto', display: 'block', objectFit: 'contain' }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = accountCreatedImg;
+            }}
           />
           <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '32px', fontWeight: '800', color: '#1E293B', margin: '16px 0 10px 0' }}>
             Account Created

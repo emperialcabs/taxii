@@ -186,6 +186,10 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
               src={otpIllustration} 
               alt="OTP Verification" 
               style={{ width: '100%', maxHeight: '180px', objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = otpIllustration;
+              }}
             />
           </div>
 

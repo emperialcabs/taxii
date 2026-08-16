@@ -41,6 +41,10 @@ export default function OnboardingScreen({ onFinish }) {
             src={currentSlide.img} 
             alt={currentSlide.title} 
             style={{ maxWidth: '85%', maxHeight: '250px', objectFit: 'contain' }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = onboarding1;
+            }}
           />
         </div>
         <div className="onboarding-text-box">

@@ -46,6 +46,10 @@ export default function LocationPermScreen({ onNext, onBack }) {
             src={locationImg} 
             alt="Enable Location Illustration" 
             style={{ maxWidth: '240px', maxHeight: '200px', margin: '0 auto 16px auto', display: 'block', objectFit: 'contain' }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = locationImg;
+            }}
           />
           <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '28px', fontWeight: '800', color: '#1E293B', margin: '16px 0 10px 0' }}>
             Enable Location
