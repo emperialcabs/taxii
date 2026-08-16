@@ -366,7 +366,7 @@ export default function MobileAppView() {
       return (
         <AccountCreatedScreen
           onNext={() => completeOnboarding()}
-          onBack={() => setAppStage('CREATE_PROFILE')}
+          onBack={() => completeOnboarding()}
         />
       );
 

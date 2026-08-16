@@ -4,18 +4,23 @@ import accountCreatedImg from '../../assets/images/account-create/account-img.pn
 const accFallbackSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 240" fill="none"><rect width="280" height="240" rx="24" fill="%23F8FAFC"/><circle cx="140" cy="110" r="55" fill="%23ECFDF5"/><path d="M140 60L160 100H200L168 124L180 165L140 140L100 165L112 124L80 100H120L140 60Z" fill="%2310B981"/><text x="140" y="200" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="%230F172A">ACCOUNT CREATED</text></svg>`;
 
 export default function AccountCreatedScreen({ onNext, onBack }) {
-  // Show screen for a minor 3 seconds before proceeding automatically
+  // Immediately set onboarding flags so refresh or reload stays on APP_HOME
   useEffect(() => {
+    try {
+      localStorage.setItem('taxigo_onboarded', 'true');
+      localStorage.setItem('taxigo_profile_completed', 'true');
+    } catch (e) {}
+
     const timer = setTimeout(() => {
       if (onNext) onNext();
-    }, 3200);
+    }, 2000);
     return () => clearTimeout(timer);
-  }, [onNext]);
+  }, []);
 
   return (
     <div className="real-mobile-app">
       <div className="white-header-nav">
-        <button className="header-back-arrow" onClick={onBack}>‹</button>
+        <button className="header-back-arrow" onClick={onNext}>‹</button>
         <h2 className="white-header-title">Account Created</h2>
       </div>
 
