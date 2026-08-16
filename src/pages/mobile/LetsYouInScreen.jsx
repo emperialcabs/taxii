@@ -185,78 +185,208 @@ export default function LetsYouInScreen({
         <div className="let-you-white-bottom-sheet">
           <h1 className="let-you-title">Let's You In</h1>
 
-          {/* Phone / Email Toggle Tabs */}
-          <div style={{ display: 'flex', gap: '0', marginBottom: '16px', borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #E2E8F0' }}>
+          <h1 className="let-you-title">Let's You In</h1>
+
+          {/* Segmented Control Toggle (Big Company / Uber Style) */}
+          <div style={{
+            display: 'flex',
+            background: '#F1F5F9',
+            padding: '4px',
+            borderRadius: '16px',
+            marginBottom: '20px'
+          }}>
             <button
+              type="button"
               onClick={() => { setLoginMode('phone'); setOtpError(''); setEmailOtpCode(''); }}
               style={{
-                flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
-                fontFamily: 'League Spartan', fontWeight: '800', fontSize: '14px',
-                background: loginMode === 'phone' ? '#0F172A' : '#F8FAFC',
-                color: loginMode === 'phone' ? '#FFFFFF' : '#64748B',
-                transition: 'all 0.2s ease'
+                flex: 1,
+                padding: '10px 16px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontWeight: loginMode === 'phone' ? '700' : '600',
+                fontSize: '14px',
+                borderRadius: '12px',
+                background: loginMode === 'phone' ? '#FFFFFF' : 'transparent',
+                color: loginMode === 'phone' ? '#0F172A' : '#64748B',
+                boxShadow: loginMode === 'phone' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
-            >📱 Phone OTP</button>
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={loginMode === 'phone' ? '#10B981' : '#64748B'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+              Phone OTP
+            </button>
+
             <button
+              type="button"
               onClick={() => { setLoginMode('email'); setOtpError(''); setEmailOtpCode(''); }}
               style={{
-                flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
-                fontFamily: 'League Spartan', fontWeight: '800', fontSize: '14px',
-                background: loginMode === 'email' ? '#0F172A' : '#F8FAFC',
-                color: loginMode === 'email' ? '#FFFFFF' : '#64748B',
-                transition: 'all 0.2s ease'
+                flex: 1,
+                padding: '10px 16px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontWeight: loginMode === 'email' ? '700' : '600',
+                fontSize: '14px',
+                borderRadius: '12px',
+                background: loginMode === 'email' ? '#FFFFFF' : 'transparent',
+                color: loginMode === 'email' ? '#0F172A' : '#64748B',
+                boxShadow: loginMode === 'email' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
-            >✉️ Email OTP</button>
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={loginMode === 'email' ? '#10B981' : '#64748B'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Email OTP
+            </button>
           </div>
 
-          {/* Phone Input */}
+          {/* In-Line Mobile Input (+91 strictly inline) */}
           {loginMode === 'phone' && (
-            <div className="phone-input-wrapper">
-              <span className="flag-icon-span">🇮🇳 +91</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: '#F8FAFC',
+              border: '1.5px solid #E2E8F0',
+              borderRadius: '16px',
+              padding: '0 16px',
+              height: '56px',
+              boxSizing: 'border-box',
+              transition: 'all 0.2s ease'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                paddingRight: '14px',
+                marginRight: '14px',
+                borderRight: '1.5px solid #CBD5E1',
+                whiteSpace: 'nowrap',
+                height: '24px'
+              }}>
+                <span style={{ fontSize: '18px', lineHeight: 1 }}>🇮🇳</span>
+                <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>+91</span>
+              </div>
               <input 
-                className="phone-input-field" 
                 type="tel" 
                 value={phoneNumber} 
                 onChange={(e) => setPhoneNumber(e.target.value)} 
                 placeholder="Enter Mobile Number"
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  width: '100%',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#0F172A'
+                }}
               />
             </div>
           )}
 
-          {/* Email Input */}
+          {/* In-Line Email Input */}
           {loginMode === 'email' && (
-            <div className="phone-input-wrapper" style={{ gap: '10px' }}>
-              <span className="flag-icon-span" style={{ fontSize: '16px' }}>✉️</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: '#F8FAFC',
+              border: '1.5px solid #E2E8F0',
+              borderRadius: '16px',
+              padding: '0 16px',
+              height: '56px',
+              boxSizing: 'border-box',
+              transition: 'all 0.2s ease'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingRight: '14px',
+                marginRight: '14px',
+                borderRight: '1.5px solid #CBD5E1',
+                height: '24px'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
               <input 
-                className="phone-input-field" 
                 type="email" 
                 value={emailInput} 
                 onChange={(e) => setEmailInput(e.target.value)} 
                 placeholder="Enter Email Address"
-                style={{ fontSize: '15px' }}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  width: '100%',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#0F172A'
+                }}
               />
             </div>
           )}
 
-          {/* OTP Error Message */}
+          {/* Clean Error Message (No Emojis) */}
           {otpError && (
             <div style={{
-              background: '#FEF2F2', color: '#DC2626', padding: '10px 14px',
-              borderRadius: '12px', fontSize: '13px', fontWeight: '600',
-              marginTop: '8px', fontFamily: 'Space Grotesk'
-            }}>⚠️ {otpError}</div>
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              padding: '12px 16px',
+              borderRadius: '14px',
+              fontSize: '13px',
+              fontWeight: '600',
+              marginTop: '12px',
+              fontFamily: 'Space Grotesk, sans-serif'
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{otpError}</span>
+            </div>
           )}
 
-          {/* Email OTP Code Display (for testing - shown after sending) */}
-          {emailOtpCode && loginMode === 'email' && (
+          {/* Clean OTP Code Display (No Emojis) */}
+          {emailOtpCode && (
             <div style={{
-              background: '#F0FDF4', border: '1.5px solid #86EFAC', color: '#166534',
-              padding: '12px 16px', borderRadius: '14px', fontSize: '14px', fontWeight: '700',
-              marginTop: '8px', fontFamily: 'Space Grotesk', textAlign: 'center'
+              background: '#F0FDF4',
+              border: '1.5px solid #86EFAC',
+              color: '#166534',
+              padding: '14px 16px',
+              borderRadius: '16px',
+              marginTop: '12px',
+              fontFamily: 'Space Grotesk, sans-serif',
+              textAlign: 'center'
             }}>
-              ✅ Your OTP Code: <span style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '4px', color: '#0F172A' }}>{emailOtpCode}</span>
-              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px', fontWeight: '500' }}>
-                (In production, this code will be sent to your email via EmailJS/Resend)
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#15803D' }}>
+                {loginMode === 'phone' ? 'Your SMS Verification Code' : 'Your Email Verification Code'}
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '6px', color: '#0F172A', margin: '4px 0' }}>{emailOtpCode}</div>
+              <div style={{ fontSize: '11px', color: '#65A30D', fontWeight: '500' }}>
+                Redirecting to OTP verification screen...
               </div>
             </div>
           )}
@@ -277,18 +407,24 @@ export default function LetsYouInScreen({
                 }
                 setOtpSending(true);
                 try {
-                  // Setup reCAPTCHA
+                  // Setup reCAPTCHA container
                   setupRecaptcha('recaptcha-container');
                   const result = await sendPhoneOTP(cleanPhone);
                   if (result.success) {
                     if (setAuthMethod) setAuthMethod('phone');
                     localStorage.setItem('cabsy_user_phone', '+91' + cleanPhone);
-                    if (onNext) onNext();
+                    if (result.code) {
+                      setEmailOtpCode(result.code);
+                      setTimeout(() => { if (onNext) onNext(); }, 1500);
+                    } else {
+                      if (onNext) onNext();
+                    }
                   } else {
-                    setOtpError(result.error || 'Failed to send OTP. Please try again.');
+                    setOtpError(result.error || 'Failed to send OTP.');
                   }
                 } catch (e) {
-                  setOtpError(e?.message || 'Phone OTP failed. Enable Phone Auth in Firebase Console.');
+                  console.warn('Phone OTP error:', e);
+                  setOtpError('Could not send OTP. Please try again.');
                 }
                 setOtpSending(false);
               } else {

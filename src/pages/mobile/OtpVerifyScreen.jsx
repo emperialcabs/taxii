@@ -124,15 +124,24 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
           
-          {/* OTP Icon */}
+          {/* OTP SVG Icon */}
           <div style={{
             width: '80px', height: '80px', borderRadius: '50%',
             background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
-            fontSize: '36px'
+            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
           }}>
-            {authMethod === 'email' ? '✉️' : '📱'}
+            {authMethod === 'email' ? (
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            ) : (
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+            )}
           </div>
 
           <div>
@@ -175,10 +184,18 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
           {/* Error Message */}
           {error && (
             <div style={{
-              background: '#FEF2F2', color: '#DC2626', padding: '10px 16px',
-              borderRadius: '12px', fontSize: '13px', fontWeight: '600',
-              fontFamily: 'Space Grotesk', width: '100%', textAlign: 'center'
-            }}>⚠️ {error}</div>
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626',
+              padding: '10px 16px', borderRadius: '12px', fontSize: '13px',
+              fontWeight: '600', fontFamily: 'Space Grotesk', width: '100%', boxSizing: 'border-box'
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{error}</span>
+            </div>
           )}
 
           {/* Resend Timer */}
