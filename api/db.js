@@ -151,6 +151,11 @@ export async function handleMySQLRequest(action, data = {}) {
             date = VALUES(date);
         `;
         const inqId = id || `INQ-${Date.now()}`;
+        const numFare = (Number.isNaN(Number(fare)) || !fare) ? 0 : Number(fare);
+        const numOrigFare = (Number.isNaN(Number(originalFare)) || !originalFare) ? numFare : Number(originalFare);
+        const numWalletDisc = (Number.isNaN(Number(walletDiscountUsed)) || !walletDiscountUsed) ? 0 : Number(walletDiscountUsed);
+        const numRewardAmt = (Number.isNaN(Number(rewardAmount)) || !rewardAmount) ? 0 : Number(rewardAmount);
+
         const params = [
           inqId,
           customerName || 'Customer',
@@ -159,16 +164,16 @@ export async function handleMySQLRequest(action, data = {}) {
           pickup || '',
           dropoff || '',
           vehicle || 'Standard',
-          Number(fare || 0),
-          Number(originalFare || fare || 0),
-          Number(walletDiscountUsed || 0),
+          numFare,
+          numOrigFare,
+          numWalletDisc,
           tripType || 'One-Way',
           scheduledDate || 'Today',
           scheduledTime || '',
           driver || 'Unassigned',
           status || 'Pending',
           rewardIssued ? 1 : 0,
-          Number(rewardAmount || 0),
+          numRewardAmt,
           paymentMethod || 'Cash',
           notes || '',
           timestamp || new Date().toISOString(),
@@ -196,7 +201,7 @@ export async function handleMySQLRequest(action, data = {}) {
             customerName,
             customerPhone || '',
             custEmail,
-            Number(fare || 0),
+            numFare,
             new Date().toLocaleDateString('en-US'),
             new Date().toISOString()
           ]).catch(() => {});
@@ -219,7 +224,8 @@ export async function handleMySQLRequest(action, data = {}) {
       case 'updateInquiryReward': {
         const { id, rewardIssued, rewardAmount } = data;
         if (!id) return { success: false, error: 'Missing inquiry ID' };
-        await executeQuery('UPDATE inquiries SET rewardIssued = ?, rewardAmount = ? WHERE id = ?', [rewardIssued ? 1 : 0, Number(rewardAmount || 0), id]);
+        const numReward = (Number.isNaN(Number(rewardAmount)) || !rewardAmount) ? 0 : Number(rewardAmount);
+        await executeQuery('UPDATE inquiries SET rewardIssued = ?, rewardAmount = ? WHERE id = ?', [rewardIssued ? 1 : 0, numReward, id]);
         return { success: true };
       }
 
@@ -258,6 +264,9 @@ export async function handleMySQLRequest(action, data = {}) {
           const [byEmail] = await executeQuery('SELECT id FROM customers WHERE LOWER(email) = ? LIMIT 1', [email.toLowerCase().trim()]).catch(() => [[]]);
           if (byEmail && byEmail.length > 0) custId = byEmail[0].id;
         }
+
+        const numRides = (Number.isNaN(Number(totalRides)) || !totalRides) ? 0 : Number(totalRides);
+        const numSpent = (Number.isNaN(Number(totalSpent)) || !totalSpent) ? 0 : Number(totalSpent);
         
         const sql = `
           INSERT INTO customers (id, name, phone, email, photoURL, profession, area, totalRides, totalSpent, registeredAt, lastLogin, status)
@@ -281,8 +290,8 @@ export async function handleMySQLRequest(action, data = {}) {
           photoURL || null,
           profession || 'Rider',
           area || 'Gujarat, India',
-          Number(totalRides || 0),
-          Number(totalSpent || 0),
+          numRides,
+          numSpent,
           registeredAt || new Date().toISOString().split('T')[0],
           lastLogin || new Date().toISOString(),
           status || 'Active'
