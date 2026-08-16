@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import db from '../../services/dbService';
-import { signInWithGoogle, loadCustomerFromFirestore, saveCustomerToFirestore } from '../../services/firebaseService';
+import { signInWithGoogle, loadCustomerFromFirestore, saveCustomerToFirestore, setupRecaptcha, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
 import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 
 // ─── Utility: derive a clean display name from an email ──────────────────────
@@ -16,11 +16,17 @@ const formatNameFromEmail = (email) => {
 export default function LetsYouInScreen({
   phoneNumber, setPhoneNumber,
   selectedGoogleAccount, setSelectedGoogleAccount,
-  onNext, onGoToCreateAccount, onGoogleSignIn, onBack
+  onNext, onGoToCreateAccount, onGoogleSignIn, onBack,
+  setAuthMethod, setAuthEmail
 }) {
   const [loading, setLoading] = useState(false);
   const [showFallbackPicker, setShowFallbackPicker] = useState(false);
   const [customEmail, setCustomEmail] = useState('');
+  const [loginMode, setLoginMode] = useState('phone'); // 'phone' | 'email'
+  const [emailInput, setEmailInput] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [emailOtpCode, setEmailOtpCode] = useState(''); // displayed to user for testing
 
   // ─── After Google gives us user data: check Firestore, route accordingly ──
   const processGoogleUser = (googleData) => {
@@ -179,20 +185,143 @@ export default function LetsYouInScreen({
         <div className="let-you-white-bottom-sheet">
           <h1 className="let-you-title">Let's You In</h1>
 
-          <div className="phone-input-wrapper">
-            <span className="flag-icon-span">🇮🇳 +91</span>
-            <input 
-              className="phone-input-field" 
-              type="tel" 
-              value={phoneNumber} 
-              onChange={(e) => setPhoneNumber(e.target.value)} 
-              placeholder="Enter Mobile Number"
-            />
+          {/* Phone / Email Toggle Tabs */}
+          <div style={{ display: 'flex', gap: '0', marginBottom: '16px', borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #E2E8F0' }}>
+            <button
+              onClick={() => { setLoginMode('phone'); setOtpError(''); setEmailOtpCode(''); }}
+              style={{
+                flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
+                fontFamily: 'League Spartan', fontWeight: '800', fontSize: '14px',
+                background: loginMode === 'phone' ? '#0F172A' : '#F8FAFC',
+                color: loginMode === 'phone' ? '#FFFFFF' : '#64748B',
+                transition: 'all 0.2s ease'
+              }}
+            >📱 Phone OTP</button>
+            <button
+              onClick={() => { setLoginMode('email'); setOtpError(''); setEmailOtpCode(''); }}
+              style={{
+                flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
+                fontFamily: 'League Spartan', fontWeight: '800', fontSize: '14px',
+                background: loginMode === 'email' ? '#0F172A' : '#F8FAFC',
+                color: loginMode === 'email' ? '#FFFFFF' : '#64748B',
+                transition: 'all 0.2s ease'
+              }}
+            >✉️ Email OTP</button>
           </div>
 
-          <button className="let-you-signin-btn" onClick={onNext} style={{ marginTop: '16px' }}>
-            Sign In with OTP
+          {/* Phone Input */}
+          {loginMode === 'phone' && (
+            <div className="phone-input-wrapper">
+              <span className="flag-icon-span">🇮🇳 +91</span>
+              <input 
+                className="phone-input-field" 
+                type="tel" 
+                value={phoneNumber} 
+                onChange={(e) => setPhoneNumber(e.target.value)} 
+                placeholder="Enter Mobile Number"
+              />
+            </div>
+          )}
+
+          {/* Email Input */}
+          {loginMode === 'email' && (
+            <div className="phone-input-wrapper" style={{ gap: '10px' }}>
+              <span className="flag-icon-span" style={{ fontSize: '16px' }}>✉️</span>
+              <input 
+                className="phone-input-field" 
+                type="email" 
+                value={emailInput} 
+                onChange={(e) => setEmailInput(e.target.value)} 
+                placeholder="Enter Email Address"
+                style={{ fontSize: '15px' }}
+              />
+            </div>
+          )}
+
+          {/* OTP Error Message */}
+          {otpError && (
+            <div style={{
+              background: '#FEF2F2', color: '#DC2626', padding: '10px 14px',
+              borderRadius: '12px', fontSize: '13px', fontWeight: '600',
+              marginTop: '8px', fontFamily: 'Space Grotesk'
+            }}>⚠️ {otpError}</div>
+          )}
+
+          {/* Email OTP Code Display (for testing - shown after sending) */}
+          {emailOtpCode && loginMode === 'email' && (
+            <div style={{
+              background: '#F0FDF4', border: '1.5px solid #86EFAC', color: '#166534',
+              padding: '12px 16px', borderRadius: '14px', fontSize: '14px', fontWeight: '700',
+              marginTop: '8px', fontFamily: 'Space Grotesk', textAlign: 'center'
+            }}>
+              ✅ Your OTP Code: <span style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '4px', color: '#0F172A' }}>{emailOtpCode}</span>
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px', fontWeight: '500' }}>
+                (In production, this code will be sent to your email via EmailJS/Resend)
+              </div>
+            </div>
+          )}
+
+          {/* Send OTP Button */}
+          <button
+            className="let-you-signin-btn"
+            disabled={otpSending}
+            onClick={async () => {
+              setOtpError('');
+              setEmailOtpCode('');
+              
+              if (loginMode === 'phone') {
+                const cleanPhone = (phoneNumber || '').replace(/\D/g, '');
+                if (!cleanPhone || cleanPhone.length < 10) {
+                  setOtpError('Please enter a valid 10-digit mobile number.');
+                  return;
+                }
+                setOtpSending(true);
+                try {
+                  // Setup reCAPTCHA
+                  setupRecaptcha('recaptcha-container');
+                  const result = await sendPhoneOTP(cleanPhone);
+                  if (result.success) {
+                    if (setAuthMethod) setAuthMethod('phone');
+                    localStorage.setItem('cabsy_user_phone', '+91' + cleanPhone);
+                    if (onNext) onNext();
+                  } else {
+                    setOtpError(result.error || 'Failed to send OTP. Please try again.');
+                  }
+                } catch (e) {
+                  setOtpError(e?.message || 'Phone OTP failed. Enable Phone Auth in Firebase Console.');
+                }
+                setOtpSending(false);
+              } else {
+                // Email OTP
+                const email = (emailInput || '').trim();
+                if (!email || !email.includes('@')) {
+                  setOtpError('Please enter a valid email address.');
+                  return;
+                }
+                setOtpSending(true);
+                const result = sendEmailOTP(email);
+                if (result.success) {
+                  setEmailOtpCode(result.code);
+                  if (setAuthMethod) setAuthMethod('email');
+                  if (setAuthEmail) setAuthEmail(email);
+                  localStorage.setItem('cabsy_user_email_otp_target', email);
+                  // Navigate to OTP screen after short delay so user can see the code
+                  setTimeout(() => {
+                    if (onNext) onNext();
+                  }, 2000);
+                } else {
+                  setOtpError(result.error || 'Failed to generate OTP.');
+                }
+                setOtpSending(false);
+              }
+            }}
+            style={{ marginTop: '16px', opacity: otpSending ? 0.7 : 1 }}
+          >
+            {otpSending ? 'Sending OTP...' : `Send OTP to ${loginMode === 'phone' ? 'Phone' : 'Email'}`}
           </button>
+
+          {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
+          <div id="recaptcha-container"></div>
 
           <div style={{ textAlign: 'center', margin: '18px 0 12px 0', fontSize: '13px', color: '#94A3B8', fontWeight: '700' }}>
             ────── OR ──────

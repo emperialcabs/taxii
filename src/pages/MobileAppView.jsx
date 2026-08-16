@@ -45,7 +45,9 @@ export default function MobileAppView() {
   // User Input & Booking States
   const [selectedGoogleAccount, setSelectedGoogleAccount] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [otpCode, setOtpCode] = useState(['', '', '', '']);
+  const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+  const [authMethod, setAuthMethod] = useState('phone'); // 'phone' | 'email'
+  const [authEmail, setAuthEmail] = useState('');
   const [selectedLang, setSelectedLang] = useState('English');
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [pickupLoc, setPickupLoc] = useState('Bhavnagar, Gujarat');
@@ -280,6 +282,8 @@ export default function MobileAppView() {
           setSelectedGoogleAccount={setSelectedGoogleAccount}
           phoneNumber={phoneNumber}
           setPhoneNumber={setPhoneNumber}
+          setAuthMethod={setAuthMethod}
+          setAuthEmail={setAuthEmail}
           onNext={() => setAppStage('OTP_VERIFY')}
           onGoToCreateAccount={() => setAppStage('CREATE_PROFILE')}
           onGoogleSignIn={(acc) => {
@@ -299,6 +303,8 @@ export default function MobileAppView() {
           phoneNumber={phoneNumber}
           otpCode={otpCode}
           setOtpCode={setOtpCode}
+          authMethod={authMethod}
+          authEmail={authEmail}
           onNext={() => setAppStage('NOTIFICATION_OPT')}
           onBack={() => setAppStage('LETS_YOU_IN')}
         />

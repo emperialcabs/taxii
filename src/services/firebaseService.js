@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import {
@@ -255,5 +255,144 @@ export const deleteInquiryFromFirestore = async (firestoreId) => {
     await deleteDoc(ref);
   } catch (e) {
     console.warn('Firestore deleteInquiry failed:', e);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHONE OTP — Firebase Phone Authentication (Real SMS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Initialize invisible reCAPTCHA verifier for Firebase Phone Auth.
+ * Must be called before sendPhoneOTP. The container element must exist in DOM.
+ */
+export const setupRecaptcha = (containerId = 'recaptcha-container') => {
+  try {
+    // Clear any existing verifier
+    if (window.recaptchaVerifier) {
+      try { window.recaptchaVerifier.clear(); } catch (e) {}
+      window.recaptchaVerifier = null;
+    }
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      size: 'invisible',
+      callback: () => {
+        console.log('[Firebase Phone Auth] reCAPTCHA solved');
+      },
+      'expired-callback': () => {
+        console.warn('[Firebase Phone Auth] reCAPTCHA expired, re-render needed');
+      }
+    });
+    return window.recaptchaVerifier;
+  } catch (e) {
+    console.warn('[Firebase Phone Auth] reCAPTCHA setup failed:', e);
+    return null;
+  }
+};
+
+/**
+ * Send OTP SMS to phone number via Firebase Phone Auth.
+ * Phone number must include country code (e.g. +919876543210).
+ * Returns { success, error? }
+ */
+export const sendPhoneOTP = async (phoneNumber) => {
+  try {
+    // Format: ensure +91 prefix for Indian numbers
+    let formatted = phoneNumber.replace(/[\s\-()]/g, '');
+    if (!formatted.startsWith('+')) {
+      formatted = '+91' + formatted.replace(/^0+/, '');
+    }
+    const appVerifier = window.recaptchaVerifier;
+    if (!appVerifier) {
+      return { success: false, error: 'reCAPTCHA not initialized. Please try again.' };
+    }
+    const confirmationResult = await signInWithPhoneNumber(auth, formatted, appVerifier);
+    window.firebaseConfirmationResult = confirmationResult;
+    return { success: true };
+  } catch (e) {
+    console.warn('[Firebase Phone Auth] Send OTP failed:', e);
+    // Reset reCAPTCHA on failure
+    try { if (window.recaptchaVerifier) window.recaptchaVerifier.clear(); } catch (x) {}
+    window.recaptchaVerifier = null;
+    return { success: false, error: e?.message || e?.code || String(e) };
+  }
+};
+
+/**
+ * Verify 6-digit SMS OTP code.
+ * Returns { success, user?, error? }
+ */
+export const verifyPhoneOTP = async (otpCode) => {
+  try {
+    if (!window.firebaseConfirmationResult) {
+      return { success: false, error: 'No pending OTP verification. Please resend.' };
+    }
+    const result = await window.firebaseConfirmationResult.confirm(otpCode);
+    window.firebaseConfirmationResult = null;
+    return {
+      success: true,
+      user: {
+        uid: result.user.uid,
+        phone: result.user.phoneNumber,
+        name: '',
+        email: ''
+      }
+    };
+  } catch (e) {
+    console.warn('[Firebase Phone Auth] Verify OTP failed:', e);
+    return { success: false, error: e?.message || 'Invalid OTP code' };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMAIL OTP — Client-side 6-digit code generation & verification
+// Uses sessionStorage for code storage. For production email delivery,
+// integrate EmailJS, Resend, or a backend API.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Generate a 6-digit OTP for email verification.
+ * Stores the code in sessionStorage with 5-minute expiry.
+ * Returns { success, code } — code is returned so the UI can display it for testing.
+ */
+export const sendEmailOTP = (email) => {
+  if (!email || !email.includes('@')) {
+    return { success: false, error: 'Invalid email address' };
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+  try {
+    sessionStorage.setItem('taxigo_email_otp', JSON.stringify({
+      email: email.toLowerCase().trim(),
+      code,
+      expiry
+    }));
+  } catch (e) {}
+  console.log(`[Email OTP] Code for ${email}: ${code}`);
+  return { success: true, code };
+};
+
+/**
+ * Verify a 6-digit OTP code for email authentication.
+ * Returns { success, error? }
+ */
+export const verifyEmailOTP = (email, inputCode) => {
+  try {
+    const raw = sessionStorage.getItem('taxigo_email_otp');
+    if (!raw) return { success: false, error: 'No OTP found. Please request a new one.' };
+    const stored = JSON.parse(raw);
+    if (Date.now() > stored.expiry) {
+      sessionStorage.removeItem('taxigo_email_otp');
+      return { success: false, error: 'OTP expired. Please request a new one.' };
+    }
+    if (stored.email !== email.toLowerCase().trim()) {
+      return { success: false, error: 'Email does not match.' };
+    }
+    if (String(inputCode).trim() !== String(stored.code)) {
+      return { success: false, error: 'Invalid OTP code.' };
+    }
+    sessionStorage.removeItem('taxigo_email_otp');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
   }
 };
