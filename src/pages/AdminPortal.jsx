@@ -135,6 +135,30 @@ export default function AdminPortal() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert("To install the Admin App to your Home Screen:\n\n1. Chrome / Edge / PC: Click the 'Install' icon in your browser address bar.\n2. Mobile / Android / iOS: Tap menu (⋮ or Share) ➔ Select 'Add to Home Screen'.");
+    }
+  };
+
   const [activeTab, setActiveTab] = useState('dashboard');
   
   // State — start empty, Firestore will populate on mount
@@ -922,6 +946,18 @@ export default function AdminPortal() {
           </form>
 
           <div className="pin-footer text-center mt-3">
+            <button 
+              type="button" 
+              onClick={handleInstallApp}
+              style={{
+                width: '100%', marginBottom: '12px', padding: '10px',
+                background: '#0F172A', color: '#00B87C', border: '1px solid #00B87C',
+                borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+              }}
+            >
+              📱 Install Admin App to Home Screen
+            </button>
             <small className="text-muted">Default Demo PIN: <strong>1234</strong></small><br />
             <a href="/" className="btn-exit-portal mt-2">← Back to Public Website</a>
           </div>
