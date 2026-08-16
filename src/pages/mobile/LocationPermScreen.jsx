@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import locationImg from '/assets/images/location/enable-location-img.png';
 
 export default function LocationPermScreen({ onNext, onBack }) {
   const [statusText, setStatusText] = useState('');
@@ -42,7 +43,7 @@ export default function LocationPermScreen({ onNext, onBack }) {
         <div style={{ textAlign: 'center', paddingTop: '10px' }}>
           <img 
             className="verify-hero-img" 
-            src="/assets/images/location/enable-location-img.png" 
+            src={locationImg} 
             alt="Enable Location Illustration" 
             style={{ maxWidth: '240px', maxHeight: '200px', margin: '0 auto 16px auto', display: 'block', objectFit: 'contain' }}
           />

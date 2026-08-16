@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import notificationImg from '/assets/images/notification/notification-img.png';
 
 export default function NotificationOptScreen({ onNext, onBack }) {
   const [statusText, setStatusText] = useState('');
@@ -49,7 +50,7 @@ export default function NotificationOptScreen({ onNext, onBack }) {
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0' }}>
           <img 
             className="verify-hero-img" 
-            src="/assets/images/notification/notification-img.png" 
+            src={notificationImg} 
             alt="Notification Illustration" 
             style={{ width: '100%', maxWidth: '280px', maxHeight: '240px', margin: '0 auto 20px auto', display: 'block', objectFit: 'contain' }}
           />

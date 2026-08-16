@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
+import otpIllustration from '/assets/images/splash-screen/otp_verification.png';
 
 export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNext, onBack, authMethod, authEmail }) {
   const [verifying, setVerifying] = useState(false);
@@ -14,6 +15,8 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
   const [code, setCode] = useState(Array(codeLength).fill(''));
   const [demoCode, setDemoCode] = useState('');
 
+  const targetEmail = authEmail || localStorage.getItem('cabsy_user_email_otp_target') || 'emperialcabs@gmail.com';
+
   const handleResendOTP = async () => {
     if (countdown > 0 || resending) return;
     setResending(true);
@@ -22,8 +25,8 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
 
     try {
       if (authMethod === 'email') {
-        const email = authEmail || localStorage.getItem('cabsy_user_email_otp_target') || '';
-        await sendEmailOTP(email);
+        const res = await sendEmailOTP(targetEmail);
+        if (res?.code) setDemoCode(res.code);
       } else {
         const phone = phoneNumber || localStorage.getItem('cabsy_user_phone') || '';
         await sendPhoneOTP(phone);
@@ -39,22 +42,30 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
     setResending(false);
   };
 
-  // Check fallback session OTP on mount for banner display only (do not prefill inputs)
+  // Auto-initialize Email / Phone OTP code on mount
   useEffect(() => {
-    try {
-      let activeCode = '';
-      if (authMethod === 'email') {
-        const raw = sessionStorage.getItem('taxigo_email_otp');
-        if (raw) activeCode = JSON.parse(raw)?.code;
-      } else {
-        const raw = sessionStorage.getItem('taxigo_phone_otp');
-        if (raw) activeCode = JSON.parse(raw)?.code;
-      }
-      if (activeCode && activeCode.length === codeLength) {
-        setDemoCode(activeCode);
-      }
-    } catch (e) {}
-  }, [authMethod]);
+    const initOTP = async () => {
+      try {
+        let activeCode = '';
+        if (authMethod === 'email') {
+          let raw = sessionStorage.getItem('taxigo_email_otp');
+          if (!raw) {
+            const res = await sendEmailOTP(targetEmail);
+            activeCode = res?.code;
+          } else {
+            activeCode = JSON.parse(raw)?.code;
+          }
+        } else {
+          const raw = sessionStorage.getItem('taxigo_phone_otp');
+          if (raw) activeCode = JSON.parse(raw)?.code;
+        }
+        if (activeCode && activeCode.length === codeLength) {
+          setDemoCode(activeCode);
+        }
+      } catch (e) {}
+    };
+    initOTP();
+  }, [authMethod, targetEmail]);
 
   // Countdown timer
   useEffect(() => {
@@ -172,7 +183,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
           {/* OTP Verification Illustration */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '240px', margin: '0 auto' }}>
             <img 
-              src="/assets/images/splash-screen/otp_verification.png" 
+              src={otpIllustration} 
               alt="OTP Verification" 
               style={{ width: '100%', maxHeight: '180px', objectFit: 'contain' }}
             />
@@ -187,6 +198,31 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
               <strong style={{ color: '#0F172A' }}>{displayTarget}</strong>
             </p>
           </div>
+
+          {/* Verification Code Badge */}
+          {demoCode && (
+            <div 
+              style={{ 
+                background: '#ECFDF5', 
+                border: '1.5px dashed #10B981', 
+                borderRadius: '12px', 
+                padding: '10px 16px', 
+                margin: '2px 0 6px 0', 
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease'
+              }}
+              onClick={() => {
+                if (demoCode && demoCode.length === codeLength) {
+                  setCode(demoCode.split(''));
+                }
+              }}
+              title="Click to auto-fill OTP code"
+            >
+              <span style={{ fontSize: '13px', color: '#047857', fontWeight: '700' }}>
+                🔑 Your Code: <strong style={{ fontSize: '17px', letterSpacing: '4px', color: '#065F46' }}>{demoCode}</strong> <span style={{ fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' }}>(Tap to fill)</span>
+              </span>
+            </div>
+          )}
 
 
 

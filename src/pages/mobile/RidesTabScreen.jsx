@@ -81,17 +81,28 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
 
     // Listen for live updates from Admin Portal or booking submissions
     const handleStorageChange = () => loadInquiries();
+
+    let bc = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('taxigo_realtime_sync');
+        bc.onmessage = () => loadInquiries();
+      }
+    } catch (e) {}
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('taxigo_ride_booked', handleStorageChange);
     window.addEventListener('taxigo_db_sync', handleStorageChange);
+    window.addEventListener('taxigo_trip_completed', handleStorageChange);
 
-    // Reduced polling from 1.5s to 10s to eliminate lag
-    const interval = setInterval(loadInquiries, 10000);
+    const interval = setInterval(loadInquiries, 1500);
 
     return () => {
+      if (bc) bc.close();
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('taxigo_ride_booked', handleStorageChange);
       window.removeEventListener('taxigo_db_sync', handleStorageChange);
+      window.removeEventListener('taxigo_trip_completed', handleStorageChange);
       clearInterval(interval);
     };
   }, []);

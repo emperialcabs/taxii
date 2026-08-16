@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import accountCreatedImg from '/assets/images/account-create/account-img.png';
 
 export default function AccountCreatedScreen({ onNext, onBack }) {
   // Show screen for a minor 3 seconds before proceeding automatically
@@ -20,7 +21,7 @@ export default function AccountCreatedScreen({ onNext, onBack }) {
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0' }}>
           <img 
             className="verify-hero-img" 
-            src="/assets/images/account-create/account-img.png" 
+            src={accountCreatedImg} 
             alt="Account Created Illustration" 
             style={{ width: '100%', maxWidth: '280px', maxHeight: '240px', margin: '0 auto 20px auto', display: 'block', objectFit: 'contain' }}
           />

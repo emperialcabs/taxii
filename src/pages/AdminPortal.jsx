@@ -496,6 +496,19 @@ export default function AdminPortal() {
   }, []);
 
   useEffect(() => {
+    if (inquiries && Array.isArray(inquiries)) {
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
+      try {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('taxigo_realtime_sync');
+          bc.postMessage({ type: 'INQUIRIES_UPDATED', inquiries, timestamp: Date.now() });
+          bc.close();
+        }
+      } catch (e) {}
+    }
+  }, [inquiries]);
+
+  useEffect(() => {
     localStorage.setItem('cabsy_drivers', JSON.stringify(drivers));
   }, [drivers]);
 
@@ -773,18 +786,27 @@ export default function AdminPortal() {
 
   const handleCompleteTrip = (inquiryId) => {
     if (!inquiryId) return;
-    setInquiries(prev => prev.map(inq => {
-      if (inq.id === inquiryId) {
-        return { ...inq, status: 'Completed' };
-      }
-      return inq;
-    }));
+    let completedInq = null;
 
-    const targetInq = inquiries.find(i => i.id === inquiryId);
+    setInquiries(prev => {
+      const updated = prev.map(inq => {
+        if (inq.id === inquiryId) {
+          completedInq = { ...inq, status: 'Completed' };
+          return completedInq;
+        }
+        return inq;
+      });
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      return updated;
+    });
+
+    const targetInq = completedInq || inquiries.find(i => i.id === inquiryId);
     if (targetInq) {
+      const fullCompleted = { ...targetInq, status: 'Completed' };
+      localStorage.setItem('taxigo_last_completed_trip', JSON.stringify(fullCompleted));
       updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
       try {
-        db.saveInquiry({ ...targetInq, status: 'Completed' });
+        db.saveInquiry(fullCompleted);
       } catch (e) {}
 
       // Direct notification to customer on trip completion
@@ -795,9 +817,19 @@ export default function AdminPortal() {
         customerPhone: targetInq.customerPhone,
         customerEmail: targetInq.customerEmail
       });
+
+      // Post real-time cross-tab BroadcastChannel message
+      try {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('taxigo_realtime_sync');
+          bc.postMessage({ type: 'TRIP_COMPLETED', data: fullCompleted, timestamp: Date.now() });
+          bc.close();
+        }
+      } catch (e) {}
+
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('taxigo_trip_completed', { detail: fullCompleted }));
     }
-    window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('taxigo_trip_completed', { detail: { id: inquiryId } }));
   };
 
   const handleCancelInquiry = (inquiryId) => {

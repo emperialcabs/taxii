@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 
+import onboarding1 from '/assets/images/splash-screen/onboarding1.png';
+import onboarding2 from '/assets/images/splash-screen/onboarding2.png';
+import onboarding3 from '/assets/images/splash-screen/onboarding3.png';
+import onboarding4 from '/assets/images/splash-screen/onboarding4.png';
+
 export default function OnboardingScreen({ onFinish }) {
   const [onboardingStep, setOnboardingStep] = useState(0);
 
@@ -7,22 +12,22 @@ export default function OnboardingScreen({ onFinish }) {
     {
       title: "Request Ride",
       desc: "Request a ride and get picked up by a nearby certified driver instantly.",
-      img: "/assets/images/splash-screen/onboarding1.png"
+      img: onboarding1
     },
     {
       title: "Confirm Your Driver",
       desc: "Huge network of certified professional drivers with top ratings.",
-      img: "/assets/images/splash-screen/onboarding2.png"
+      img: onboarding2
     },
     {
       title: "Track Your Ride",
       desc: "Real-time GPS movement tracking from pickup point straight to destination.",
-      img: "/assets/images/splash-screen/onboarding3.png"
+      img: onboarding3
     },
     {
       title: "Choose Vehicle Class",
       desc: "Select your preferred ride class from Swift, Ertiga to Luxury Innova.",
-      img: "/assets/images/splash-screen/onboarding4.png"
+      img: onboarding4
     }
   ];
 

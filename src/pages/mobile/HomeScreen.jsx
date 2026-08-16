@@ -31,16 +31,30 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [isLocating, setIsLocating] = useState(true);
 
-  // Active Ride Live Sync (ONLY for the current logged-in user or latest active trip)
+  // Active Ride Live Sync & Completed Trip Detection
   const [activeRide, setActiveRide] = useState(null);
+  const [completedModal, setCompletedModal] = useState(null);
+  const [driverRating, setDriverRating] = useState(5);
+  const prevActiveRideIdRef = useRef(null);
+
   useEffect(() => {
     const checkActiveRide = () => {
       try {
         const saved = localStorage.getItem('cabsy_inquiries');
+        const lastCompletedRaw = localStorage.getItem('taxigo_last_completed_trip');
         const userProfRaw = localStorage.getItem('cabsy_user_profile');
         const userProf = userProfRaw ? JSON.parse(userProfRaw) : null;
         const uPhone = userProf?.phone ? String(userProf.phone).replace(/\D/g, '') : '';
         const uEmail = userProf?.email ? String(userProf.email).toLowerCase().trim() : '';
+
+        if (lastCompletedRaw) {
+          try {
+            const parsedLast = JSON.parse(lastCompletedRaw);
+            if (parsedLast && parsedLast.id && !parsedLast.dismissed) {
+              setCompletedModal(parsedLast);
+            }
+          } catch(e) {}
+        }
 
         if (saved) {
           const list = JSON.parse(saved);
@@ -57,7 +71,15 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
             if (matchedRide) {
               setActiveRide(matchedRide);
+              prevActiveRideIdRef.current = matchedRide.id;
               return;
+            } else if (prevActiveRideIdRef.current) {
+              // Active trip was just marked completed by Admin!
+              const completedTrip = list.find(i => i.id === prevActiveRideIdRef.current && i.status === 'Completed');
+              if (completedTrip) {
+                setCompletedModal(completedTrip);
+              }
+              prevActiveRideIdRef.current = null;
             }
           }
         }
@@ -66,16 +88,41 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     };
 
     checkActiveRide();
+
+    // Cross-tab real-time BroadcastChannel
+    let bc = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('taxigo_realtime_sync');
+        bc.onmessage = (msg) => {
+          if (msg.data?.type === 'TRIP_COMPLETED' && msg.data?.data) {
+            setCompletedModal(msg.data.data);
+            setActiveRide(null);
+          } else {
+            checkActiveRide();
+          }
+        };
+      }
+    } catch (e) {}
+
+    const handleTripCompletedEvent = (e) => {
+      if (e.detail) setCompletedModal(e.detail);
+      checkActiveRide();
+    };
+
     window.addEventListener('storage', checkActiveRide);
     window.addEventListener('taxigo_trip_started', checkActiveRide);
+    window.addEventListener('taxigo_trip_completed', handleTripCompletedEvent);
     window.addEventListener('taxigo_db_sync', checkActiveRide);
     window.addEventListener('cabsy-new-inquiry', checkActiveRide);
 
-    const pollInterval = setInterval(checkActiveRide, 1000);
+    const pollInterval = setInterval(checkActiveRide, 800);
 
     return () => {
+      if (bc) bc.close();
       window.removeEventListener('storage', checkActiveRide);
       window.removeEventListener('taxigo_trip_started', checkActiveRide);
+      window.removeEventListener('taxigo_trip_completed', handleTripCompletedEvent);
       window.removeEventListener('taxigo_db_sync', checkActiveRide);
       window.removeEventListener('cabsy-new-inquiry', checkActiveRide);
       clearInterval(pollInterval);
@@ -563,6 +610,139 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(52, 211, 153, 0.4)' }}
             >
               Confirm Location & Continue →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Multinational Big-Company Style "Trip Completed" Modal */}
+      {completedModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.75)', zIndex: 10000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(8px)'
+        }}>
+          <div style={{
+            background: '#FFFFFF', borderRadius: '28px', padding: '28px 24px 24px 24px', width: '100%', maxWidth: '380px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)', textAlign: 'center', overflow: 'hidden', position: 'relative'
+          }}>
+            {/* Top Banner Celebration Badge */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '50%', background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF',
+                boxShadow: '0 10px 25px rgba(34, 197, 94, 0.4)'
+              }}>
+                <CheckCircle2 size={42} strokeWidth={2.5} />
+              </div>
+            </div>
+
+            <h2 style={{ fontFamily: 'League Spartan', fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0' }}>
+              Trip Completed!
+            </h2>
+            <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', color: '#64748B', margin: '0 0 20px 0' }}>
+              Thank you for riding with <strong>Empire Cabs</strong>
+            </p>
+
+            {/* Route & Driver Summary Card */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', textAlign: 'left', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Trip ID</span>
+                  <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A' }}>{completedModal.id || 'INQ-COMPLETED'}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Total Fare</span>
+                  <div style={{ fontWeight: '800', fontSize: '18px', color: '#16A34A' }}>₹{Number(completedModal.fare || 0).toFixed(2)}</div>
+                </div>
+              </div>
+
+              {/* Pickup -> Dropoff Locations */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}></span>
+                  <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#334155' }}>{completedModal.pickup || completedModal.pickupLoc || 'Pickup Location'}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }}></span>
+                  <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#334155' }}>{completedModal.dropoff || completedModal.dropoffLoc || 'Destination'}</span>
+                </div>
+              </div>
+
+              {/* Driver Details */}
+              {completedModal.driver && (
+                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🚕</div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>Driver: {completedModal.driver}</div>
+                    <span style={{ fontSize: '11px', color: '#64748B' }}>Empire Certified Partner</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* REWARD SECTION — ONLY SHOWN IF REWARD WAS ISSUED / GIVEN BY ADMIN! */}
+            {(Boolean(completedModal.rewardAmount) || Boolean(completedModal.rewardGiven) || Boolean(completedModal.rewardIssued) || (completedModal.walletDiscountUsed > 0)) && (
+              <div style={{
+                background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+                border: '1.5px solid #F59E0B',
+                borderRadius: '20px',
+                padding: '16px',
+                marginBottom: '20px',
+                textAlign: 'center',
+                boxShadow: '0 8px 20px rgba(245, 158, 11, 0.2)'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '4px' }}>🎁</div>
+                <h4 style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#92400E', margin: '0 0 4px 0' }}>
+                  Congratulations! You Earned ₹{completedModal.rewardAmount || 100} Cash Reward
+                </h4>
+                <p style={{ fontFamily: 'Space Grotesk', fontSize: '13px', color: '#B45309', margin: 0, lineHeight: '1.4' }}>
+                  Added directly to your Empire Cash Wallet for your next ride!
+                </p>
+              </div>
+            )}
+
+            {/* Rating Stars */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Rate Your Driver Experience</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setDriverRating(star)}
+                    style={{
+                      background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer',
+                      color: star <= driverRating ? '#F59E0B' : '#CBD5E1', transition: 'transform 0.1s ease'
+                    }}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <button
+              onClick={() => {
+                setCompletedModal(null);
+                localStorage.removeItem('taxigo_last_completed_trip');
+              }}
+              style={{
+                width: '100%',
+                padding: '16px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #FFAE00 0%, #FF9500 100%)',
+                color: '#0F172A',
+                border: 'none',
+                fontFamily: 'League Spartan',
+                fontSize: '17px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(255, 174, 0, 0.4)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Done / Book Next Ride →
             </button>
           </div>
         </div>
