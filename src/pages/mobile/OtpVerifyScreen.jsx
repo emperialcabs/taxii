@@ -12,7 +12,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
   const [code, setCode] = useState(Array(codeLength).fill(''));
   const [demoCode, setDemoCode] = useState('');
 
-  // Check fallback session OTP on mount
+  // Check fallback session OTP on mount for banner display only (do not prefill inputs)
   useEffect(() => {
     try {
       let activeCode = '';
@@ -25,7 +25,6 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       }
       if (activeCode && activeCode.length === codeLength) {
         setDemoCode(activeCode);
-        setCode(activeCode.split(''));
       }
     } catch (e) {}
   }, [authMethod]);
