@@ -164,23 +164,63 @@ export default function AdminPortal() {
   // State — start empty, Firestore will populate on mount
   const [inquiries, setInquiries] = useState([]);
   const [firestoreLoading, setFirestoreLoading] = useState(true);
+  const [customers, setCustomers] = useState([]);
 
-  // Always sort inquiries by newest first (Newest ID or Newest Timestamp at the top across all tabs)
+  // Always sort inquiries by newest first (Latest date/timestamp at the top across all 3 tabs)
   const sortedInquiries = React.useMemo(() => {
     return [...inquiries].sort((a, b) => {
+      // 1. Compare ISO timestamp / createdAt
+      const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
+      const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+      if (timeA > 0 && timeB > 0 && timeA !== timeB) {
+        return timeB - timeA;
+      }
+      // 2. Parse date string (e.g. "Aug 16, 2026" vs "Aug 15, 2026")
+      if (a.date && b.date && a.date !== b.date) {
+        const parseA = Date.parse(a.date);
+        const parseB = Date.parse(b.date);
+        if (!isNaN(parseA) && !isNaN(parseB) && parseA !== parseB) {
+          return parseB - parseA;
+        }
+      }
+      // 3. Compare numeric portion of INQ ID as secondary fallback
       const numA = parseInt(String(a.id).replace(/\D/g, '')) || 0;
       const numB = parseInt(String(b.id).replace(/\D/g, '')) || 0;
       if (numA !== numB) return numB - numA;
-      return new Date(b.date || 0) - new Date(a.date || 0);
+      return inquiries.indexOf(b) - inquiries.indexOf(a);
     });
   }, [inquiries]);
+
+  // Resolve customer name properly: if "Google User", "Rider", or "Web Passenger", check profile/email/phone
+  const resolveCustomerName = (inq) => {
+    if (!inq) return 'Valued Customer';
+    const name = inq.customerName || inq.name || '';
+    if (name && name !== 'Google User' && name !== 'Rider' && name !== 'Web Passenger' && name !== 'Guest Customer') {
+      return name;
+    }
+    // Try matching customer profile from customers array by phone or email
+    const match = customers.find(c => {
+      if (c.phone && inq.customerPhone && c.phone.replace(/\D/g, '').endsWith(inq.customerPhone.replace(/\D/g, '').slice(-8))) return true;
+      if (c.email && inq.customerEmail && c.email.toLowerCase() === inq.customerEmail.toLowerCase()) return true;
+      return false;
+    });
+    if (match && match.name && match.name !== 'Google User' && match.name !== 'Rider') {
+      return match.name;
+    }
+    if (inq.customerEmail && inq.customerEmail.includes('@')) {
+      const handle = inq.customerEmail.split('@')[0].replace(/[._-]/g, ' ');
+      if (handle) return handle.charAt(0).toUpperCase() + handle.slice(1);
+    }
+    if (inq.customerPhone && inq.customerPhone.length > 5) {
+      return `Customer (${inq.customerPhone.slice(-5)})`;
+    }
+    return 'Empire Passenger';
+  };
 
   const [drivers, setDrivers] = useState(() => {
     const saved = localStorage.getItem('cabsy_drivers');
     return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
   });
-
-  const [customers, setCustomers] = useState([]);
 
   const [vehicles, setVehicles] = useState(() => {
     const saved = localStorage.getItem('cabsy_vehicles');
@@ -1256,7 +1296,7 @@ export default function AdminPortal() {
                       {sortedInquiries.slice(0, 5).map(inq => (
                         <tr key={inq.id}>
                           <td><strong>{inq.id}</strong></td>
-                          <td>{inq.customerName}<br /><small className="text-muted">{inq.customerPhone}</small></td>
+                          <td>{resolveCustomerName(inq)}<br /><small className="text-muted">{inq.customerPhone}</small></td>
                           <td className="route-cell">
                             <span className="text-green">●</span> {inq.pickup}<br />
                             <span className="text-red">●</span> {inq.dropoff}
@@ -1355,7 +1395,7 @@ export default function AdminPortal() {
                       <tr key={inq.id}>
                         <td><strong>{inq.id}</strong><br /><small className="text-muted">{inq.date}</small></td>
                         <td>
-                          <strong>{inq.customerName}</strong>
+                          <strong>{resolveCustomerName(inq)}</strong>
                           <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone}</div>
                         </td>
                         <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
@@ -1521,7 +1561,7 @@ export default function AdminPortal() {
                           <td><strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{inq.id}</strong></td>
                           <td>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                              <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{inq.customerName}</strong>
+                              <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{resolveCustomerName(inq)}</strong>
                               <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>{inq.customerPhone}</span>
                             </div>
                           </td>
@@ -1649,7 +1689,7 @@ export default function AdminPortal() {
                         <td><strong>{inq.id}</strong></td>
                         <td>
                           <div>
-                            <strong>{inq.customerName}</strong>
+                            <strong>{resolveCustomerName(inq)}</strong>
                             <small className="text-muted display-block">{inq.customerPhone}</small>
                           </div>
                         </td>

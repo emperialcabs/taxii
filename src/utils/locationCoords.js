@@ -57,40 +57,17 @@ export function generateRoutePolyline(startPos, endPos) {
   const safeStart = (startPos && typeof startPos.lat === 'number' && !isNaN(startPos.lat) && typeof startPos.lng === 'number' && !isNaN(startPos.lng)) ? startPos : { lat: 21.7645, lng: 72.1519 };
   const safeEnd = (endPos && typeof endPos.lat === 'number' && !isNaN(endPos.lat) && typeof endPos.lng === 'number' && !isNaN(endPos.lng)) ? endPos : { lat: 23.0225, lng: 72.5714 };
 
-  const isBhavnagar = safeStart.lat < 21.9 && safeStart.lng < 72.3;
-  const isVadodara = safeEnd.lng > 73.0 && safeEnd.lat > 22.0 && safeEnd.lat < 22.5;
+  // Create a clean 5-point interpolated road curve starting directly from live user location to destination
+  const p1 = safeStart;
+  const p5 = safeEnd;
+  const latDiff = p5.lat - p1.lat;
+  const lngDiff = p5.lng - p1.lng;
 
-  if (isBhavnagar && isVadodara) {
-    return [
-      safeStart,
-      { lat: 21.8844, lng: 71.9318 },
-      { lat: 22.3732, lng: 71.9837 },
-      { lat: 22.4215, lng: 72.3115 },
-      { lat: 22.4880, lng: 72.7042 },
-      { lat: 22.4500, lng: 73.0600 },
-      safeEnd
-    ];
-  }
+  const p2 = { lat: p1.lat + latDiff * 0.25 + 0.002, lng: p1.lng + lngDiff * 0.25 - 0.001 };
+  const p3 = { lat: p1.lat + latDiff * 0.50 + 0.003, lng: p1.lng + lngDiff * 0.50 + 0.002 };
+  const p4 = { lat: p1.lat + latDiff * 0.75 + 0.001, lng: p1.lng + lngDiff * 0.75 - 0.001 };
 
-  const isAhmedabad = safeEnd.lat > 22.9 && safeEnd.lng < 72.7;
-  if (isBhavnagar && isAhmedabad) {
-    return [
-      safeStart,
-      { lat: 21.8844, lng: 71.9318 },
-      { lat: 22.3732, lng: 71.9837 },
-      { lat: 22.6074, lng: 72.1578 },
-      { lat: 22.8360, lng: 72.3644 },
-      safeEnd
-    ];
-  }
-
-  const midLat = (safeStart.lat + safeEnd.lat) / 2 + 0.003;
-  const midLng = (safeStart.lng + safeEnd.lng) / 2 - 0.002;
-  return [
-    safeStart,
-    { lat: midLat, lng: midLng },
-    safeEnd
-  ];
+  return [p1, p2, p3, p4, p5];
 }
 
 /**
