@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
 import otpIllustration from '../../assets/images/splash-screen/otp_verification.png';
 
+const otpFallbackSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none"><rect width="240" height="180" rx="20" fill="%23F1F5F9"/><circle cx="120" cy="80" r="45" fill="%23ECFDF5"/><path d="M105 75L115 85L135 65" stroke="%2310B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="80" y="130" width="80" height="12" rx="6" fill="%23CBD5E1"/></svg>`;
+
 export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNext, onBack, authMethod, authEmail }) {
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
@@ -180,17 +182,27 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
           
-          {/* OTP Verification Illustration */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '240px', margin: '0 auto' }}>
-            <img 
-              src={otpIllustration} 
-              alt="OTP Verification" 
-              style={{ width: '100%', maxHeight: '180px', objectFit: 'contain' }}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = otpIllustration;
-              }}
-            />
+          {/* OTP Verification 3D Vector Graphic */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '240px', height: '170px', margin: '0 auto' }}>
+            <svg viewBox="0 0 240 170" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+              <defs>
+                <linearGradient id="otpsBg" x1="0" y1="0" x2="240" y2="170" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#F0F9FF" />
+                  <stop offset="1" stopColor="#E0F2FE" />
+                </linearGradient>
+                <filter id="otpShieldShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="12" floodColor="#0284C7" floodOpacity="0.25" />
+                </filter>
+              </defs>
+              <rect width="240" height="170" rx="24" fill="url(#otpsBg)" />
+              <circle cx="120" cy="85" r="55" fill="#BAE6FD" fillOpacity="0.5" />
+              <g filter="url(#otpShieldShadow)">
+                <path d="M120 35 L155 50 V85 C155 110 120 128 120 128 C120 128 85 110 85 85 V50 L120 35 Z" fill="#0284C7" />
+                <rect x="108" y="70" width="24" height="20" rx="6" fill="#FFFFFF" />
+                <path d="M114 70 V62 C114 58 116 56 120 56 C124 56 126 58 126 62 V70" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+                <circle cx="120" cy="80" r="3" fill="#0284C7" />
+              </g>
+            </svg>
           </div>
 
           <div>
