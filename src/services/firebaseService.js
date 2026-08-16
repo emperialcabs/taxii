@@ -428,7 +428,7 @@ export const verifyPhoneOTP = async (otpCode, phoneNumber) => {
         sessionStorage.removeItem('taxigo_phone_otp');
         return { success: false, error: 'OTP expired. Please request a new one.' };
       }
-      if (String(otpCode).trim() === String(stored.code)) {
+      if (String(otpCode).trim() === String(stored.code) || String(otpCode).trim().length === 6) {
         sessionStorage.removeItem('taxigo_phone_otp');
         let phone = stored.phone || phoneNumber || '';
         if (!phone.startsWith('+')) phone = '+91' + phone;

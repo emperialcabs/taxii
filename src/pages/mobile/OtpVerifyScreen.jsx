@@ -172,27 +172,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             </p>
           </div>
 
-          {/* Demo OTP Banner (When real SMS isn't delivered) */}
-          {demoCode && (
-            <div style={{
-              background: '#F0FDF4',
-              border: '1.5px solid #86EFAC',
-              color: '#166534',
-              padding: '10px 16px',
-              borderRadius: '14px',
-              fontSize: '13px',
-              fontWeight: '700',
-              fontFamily: 'Space Grotesk, sans-serif',
-              width: '100%',
-              boxSizing: 'border-box',
-              textAlign: 'center'
-            }}>
-              <div>Verification Code: <span style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '4px', color: '#0F172A' }}>{demoCode}</span></div>
-              <div style={{ fontSize: '11px', color: '#65A30D', marginTop: '2px', fontWeight: '500' }}>
-                (Auto-filled into inputs below for testing)
-              </div>
-            </div>
-          )}
+
 
           {/* 6-digit OTP Input Grid */}
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', margin: '8px 0' }}>
