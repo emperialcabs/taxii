@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { verifyPhoneOTP, verifyEmailOTP } from '../../services/firebaseService';
+import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
 
 export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNext, onBack, authMethod, authEmail }) {
   const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(60);
   const inputRefs = useRef([]);
@@ -11,6 +13,31 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
   const codeLength = 6;
   const [code, setCode] = useState(Array(codeLength).fill(''));
   const [demoCode, setDemoCode] = useState('');
+
+  const handleResendOTP = async () => {
+    if (countdown > 0 || resending) return;
+    setResending(true);
+    setError('');
+    setResendSuccess('');
+
+    try {
+      if (authMethod === 'email') {
+        const email = authEmail || localStorage.getItem('cabsy_user_email_otp_target') || '';
+        await sendEmailOTP(email);
+      } else {
+        const phone = phoneNumber || localStorage.getItem('cabsy_user_phone') || '';
+        await sendPhoneOTP(phone);
+      }
+      setResendSuccess('A new 6-digit verification code has been sent!');
+      setCountdown(60);
+      setCode(Array(codeLength).fill(''));
+      if (inputRefs.current[0]) inputRefs.current[0].focus();
+    } catch (e) {
+      console.warn('[Resend OTP Error]:', e);
+      setError('Failed to resend OTP. Please try again.');
+    }
+    setResending(false);
+  };
 
   // Check fallback session OTP on mount for banner display only (do not prefill inputs)
   useEffect(() => {
@@ -218,12 +245,25 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             </div>
           )}
 
+          {resendSuccess && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#ECFDF5', border: '1px solid #6EE7B7', color: '#047857',
+              padding: '10px 16px', borderRadius: '12px', fontSize: '13px',
+              fontWeight: '600', fontFamily: 'Space Grotesk', width: '100%', boxSizing: 'border-box'
+            }}>
+              <span>{resendSuccess}</span>
+            </div>
+          )}
+
           {/* Resend Timer */}
           <p style={{ fontFamily: 'Space Grotesk', fontSize: '13px', color: '#94A3B8', margin: 0 }}>
             {countdown > 0 ? (
               <>Didn't receive code? <span style={{ color: '#64748B', fontWeight: '700' }}>Resend in 00:{String(countdown).padStart(2, '0')}</span></>
             ) : (
-              <>Didn't receive code? <span style={{ color: '#10B981', fontWeight: '800', cursor: 'pointer' }} onClick={onBack}>Resend OTP</span></>
+              <>Didn't receive code? <span style={{ color: resending ? '#94A3B8' : '#10B981', fontWeight: '800', cursor: resending ? 'default' : 'pointer' }} onClick={handleResendOTP}>
+                {resending ? 'Resending...' : 'Resend OTP'}
+              </span></>
             )}
           </p>
         </div>
