@@ -2,6 +2,12 @@ import React from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
+import car1 from '../../assets/images/map/car1.png';
+import car2 from '../../assets/images/map/car2.png';
+import car3 from '../../assets/images/map/car3.png';
+import car4 from '../../assets/images/map/car4.png';
+
+const carImages = [car1, car2, car3, car4];
 
 export default function SelectCarScreen({ 
   userCoords, 
@@ -60,7 +66,7 @@ export default function SelectCarScreen({
         id: v.id || idx + 1,
         name: v.name,
         passengers: v.passengers || '4 Persons',
-        img: v.image || `/assets/images/map/car${(idx % 4) + 1}.png`,
+        img: v.image || carImages[idx % carImages.length],
         dist: `${effectiveDistanceKm} km`,
         time: `${Math.round(effectiveDistanceKm * 1.4)} min`,
         ratePerKm,

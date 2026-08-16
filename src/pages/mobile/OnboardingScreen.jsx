@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
-import onboarding1 from '/assets/images/splash-screen/onboarding1.png';
-import onboarding2 from '/assets/images/splash-screen/onboarding2.png';
-import onboarding3 from '/assets/images/splash-screen/onboarding3.png';
-import onboarding4 from '/assets/images/splash-screen/onboarding4.png';
+import onboarding1 from '../../assets/images/splash-screen/onboarding1.png';
+import onboarding2 from '../../assets/images/splash-screen/onboarding2.png';
+import onboarding3 from '../../assets/images/splash-screen/onboarding3.png';
+import onboarding4 from '../../assets/images/splash-screen/onboarding4.png';
 
 export default function OnboardingScreen({ onFinish }) {
   const [onboardingStep, setOnboardingStep] = useState(0);

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import accountCreatedImg from '/assets/images/account-create/account-img.png';
+import accountCreatedImg from '../../assets/images/account-create/account-img.png';
 
 export default function AccountCreatedScreen({ onNext, onBack }) {
   // Show screen for a minor 3 seconds before proceeding automatically

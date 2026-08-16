@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
-import otpIllustration from '/assets/images/splash-screen/otp_verification.png';
+import otpIllustration from '../../assets/images/splash-screen/otp_verification.png';
 
 export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNext, onBack, authMethod, authEmail }) {
   const [verifying, setVerifying] = useState(false);

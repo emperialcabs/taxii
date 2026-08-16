@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import notificationImg from '/assets/images/notification/notification-img.png';
+import notificationImg from '../../assets/images/notification/notification-img.png';
 
 export default function NotificationOptScreen({ onNext, onBack }) {
   const [statusText, setStatusText] = useState('');

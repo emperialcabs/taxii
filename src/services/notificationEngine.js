@@ -47,8 +47,8 @@ export const sendSystemPushNotification = (title, body, tag = 'taxigo-notif') =>
     try {
       new Notification(title, {
         body: body,
-        icon: '/assets/images/logo.png',
-        badge: '/assets/images/logo.png',
+        icon: '/assets/images/splash-screen/logo.png',
+        badge: '/assets/images/splash-screen/logo.png',
         tag: tag,
         renotify: true
       });

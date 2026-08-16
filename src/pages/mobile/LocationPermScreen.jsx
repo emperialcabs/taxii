@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import locationImg from '/assets/images/location/enable-location-img.png';
+import locationImg from '../../assets/images/location/enable-location-img.png';
 
 export default function LocationPermScreen({ onNext, onBack }) {
   const [statusText, setStatusText] = useState('');
