@@ -31,7 +31,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [isLocating, setIsLocating] = useState(true);
 
-  // Active Ride Live Sync (ONLY for the current logged-in user)
+  // Active Ride Live Sync (ONLY for the current logged-in user or latest active trip)
   const [activeRide, setActiveRide] = useState(null);
   useEffect(() => {
     const checkActiveRide = () => {
@@ -44,17 +44,19 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
         if (saved) {
           const list = JSON.parse(saved);
-          if (Array.isArray(list)) {
-            const current = list.find(i => {
+          if (Array.isArray(list) && list.length > 0) {
+            // Find current user's active ride OR the latest active ride in system
+            const matchedRide = list.find(i => {
               if (!i) return false;
               const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
               const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
               const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                               (uEmail && iEmail && uEmail === iEmail);
               return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-            });
-            if (current) {
-              setActiveRide(current);
+            }) || list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+
+            if (matchedRide) {
+              setActiveRide(matchedRide);
               return;
             }
           }
@@ -66,9 +68,17 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     checkActiveRide();
     window.addEventListener('storage', checkActiveRide);
     window.addEventListener('taxigo_trip_started', checkActiveRide);
+    window.addEventListener('taxigo_db_sync', checkActiveRide);
+    window.addEventListener('cabsy-new-inquiry', checkActiveRide);
+
+    const pollInterval = setInterval(checkActiveRide, 1000);
+
     return () => {
       window.removeEventListener('storage', checkActiveRide);
       window.removeEventListener('taxigo_trip_started', checkActiveRide);
+      window.removeEventListener('taxigo_db_sync', checkActiveRide);
+      window.removeEventListener('cabsy-new-inquiry', checkActiveRide);
+      clearInterval(pollInterval);
     };
   }, []);
 
