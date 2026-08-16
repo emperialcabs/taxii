@@ -57,7 +57,36 @@ export function generateRoutePolyline(startPos, endPos) {
   const safeStart = (startPos && typeof startPos.lat === 'number' && !isNaN(startPos.lat) && typeof startPos.lng === 'number' && !isNaN(startPos.lng)) ? startPos : { lat: 21.7645, lng: 72.1519 };
   const safeEnd = (endPos && typeof endPos.lat === 'number' && !isNaN(endPos.lat) && typeof endPos.lng === 'number' && !isNaN(endPos.lng)) ? endPos : { lat: 23.0225, lng: 72.5714 };
 
-  // Create a clean 5-point interpolated road curve starting directly from live user location to destination
+  const isBhavnagarSide = safeStart.lat < 22.1 && safeStart.lng < 72.4;
+  const isVadodaraSide = safeEnd.lng > 73.0 && safeEnd.lat > 22.0 && safeEnd.lat < 22.6;
+
+  // Real highway routing around Gulf of Khambhat (Bhavnagar -> Dholera -> Vataman -> Tarapur -> Anand -> Vadodara)
+  if (isBhavnagarSide && isVadodaraSide) {
+    return [
+      safeStart,
+      { lat: 22.2500, lng: 72.1800 }, // Dholera Expressway
+      { lat: 22.4300, lng: 72.2200 }, // Vataman Circle
+      { lat: 22.4900, lng: 72.7000 }, // Tarapur Cross Road
+      { lat: 22.5500, lng: 72.9500 }, // Anand Bypass
+      safeEnd
+    ];
+  }
+
+  // Reverse check: Vadodara -> Bhavnagar
+  const isBhavnagarEnd = safeEnd.lat < 22.1 && safeEnd.lng < 72.4;
+  const isVadodaraStart = safeStart.lng > 73.0 && safeStart.lat > 22.0 && safeStart.lat < 22.6;
+  if (isVadodaraStart && isBhavnagarEnd) {
+    return [
+      safeStart,
+      { lat: 22.5500, lng: 72.9500 },
+      { lat: 22.4900, lng: 72.7000 },
+      { lat: 22.4300, lng: 72.2200 },
+      { lat: 22.2500, lng: 72.1800 },
+      safeEnd
+    ];
+  }
+
+  // Create clean 5-point interpolated road curve starting directly from live user location to destination
   const p1 = safeStart;
   const p5 = safeEnd;
   const latDiff = p5.lat - p1.lat;
@@ -93,7 +122,7 @@ export async function fetchRoadPolyline(startPos, endPos) {
 }
 
 /**
- * Calculates distance in KM between 2 coordinates
+ * Calculates distance in KM between 2 coordinates accounting for real road routes
  */
 export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   if (typeof lat1 !== 'number' || typeof lon1 !== 'number' || typeof lat2 !== 'number' || typeof lon2 !== 'number' || isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return 0;
@@ -105,8 +134,23 @@ export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const d = R * c;
-  return Math.round(d * 10) / 10;
+  const crowFliesDist = R * c;
+
+  // Check if route bypasses Gulf of Khambhat (e.g. Bhavnagar to Vadodara / Anand)
+  const isBhavnagar1 = lat1 < 22.1 && lon1 < 72.4;
+  const isVadodara2 = lon2 > 73.0 && lat2 > 22.0 && lat2 < 22.6;
+  const isBhavnagar2 = lat2 < 22.1 && lon2 < 72.4;
+  const isVadodara1 = lon1 > 73.0 && lat1 > 22.0 && lat1 < 22.6;
+
+  if ((isBhavnagar1 && isVadodara2) || (isVadodara1 && isBhavnagar2)) {
+    // Road driving distance around Gulf of Khambhat highway bypass (Dholera - Vataman - Tarapur)
+    const roadDist = crowFliesDist * 1.76;
+    return Math.round(roadDist * 10) / 10;
+  }
+
+  // Standard Indian road driving factor (~1.25x crow flies distance for normal roads)
+  const standardRoadDist = crowFliesDist * 1.25;
+  return Math.round(standardRoadDist * 10) / 10;
 }
 
 /**
@@ -116,5 +160,6 @@ export function estimateEtaMins(distKm) {
   if (!distKm || distKm <= 0) return 0;
   if (distKm <= 10) return Math.round(distKm * 2.4); // City traffic ~25 km/h
   if (distKm <= 40) return Math.round(distKm * 1.6); // Suburbs ~37 km/h
-  return Math.round(distKm * 1.25); // Highway driving ~48 km/h
+  // Highway driving (~62 km/h avg speed -> ~0.96 min per km)
+  return Math.round(distKm * 0.96);
 }
