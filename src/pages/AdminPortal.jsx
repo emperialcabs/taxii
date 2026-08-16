@@ -1,3 +1,4 @@
+// Empire Cab Admin Portal v1.0.4 - Live Trip Tracking & Chronological Inquiries Engine
 import React, { useState, useEffect } from 'react';
 import {
   saveInquiryToMySQL,
