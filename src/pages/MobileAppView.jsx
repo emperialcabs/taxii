@@ -331,7 +331,7 @@ export default function MobileAppView() {
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen
-          onNext={() => proceedAfterAuth()}
+          onNext={() => setAppStage('ACCOUNT_CREATED')}
           onBack={() => setAppStage('PREFERRED_LANG')}
         />
       );

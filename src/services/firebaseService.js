@@ -297,8 +297,7 @@ export const sendFast2SMSOTP = async (phoneNumber, code) => {
 
   // 1. Try serverless backend API proxy endpoint (/api/send-otp)
   try {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const apiEndpoint = isLocal ? '/api/send-otp' : 'https://taxi-three.vercel.app/api/send-otp';
+    const apiEndpoint = '/api/send-otp';
 
     const response = await fetch(apiEndpoint, {
       method: 'POST',
@@ -478,13 +477,18 @@ export const sendEmailOTP = async (email) => {
 
   // Serverless Backend Proxy (/api/send-email-otp)
   try {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const apiEndpoint = isLocal ? '/api/send-email-otp' : 'https://taxi-three.vercel.app/api/send-email-otp';
-    await fetch(apiEndpoint, {
+    const apiEndpoint = '/api/send-email-otp';
+    const resp = await fetch(apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
     });
+    const result = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      console.warn('[Email OTP Backend] API error:', result);
+    } else {
+      console.log('[Email OTP Backend] Sent successfully via:', result.via);
+    }
   } catch (err) {
     console.warn('[Email OTP Backend Proxy] Exception:', err);
   }
