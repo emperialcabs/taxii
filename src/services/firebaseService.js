@@ -293,30 +293,49 @@ export const setupRecaptcha = (containerId = 'recaptcha-container') => {
  * Send Fast2SMS OTP (India +91)
  */
 export const sendFast2SMSOTP = async (phoneNumber, code) => {
+  const cleanDigits = phoneNumber.replace(/\D/g, '').slice(-10);
+
+  // 1. Try serverless backend API proxy endpoint (/api/send-otp)
+  try {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const apiEndpoint = isLocal ? '/api/send-otp' : 'https://taxi-three.vercel.app/api/send-otp';
+
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanDigits, code })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.success) {
+        console.log('[Fast2SMS Backend Proxy] Real SMS sent successfully to:', cleanDigits);
+        return { success: true };
+      } else {
+        console.warn('[Fast2SMS Backend Proxy] API returned failure:', data?.error);
+      }
+    }
+  } catch (err) {
+    console.warn('[Fast2SMS Backend Proxy] Exception:', err);
+  }
+
+  // 2. Direct client fetch fallback
   const apiKey = (
     import.meta.env.VITE_FAST2SMS_API_KEY ||
     localStorage.getItem('fast2sms_api_key') ||
     '5S9P6LKf8qzDT0tRkhu7HbGUcBXZfVOFjpAnodmEegCaNI3MwZ'
   ).trim();
-  if (!apiKey) return { success: false, reason: 'NO_KEY' };
 
-  const cleanDigits = phoneNumber.replace(/\D/g, '').slice(-10);
-  
   try {
     const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
     const response = await fetch(url);
     const data = await response.json();
     if (data && data.return) {
-      console.log('[Fast2SMS] Real SMS sent successfully to:', cleanDigits);
       return { success: true };
-    } else {
-      console.warn('[Fast2SMS] API error:', data?.message || data);
-      return { success: false, error: data?.message || 'Fast2SMS delivery failed' };
     }
-  } catch (err) {
-    console.error('[Fast2SMS] Request exception:', err);
-    return { success: false, error: err.message };
-  }
+  } catch (err) {}
+
+  return { success: false, error: 'SMS delivery failed' };
 };
 
 /**
