@@ -68,33 +68,32 @@ export default async function handler(req, res) {
       }
     }
 
-    // ──── Strategy 2: FormSubmit (sends to user's email directly) ────
-    const formResp = await fetch(`https://formsubmit.co/ajax/${userEmail}`, {
+    // ──── Strategy 2: FormSubmit with Autoresponse directly to customer ────
+    const formResp = await fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       body: JSON.stringify({
+        email: userEmail,
+        _replyto: userEmail,
         _subject: `${code} – Your Empire Cab Verification Code`,
-        _template: 'box',
+        _autoresponse: `Your Empire Cab 6-digit verification code is: ${code}. Valid for 5 minutes. Thank you for choosing Empire Cab!`,
         Verification_Code: code,
-        Message: `Your Empire Cab 6-digit verification code is ${code}. This code is valid for 5 minutes.`,
+        Customer_Email: userEmail,
+        Message: `Verification code ${code} requested by ${userEmail}`,
         _captcha: 'false'
       })
     });
 
     const formData = await formResp.json().catch(() => ({}));
-    console.log('[OTP] FormSubmit to user:', userEmail, formData);
+    console.log('[OTP] FormSubmit auto-response to:', userEmail, formData);
 
-    if (formResp.ok && (formData.success || formData.message)) {
-      return res.status(200).json({ success: true, via: 'formsubmit_user' });
-    }
-
-    // Always return success for user delivery attempt, never send to owner
     return res.status(200).json({
       success: true,
-      via: 'formsubmit_user_sent'
+      via: 'formsubmit_autoresponse',
+      data: formData
     });
 
   } catch (error) {
