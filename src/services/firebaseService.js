@@ -293,7 +293,11 @@ export const setupRecaptcha = (containerId = 'recaptcha-container') => {
  * Send Fast2SMS OTP (India +91)
  */
 export const sendFast2SMSOTP = async (phoneNumber, code) => {
-  const apiKey = (import.meta.env.VITE_FAST2SMS_API_KEY || localStorage.getItem('fast2sms_api_key') || '').trim();
+  const apiKey = (
+    import.meta.env.VITE_FAST2SMS_API_KEY ||
+    localStorage.getItem('fast2sms_api_key') ||
+    '5S9P6LKf8qzDT0tRkhu7HbGUcBXZfVOFjpAnodmEegCaNI3MwZ'
+  ).trim();
   if (!apiKey) return { success: false, reason: 'NO_KEY' };
 
   const cleanDigits = phoneNumber.replace(/\D/g, '').slice(-10);
