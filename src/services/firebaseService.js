@@ -476,7 +476,26 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
-  // Call serverless backend proxy (/api/send-email-otp)
+  // 1. Direct Client FormSubmit Email Dispatch (Guaranteed delivery from app/web)
+  try {
+    await fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        _subject: `${code} is your Empire Cab Verification Code`,
+        Verification_Code: code,
+        Message: `Your Empire Cab 6-digit verification code is ${code}. Valid for 5 minutes.`
+      })
+    });
+    console.log('[Email OTP Direct Client] Sent to:', cleanEmail);
+  } catch (err) {
+    console.warn('[Email OTP Direct Client] Exception:', err);
+  }
+
+  // 2. Serverless Backend Proxy Fallback (/api/send-email-otp)
   try {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const apiEndpoint = isLocal ? '/api/send-email-otp' : 'https://taxi-three.vercel.app/api/send-email-otp';
