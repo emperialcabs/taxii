@@ -26,18 +26,18 @@ const OnboardingGraphic1 = () => (
     {/* Card Container Background */}
     <rect width="320" height="260" rx="28" fill="url(#ob1Bg)" />
     {/* Animated Radar Pulse Rings */}
-    <circle cx="160" cy="120" r="85" fill="#3B82F6" fillOpacity="0.06" />
-    <circle cx="160" cy="120" r="60" fill="#3B82F6" fillOpacity="0.08" />
+    <circle cx="160" cy="120" r="85" fill="#3B82F6" fillOpacity="0.06" className="ob-animate-pulse" />
+    <circle cx="160" cy="120" r="60" fill="#3B82F6" fillOpacity="0.08" className="ob-animate-pulse" />
     {/* Map Path Line */}
     <path d="M50 190 Q120 150 160 110 T270 60" stroke="#3B82F6" strokeWidth="4" strokeDasharray="8 6" strokeLinecap="round" />
     {/* 3D Location Marker Pin */}
-    <g filter="url(#pinShadow)">
+    <g filter="url(#pinShadow)" className="ob-animate-float">
       <path d="M160 40 C140 40 125 55 125 75 C125 100 160 130 160 130 C160 130 195 100 195 75 C195 55 180 40 160 40 Z" fill="url(#pinGrad)" />
       <circle cx="160" cy="72" r="12" fill="#FFFFFF" />
       <circle cx="160" cy="72" r="6" fill="#EF4444" />
     </g>
     {/* 3D Yellow Taxi Car */}
-    <g filter="url(#glow1)">
+    <g filter="url(#glow1)" className="ob-animate-car">
       {/* Car Body Base */}
       <rect x="70" y="150" width="180" height="42" rx="16" fill="url(#carGrad1)" />
       {/* Cabin/Roof */}

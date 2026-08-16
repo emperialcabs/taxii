@@ -493,8 +493,7 @@ export const sendEmailOTP = async (email) => {
     console.warn('[Email OTP Backend Proxy] Exception:', err);
   }
 
-  console.log(`[Email OTP] Code for ${cleanEmail}: ${code}`);
-  return { success: true, code };
+  return { success: true };
 };
 
 /**

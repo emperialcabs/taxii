@@ -16,7 +16,7 @@ export default function AccountCreatedScreen({ onNext, onBack }) {
     <div className="real-mobile-app">
       <div className="white-header-nav">
         <button className="header-back-arrow" onClick={onBack}>‹</button>
-        <h2 className="white-header-title">Notification</h2>
+        <h2 className="white-header-title">Account Created</h2>
       </div>
 
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
@@ -33,8 +33,8 @@ export default function AccountCreatedScreen({ onNext, onBack }) {
                 </filter>
               </defs>
               <rect width="280" height="220" rx="28" fill="url(#accBg)" />
-              <circle cx="140" cy="110" r="68" fill="#86EFAC" fillOpacity="0.4" />
-              <g filter="url(#checkGlow)">
+              <circle cx="140" cy="110" r="68" fill="#86EFAC" fillOpacity="0.4" className="ob-animate-pulse" />
+              <g filter="url(#checkGlow)" className="ob-animate-check">
                 <circle cx="140" cy="110" r="48" fill="#22C55E" />
                 <path d="M124 110 L134 120 L158 96" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
               </g>

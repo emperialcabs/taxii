@@ -215,30 +215,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             </p>
           </div>
 
-          {/* Verification Code Badge */}
-          {demoCode && (
-            <div 
-              style={{ 
-                background: '#ECFDF5', 
-                border: '1.5px dashed #10B981', 
-                borderRadius: '12px', 
-                padding: '10px 16px', 
-                margin: '2px 0 6px 0', 
-                cursor: 'pointer',
-                transition: 'transform 0.15s ease'
-              }}
-              onClick={() => {
-                if (demoCode && demoCode.length === codeLength) {
-                  setCode(demoCode.split(''));
-                }
-              }}
-              title="Click to auto-fill OTP code"
-            >
-              <span style={{ fontSize: '13px', color: '#047857', fontWeight: '700' }}>
-                🔑 Your Code: <strong style={{ fontSize: '17px', letterSpacing: '4px', color: '#065F46' }}>{demoCode}</strong> <span style={{ fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' }}>(Tap to fill)</span>
-              </span>
-            </div>
-          )}
+
 
 
 

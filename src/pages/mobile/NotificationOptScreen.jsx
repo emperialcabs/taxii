@@ -62,8 +62,8 @@ export default function NotificationOptScreen({ onNext, onBack }) {
                 </filter>
               </defs>
               <rect width="280" height="220" rx="28" fill="url(#notifBg)" />
-              <circle cx="140" cy="110" r="70" fill="#FDE68A" fillOpacity="0.5" />
-              <g filter="url(#bellShadow)">
+              <circle cx="140" cy="110" r="70" fill="#FDE68A" fillOpacity="0.5" className="ob-animate-pulse" />
+              <g filter="url(#bellShadow)" className="ob-animate-bell">
                 <path d="M140 45 C115 45 100 65 100 95 V130 L90 145 H190 L180 130 V95 C180 65 165 45 140 45 Z" fill="#F59E0B" />
                 <circle cx="140" cy="160" r="14" fill="#D97706" />
                 <circle cx="172" cy="65" r="16" fill="#EF4444" />

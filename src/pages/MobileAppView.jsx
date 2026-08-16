@@ -94,6 +94,15 @@ export default function MobileAppView() {
     try {
       localStorage.setItem('taxigo_onboarded', 'true');
       localStorage.setItem('taxigo_profile_completed', 'true');
+      const existing = localStorage.getItem('cabsy_user_profile');
+      if (!existing) {
+        const defaultProfile = {
+          name: 'Empire Rider',
+          phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '+91 98765 43210',
+          email: authEmail || localStorage.getItem('cabsy_user_email_otp_target') || ''
+        };
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(defaultProfile));
+      }
     } catch (e) { }
     setAppStage('APP_HOME');
   };
@@ -339,7 +348,7 @@ export default function MobileAppView() {
     case 'ACCOUNT_CREATED':
       return (
         <AccountCreatedScreen
-          onNext={() => proceedAfterAuth()}
+          onNext={() => completeOnboarding()}
           onBack={() => setAppStage('LOCATION_PERM')}
         />
       );
