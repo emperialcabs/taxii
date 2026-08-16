@@ -77,7 +77,12 @@ export const loadAllInquiriesFromMySQL = async () => {
  */
 export const saveCustomerToMySQL = async (customer) => {
   if (!customer || (!customer.name && !customer.phone && !customer.email)) return null;
-  const res = await sendRequest('saveCustomer', customer);
+  const cleanCustomer = {
+    ...customer,
+    totalRides: (Number.isNaN(Number(customer.totalRides)) || !customer.totalRides) ? 0 : Number(customer.totalRides),
+    totalSpent: (Number.isNaN(Number(customer.totalSpent)) || !customer.totalSpent) ? 0 : Number(customer.totalSpent)
+  };
+  const res = await sendRequest('saveCustomer', cleanCustomer);
   return res.success;
 };
 

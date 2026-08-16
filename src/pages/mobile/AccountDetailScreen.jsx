@@ -94,6 +94,8 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
     const finalProfile = {
       ...profile,
       id: profile.id || ('CUST-' + Math.floor(10000 + Math.random() * 89999)),
+      totalRides: (Number.isNaN(Number(profile.totalRides)) || !profile.totalRides) ? 0 : Number(profile.totalRides),
+      totalSpent: (Number.isNaN(Number(profile.totalSpent)) || !profile.totalSpent) ? 0 : Number(profile.totalSpent),
       joined: profile.joined || new Date().toISOString().split('T')[0]
     };
     try {
