@@ -27,31 +27,32 @@ export default async function handler(req, res) {
   const cleanDigits = String(phone).replace(/\D/g, '').slice(-10);
 
   try {
-    // 1. Fast2SMS Quick SMS Route (Active & Verified)
+    // 1. Try Fast2SMS Cheap OTP Route (₹0.25 per SMS) FIRST
+    const fastUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
+    const response = await fetch(fastUrl);
+    const data = await response.json();
+
+    if (data && data.return) {
+      console.log('[Fast2SMS OTP Route - ₹0.25/SMS] Sent successfully to:', cleanDigits);
+      return res.status(200).json({ success: true, via: 'fast2sms_otp', cost: '₹0.25', data });
+    }
+
+    // 2. Fallback to Quick SMS Route (₹5.00/SMS) if website verification is pending
     const messageText = encodeURIComponent(`Your Empire Cab verification code is ${code}`);
     const quickUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${messageText}&language=english&flash=0&numbers=${cleanDigits}`;
     const qResponse = await fetch(quickUrl);
     const qData = await qResponse.json();
 
     if (qData && qData.return) {
-      console.log('[Fast2SMS API Proxy] Real SMS sent to:', cleanDigits);
-      return res.status(200).json({ success: true, via: 'fast2sms_q', data: qData });
+      console.log('[Fast2SMS Quick SMS Route - ₹5.00/SMS] Sent successfully to:', cleanDigits);
+      return res.status(200).json({ success: true, via: 'fast2sms_q', cost: '₹5.00', data: qData });
     }
 
-    // 2. Fast2SMS OTP Route Fallback
-    const fastUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
-    const response = await fetch(fastUrl);
-    const data = await response.json();
-
-    if (data && data.return) {
-      return res.status(200).json({ success: true, via: 'fast2sms_otp', data });
-    }
-
-    console.warn('[Fast2SMS API Response]:', qData || data);
+    console.warn('[Fast2SMS API Response]:', data || qData);
     return res.status(200).json({
       success: false,
-      error: qData?.message || data?.message || 'SMS delivery failed',
-      code: qData?.status_code || data?.status_code
+      error: data?.message || qData?.message || 'SMS delivery failed',
+      code: data?.status_code || qData?.status_code
     });
   } catch (error) {
     console.error('[API Send OTP Error]:', error);
