@@ -327,7 +327,8 @@ export const sendFast2SMSOTP = async (phoneNumber, code) => {
   ).trim();
 
   try {
-    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
+    const msg = encodeURIComponent(`Your Empire Cab verification code is ${code}`);
+    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${msg}&language=english&flash=0&numbers=${cleanDigits}`;
     const response = await fetch(url);
     const data = await response.json();
     if (data && data.return) {

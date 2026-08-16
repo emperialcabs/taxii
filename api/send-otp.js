@@ -27,29 +27,31 @@ export default async function handler(req, res) {
   const cleanDigits = String(phone).replace(/\D/g, '').slice(-10);
 
   try {
-    // 1. Fast2SMS v2 OTP Route
+    // 1. Fast2SMS Quick SMS Route (Active & Verified)
+    const messageText = encodeURIComponent(`Your Empire Cab verification code is ${code}`);
+    const quickUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${messageText}&language=english&flash=0&numbers=${cleanDigits}`;
+    const qResponse = await fetch(quickUrl);
+    const qData = await qResponse.json();
+
+    if (qData && qData.return) {
+      console.log('[Fast2SMS API Proxy] Real SMS sent to:', cleanDigits);
+      return res.status(200).json({ success: true, via: 'fast2sms_q', data: qData });
+    }
+
+    // 2. Fast2SMS OTP Route Fallback
     const fastUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${code}&flash=0&numbers=${cleanDigits}`;
     const response = await fetch(fastUrl);
     const data = await response.json();
 
     if (data && data.return) {
-      return res.status(200).json({ success: true, via: 'fast2sms', data });
+      return res.status(200).json({ success: true, via: 'fast2sms_otp', data });
     }
 
-    // 2. Fast2SMS Quick SMS Route
-    const quickUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=Your%20Empire%20Cab%20verification%20code%20is%20${code}&language=english&flash=0&numbers=${cleanDigits}`;
-    const qResponse = await fetch(quickUrl);
-    const qData = await qResponse.json();
-
-    if (qData && qData.return) {
-      return res.status(200).json({ success: true, via: 'fast2sms_q', data: qData });
-    }
-
-    console.warn('[Fast2SMS API Response]:', data || qData);
+    console.warn('[Fast2SMS API Response]:', qData || data);
     return res.status(200).json({
       success: false,
-      error: data?.message || qData?.message || 'SMS delivery failed',
-      code: data?.status_code || qData?.status_code
+      error: qData?.message || data?.message || 'SMS delivery failed',
+      code: qData?.status_code || data?.status_code
     });
   } catch (error) {
     console.error('[API Send OTP Error]:', error);
