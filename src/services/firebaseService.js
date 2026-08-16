@@ -323,7 +323,7 @@ export const sendFast2SMSOTP = async (phoneNumber, code) => {
   const apiKey = (
     import.meta.env.VITE_FAST2SMS_API_KEY ||
     localStorage.getItem('fast2sms_api_key') ||
-    '5S9P6LKf8qzDT0tRkhu7HbGUcBXZfVOFjpAnodmEegCaNI3MwZ'
+    '5S9P6LKf8qzDT0tRkhu7HbGUcBX2rVOFjpAnodmEegCaNI3MwZckRFTr8SAhdOMwEt1CPlaugnUqZmX4'
   ).trim();
 
   try {
