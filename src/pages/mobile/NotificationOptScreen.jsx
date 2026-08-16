@@ -45,18 +45,18 @@ export default function NotificationOptScreen({ onNext, onBack }) {
         <h2 className="white-header-title">Notification</h2>
       </div>
 
-      <div className="verify-screen-body">
-        <div style={{ textAlign: 'center', paddingTop: '10px' }}>
+      <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
+        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0' }}>
           <img 
             className="verify-hero-img" 
             src="/assets/images/notification/notification-img.png" 
             alt="Notification Illustration" 
-            style={{ maxWidth: '240px', maxHeight: '200px', margin: '0 auto 16px auto', display: 'block', objectFit: 'contain' }}
+            style={{ width: '100%', maxWidth: '280px', maxHeight: '240px', margin: '0 auto 20px auto', display: 'block', objectFit: 'contain' }}
           />
-          <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '28px', fontWeight: '800', color: '#1E293B', margin: '16px 0 10px 0' }}>
+          <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '32px', fontWeight: '800', color: '#1E293B', margin: '12px 0 10px 0' }}>
             Notifications
           </h2>
-          <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '15px', color: '#64748B', lineHeight: '1.6', maxWidth: '300px', margin: '0 auto' }}>
+          <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '15px', color: '#64748B', lineHeight: '1.6', maxWidth: '320px', margin: '0 auto' }}>
             Stay notified about new car, offer status and other updates. You can turn off any time from setting.
           </p>
 
@@ -74,10 +74,25 @@ export default function NotificationOptScreen({ onNext, onBack }) {
           )}
         </div>
 
-        <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '20px', width: '100%' }}>
           <button 
             className="notification-allow-btn" 
             onClick={handleAllowNotifications}
+            style={{
+              width: '100%',
+              height: '56px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #FFAE00 0%, #FF9500 100%)',
+              color: '#FFFFFF',
+              fontSize: '18px',
+              fontWeight: '800',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(255, 174, 0, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
             Allow
           </button>

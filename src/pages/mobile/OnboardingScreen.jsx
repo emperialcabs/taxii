@@ -6,7 +6,7 @@ export default function OnboardingScreen({ onFinish }) {
   const onboardingSlides = [
     {
       title: "Request Ride",
-      desc: "Request a ride gets picked up by a nearby community driver instantly.",
+      desc: "Request a ride and get picked up by a nearby certified driver instantly.",
       img: "/assets/images/splash-screen/onboarding1.png"
     },
     {
@@ -18,6 +18,11 @@ export default function OnboardingScreen({ onFinish }) {
       title: "Track Your Ride",
       desc: "Real-time GPS movement tracking from pickup point straight to destination.",
       img: "/assets/images/splash-screen/onboarding3.png"
+    },
+    {
+      title: "Choose Vehicle Class",
+      desc: "Select your preferred ride class from Swift, Ertiga to Luxury Innova.",
+      img: "/assets/images/splash-screen/onboarding4.png"
     }
   ];
 
@@ -26,10 +31,12 @@ export default function OnboardingScreen({ onFinish }) {
   return (
     <div className="real-mobile-app">
       <div className="onboarding-screen-container">
-        <div className="onboarding-image-box">
-          <div style={{ fontSize: '80px', textAlign: 'center', margin: '20px 0' }}>
-            {onboardingStep === 0 ? '🚖' : onboardingStep === 1 ? '👨‍✈️' : '📍'}
-          </div>
+        <div className="onboarding-image-box" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '260px', padding: '16px' }}>
+          <img 
+            src={currentSlide.img} 
+            alt={currentSlide.title} 
+            style={{ maxWidth: '85%', maxHeight: '250px', objectFit: 'contain' }}
+          />
         </div>
         <div className="onboarding-text-box">
           <h2 className="onboarding-title">{currentSlide.title}</h2>

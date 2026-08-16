@@ -169,24 +169,13 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
           
-          {/* OTP SVG Icon */}
-          <div style={{
-            width: '80px', height: '80px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
-          }}>
-            {authMethod === 'email' ? (
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-            ) : (
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                <line x1="12" y1="18" x2="12.01" y2="18"/>
-              </svg>
-            )}
+          {/* OTP Verification Illustration */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '240px', margin: '0 auto' }}>
+            <img 
+              src="/assets/images/splash-screen/otp_verification.png" 
+              alt="OTP Verification" 
+              style={{ width: '100%', maxHeight: '180px', objectFit: 'contain' }}
+            />
           </div>
 
           <div>
