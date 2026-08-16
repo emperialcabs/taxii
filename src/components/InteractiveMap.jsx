@@ -67,9 +67,10 @@ const createDestinationPinIcon = (label = "Dropoff") => {
   });
 };
 
-// Component to dynamically re-center & auto-fit route bounds on map view update
+// Component to dynamically re-center & auto-fit route bounds on map view update smoothly
 function MapRecenter({ center, destination, routePolyline, zoom }) {
   const map = useMap();
+  const prevCenterRef = React.useRef(center);
 
   useEffect(() => {
     if (!map || !map._container) return;
@@ -85,7 +86,6 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
     refreshMapSize();
     const t1 = setTimeout(refreshMapSize, 100);
     const t2 = setTimeout(refreshMapSize, 400);
-    const t3 = setTimeout(refreshMapSize, 1000);
 
     window.addEventListener('resize', refreshMapSize);
 
@@ -95,9 +95,15 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
           [center.lat, center.lng],
           [destination.lat, destination.lng]
         ]);
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true, duration: 0.8 });
       } else if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
-        map.flyTo([center.lat, center.lng], zoom || 15, { animate: true, duration: 1.0 });
+        const prev = prevCenterRef.current;
+        const dist = prev ? Math.hypot(center.lat - prev.lat, center.lng - prev.lng) : 1;
+        // Only pan if shift is significant to avoid fighting manual drag gestures
+        if (dist > 0.0003) {
+          map.panTo([center.lat, center.lng], { animate: true, duration: 0.6, easeLinearity: 0.25 });
+          prevCenterRef.current = center;
+        }
       }
     } catch (err) {
       console.warn("Leaflet map view set notice:", err);
@@ -106,7 +112,6 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
       window.removeEventListener('resize', refreshMapSize);
     };
   }, [center?.lat, center?.lng, destination?.lat, destination?.lng, zoom, map]);
@@ -220,7 +225,15 @@ export default function InteractiveMap({
           touchZoom={true}
           scrollWheelZoom={true}
           doubleClickZoom={true}
-          style={{ width: '100%', height: '100%', background: '#E2E8F0' }}
+          zoomAnimation={true}
+          fadeAnimation={true}
+          markerZoomAnimation={true}
+          easeLinearity={0.25}
+          wheelDebounceTime={40}
+          wheelPxPerZoomLevel={120}
+          inertia={true}
+          inertiaDeceleration={3000}
+          style={{ width: '100%', height: '100%', background: '#E2E8F0', willChange: 'transform' }}
         >
           <MapRecenter center={{ lat: safeLat, lng: safeLng }} destination={destination} routePolyline={routePolyline} zoom={zoom} />
           

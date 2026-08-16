@@ -31,6 +31,23 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Leaflet Map Smooth Hardware Acceleration */
+.leaflet-tile-container {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.leaflet-marker-icon, .custom-leaflet-user-pin, .custom-leaflet-blue-arrow-pin, .custom-leaflet-dest-pin {
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
 * {
   margin: 0;
   padding: 0;
