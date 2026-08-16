@@ -21,9 +21,13 @@
 
 .real-mobile-app {
   width: 100%;
+  /* vh fallback first, then dvh for iOS Safari dynamic viewport */
   min-height: 100vh;
+  min-height: 100dvh;
   height: 100vh;
+  height: 100dvh;
   max-height: 100vh;
+  max-height: 100dvh;
   max-width: 600px;
   margin: 0 auto;
   background: #F8FAFC;
@@ -33,11 +37,10 @@
   box-sizing: border-box;
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0,0,0,0.08);
-  animation: fadeInApp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
+  /* Do NOT start at opacity:0 — causes white flash if GPU compositing stalls */
+  will-change: transform;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  /* GPU acceleration for smooth rendering */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
@@ -51,7 +54,6 @@
   flex: 1 1 auto !important;
   min-height: 0 !important;
   box-shadow: none;
-  animation: none;
   overflow: hidden;
 }
 
@@ -68,8 +70,8 @@
 
 @keyframes fadeInApp {
   from {
-    opacity: 0;
-    transform: translate3d(0, 6px, 0);
+    opacity: 1;
+    transform: translate3d(0, 4px, 0);
   }
   to {
     opacity: 1;

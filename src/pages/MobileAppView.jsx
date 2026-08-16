@@ -261,8 +261,9 @@ export default function MobileAppView() {
     );
   };
 
-  // Modular View Orchestrator
-  switch (appStage) {
+  // Modular View Orchestrator — wrapped in a fixed-height root container
+  // so that all child screens with height:100% resolve correctly on iOS/Android
+  const renderStage = () => { switch (appStage) {
     case 'PRELOADER':
       return <PreloaderScreen onFinish={() => setAppStage('SPLASH')} />;
 
@@ -473,5 +474,24 @@ export default function MobileAppView() {
 
     default:
       return renderTabContent();
-  }
+  } };
+
+  return (
+    <div
+      id="taxigo-app-root"
+      style={{
+        width: '100%',
+        height: '100vh',
+        minHeight: '100vh',
+        maxHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+        background: '#F8FAFC'
+      }}
+    >
+      {renderStage()}
+    </div>
+  );
 }
