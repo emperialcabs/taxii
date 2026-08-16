@@ -332,17 +332,22 @@ export const sendPhoneOTP = async (phoneNumber) => {
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
 
-  // 1. Try Fast2SMS if API key is provided
-  const fastRes = await sendFast2SMSOTP(formatted, code);
-  if (fastRes.success) {
-    try {
+  // 1. Try Fast2SMS API
+  try {
+    const fastRes = await sendFast2SMSOTP(formatted, code);
+    if (fastRes.success) {
       sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
         phone: formatted,
         code,
         expiry: Date.now() + 5 * 60 * 1000
       }));
-    } catch (err) {}
-    return { success: true, via: 'fast2sms' };
+      console.log('[Fast2SMS] Real SMS sent to', formatted);
+      return { success: true, via: 'fast2sms' };
+    } else {
+      console.warn('[Fast2SMS] Delivery did not succeed, engaging fallback:', fastRes.error || fastRes.reason);
+    }
+  } catch (err) {
+    console.warn('[Fast2SMS] Exception, engaging fallback:', err);
   }
 
   // 2. Try Firebase Phone Auth
@@ -359,7 +364,7 @@ export const sendPhoneOTP = async (phoneNumber) => {
     window.recaptchaVerifier = null;
   }
 
-  // 3. Fallback code generation
+  // 3. Fallback code generation (Guaranteed to ask for OTP and navigate to OtpVerifyScreen)
   try {
     sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
       phone: formatted,
@@ -367,7 +372,7 @@ export const sendPhoneOTP = async (phoneNumber) => {
       expiry: Date.now() + 5 * 60 * 1000
     }));
   } catch (err) {}
-  console.log(`[Phone OTP Fallback] Code for ${formatted}: ${code}`);
+  console.log(`[Phone OTP Fallback] 6-digit code for ${formatted}: ${code}`);
   return { success: true, code, fallback: true };
 };
 
