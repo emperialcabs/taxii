@@ -5,7 +5,7 @@ import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
-import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X } from 'lucide-react';
+import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X, Car, ShieldCheck, Star, Sparkles, Award } from 'lucide-react';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
   // Load saved profile from localStorage
@@ -616,137 +616,163 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
       )}
 
       {/* Multinational Big-Company Style "Trip Completed" Modal */}
-      {completedModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.75)', zIndex: 10000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(8px)'
-        }}>
+      {completedModal && (() => {
+        const rewardVal = Number(completedModal.rewardAmount || completedModal.rewardGiven || 0);
+        const hasReward = rewardVal > 0 || (completedModal.rewardIssued && rewardVal > 0);
+        
+        return (
           <div style={{
-            background: '#FFFFFF', borderRadius: '28px', padding: '28px 24px 24px 24px', width: '100%', maxWidth: '380px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)', textAlign: 'center', overflow: 'hidden', position: 'relative'
+            position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', zIndex: 10000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(16px)'
           }}>
-            {/* Top Banner Celebration Badge */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-              <div style={{
-                width: '72px', height: '72px', borderRadius: '50%', background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF',
-                boxShadow: '0 10px 25px rgba(34, 197, 94, 0.4)'
-              }}>
-                <CheckCircle2 size={42} strokeWidth={2.5} />
-              </div>
-            </div>
-
-            <h2 style={{ fontFamily: 'League Spartan', fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0' }}>
-              Trip Completed!
-            </h2>
-            <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', color: '#64748B', margin: '0 0 20px 0' }}>
-              Thank you for riding with <strong>Empire Cabs</strong>
-            </p>
-
-            {/* Route & Driver Summary Card */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', textAlign: 'left', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
-                <div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Trip ID</span>
-                  <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A' }}>{completedModal.id || 'INQ-COMPLETED'}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Total Fare</span>
-                  <div style={{ fontWeight: '800', fontSize: '18px', color: '#16A34A' }}>₹{Number(completedModal.fare || 0).toFixed(2)}</div>
+            <div style={{
+              background: '#FFFFFF', borderRadius: '28px', padding: '28px 24px 24px 24px', width: '100%', maxWidth: '390px',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)', textAlign: 'center', overflow: 'hidden', position: 'relative',
+              border: '1px solid rgba(255, 255, 255, 0.6)'
+            }}>
+              {/* Top Banner Celebration Badge */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <div style={{
+                  position: 'relative',
+                  width: '76px', height: '76px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF',
+                  boxShadow: '0 12px 30px rgba(16, 185, 129, 0.45)'
+                }}>
+                  <CheckCircle2 size={44} strokeWidth={2.5} />
                 </div>
               </div>
 
-              {/* Pickup -> Dropoff Locations */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}></span>
-                  <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#334155' }}>{completedModal.pickup || completedModal.pickupLoc || 'Pickup Location'}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }}></span>
-                  <span style={{ fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#334155' }}>{completedModal.dropoff || completedModal.dropoffLoc || 'Destination'}</span>
-                </div>
-              </div>
+              <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 4px 0', letterSpacing: '-0.3px' }}>
+                Trip Completed!
+              </h2>
+              <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '14px', color: '#64748B', margin: '0 0 20px 0', fontWeight: '500' }}>
+                Thank you for riding with <strong style={{ color: '#0F172A' }}>Empire Cab</strong>
+              </p>
 
-              {/* Driver Details */}
-              {completedModal.driver && (
-                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🚕</div>
+              {/* Route & Driver Summary Card */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', textAlign: 'left', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>Driver: {completedModal.driver}</div>
-                    <span style={{ fontSize: '11px', color: '#64748B' }}>Empire Certified Partner</span>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trip ID</span>
+                    <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>{completedModal.id || 'INQ-COMPLETED'}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Fare</span>
+                    <div style={{ fontWeight: '800', fontSize: '20px', color: '#10B981', fontFamily: 'Space Grotesk, sans-serif' }}>₹{Number(completedModal.fare || 0).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                {/* Pickup -> Dropoff Locations Timeline */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', paddingLeft: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', flexShrink: 0, boxShadow: '0 0 0 3px rgba(16,185,129,0.15)' }}></div>
+                    <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '13px', fontWeight: '700', color: '#1E293B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{completedModal.pickup || completedModal.pickupLoc || 'Pickup Location'}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0, boxShadow: '0 0 0 3px rgba(239,68,68,0.15)' }}></div>
+                    <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '13px', fontWeight: '700', color: '#1E293B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{completedModal.dropoff || completedModal.dropoffLoc || 'Destination'}</span>
+                  </div>
+                </div>
+
+                {/* Driver Details with MNC Vector Icon */}
+                {completedModal.driver && (
+                  <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', flexShrink: 0 }}>
+                      <Car size={20} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>Driver: {completedModal.driver}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                        <ShieldCheck size={13} color="#10B981" />
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Empire Certified Partner</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* REWARD SECTION — ONLY SHOWN IF REWARD WAS ISSUED & > 0 */}
+              {hasReward && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+                  border: '1.5px solid #10B981',
+                  borderRadius: '20px',
+                  padding: '16px',
+                  marginBottom: '20px',
+                  textAlign: 'center',
+                  boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', flexShrink: 0 }}>
+                    <Gift size={22} />
+                  </div>
+                  <div style={{ textAlign: 'left', flex: 1 }}>
+                    <h4 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '16px', fontWeight: '800', color: '#065F46', margin: '0 0 2px 0' }}>
+                      ₹{rewardVal.toFixed(2)} Cash Reward Earned!
+                    </h4>
+                    <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '12px', color: '#047857', margin: 0, fontWeight: '600' }}>
+                      Added to your Empire Wallet balance.
+                    </p>
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* REWARD SECTION — ONLY SHOWN IF REWARD WAS ISSUED / GIVEN BY ADMIN! */}
-            {(Boolean(completedModal.rewardAmount) || Boolean(completedModal.rewardGiven) || Boolean(completedModal.rewardIssued) || (completedModal.walletDiscountUsed > 0)) && (
-              <div style={{
-                background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-                border: '1.5px solid #F59E0B',
-                borderRadius: '20px',
-                padding: '16px',
-                marginBottom: '20px',
-                textAlign: 'center',
-                boxShadow: '0 8px 20px rgba(245, 158, 11, 0.2)'
-              }}>
-                <div style={{ fontSize: '32px', marginBottom: '4px' }}>🎁</div>
-                <h4 style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#92400E', margin: '0 0 4px 0' }}>
-                  Congratulations! You Earned ₹{completedModal.rewardAmount || 100} Cash Reward
-                </h4>
-                <p style={{ fontFamily: 'Space Grotesk', fontSize: '13px', color: '#B45309', margin: 0, lineHeight: '1.4' }}>
-                  Added directly to your Empire Cash Wallet for your next ride!
-                </p>
+              {/* Rating Stars with Vector Star Icons */}
+              <div style={{ marginBottom: '22px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '10px', fontFamily: 'Space Grotesk, sans-serif' }}>Rate Your Driver Experience</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setDriverRating(star)}
+                      style={{
+                        background: 'none', border: 'none', padding: '4px', cursor: 'pointer',
+                        color: star <= driverRating ? '#F59E0B' : '#CBD5E1', transition: 'transform 0.15s ease',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}
+                    >
+                      <Star size={28} fill={star <= driverRating ? '#F59E0B' : 'transparent'} strokeWidth={1.5} />
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
 
-            {/* Rating Stars */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Rate Your Driver Experience</div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setDriverRating(star)}
-                    style={{
-                      background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer',
-                      color: star <= driverRating ? '#F59E0B' : '#CBD5E1', transition: 'transform 0.1s ease'
-                    }}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCompletedModal(null);
+                  localStorage.removeItem('taxigo_last_completed_trip');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontFamily: 'League Spartan, sans-serif',
+                  fontSize: '17px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                <span>DONE / BOOK NEXT RIDE</span>
+                <ArrowRight size={20} />
+              </button>
             </div>
-
-            {/* Action Button */}
-            <button
-              onClick={() => {
-                setCompletedModal(null);
-                localStorage.removeItem('taxigo_last_completed_trip');
-              }}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #FFAE00 0%, #FF9500 100%)',
-                color: '#0F172A',
-                border: 'none',
-                fontFamily: 'League Spartan',
-                fontSize: '17px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(255, 174, 0, 0.4)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}
-            >
-              Done / Book Next Ride →
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Bottom Navigation Toolbar */}
       <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />

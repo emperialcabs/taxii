@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getBestLiveLocation } from '../../services/liveLocationService';
+import { Navigation, MapPin, ArrowLeft, ArrowRight, Compass } from 'lucide-react';
 
 const DEFAULT_PLACES = [
   "Bhavnagar, Gujarat",
@@ -96,8 +97,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
   return (
     <div className="real-mobile-app" style={{ background: '#F8FAFC' }}>
       {/* Premium Header */}
-      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-        <button className="header-back-arrow" onClick={onBack}>←</button>
+      <div className="white-header-nav" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="header-back-arrow" onClick={onBack} style={{ background: '#F1F5F9', border: 'none', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0F172A' }}>
+          <ArrowLeft size={18} />
+        </button>
         <h2 className="white-header-title">Select Destination</h2>
       </div>
 
@@ -155,7 +158,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                   }}
                   style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '700', color: '#059669', background: '#ECFDF5', borderBottom: '1px solid #A7F3D0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                 >
-                  <span>🎯</span>
+                  <Navigation size={18} color="#10B981" />
                   <span><strong>Use My Current Live GPS Spot</strong></span>
                 </div>
                 <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
@@ -170,7 +173,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       setActiveDropdown(null);
                     }}
                   >
-                    <span style={{ color: '#10B981', fontWeight: 'bold' }}>📍</span>
+                    <MapPin size={16} color="#10B981" />
                     <span>{place}</span>
                   </div>
                 ))}
@@ -181,8 +184,8 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
           {/* Dropoff Input */}
           <div style={{ position: 'relative', borderTop: '1px dashed #E2E8F0', paddingTop: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MapPin size={16} color="#EF4444" />
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
               </div>
               {currentDistance && (
@@ -226,7 +229,7 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                       setActiveDropdown(null);
                     }}
                   >
-                    <span style={{ color: '#EF4444', fontWeight: 'bold' }}>📍</span>
+                    <MapPin size={16} color="#EF4444" />
                     <span>{place}</span>
                   </div>
                 ))}

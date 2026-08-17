@@ -1,6 +1,7 @@
 import React from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
+import { Wallet, QrCode, Banknote, CreditCard, ArrowLeft, CheckCircle2, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 
 export default function SelectPaymentScreen({ 
   userCoords,
@@ -17,6 +18,13 @@ export default function SelectPaymentScreen({
   const destPos = getCoordsForPlace(dropoffLoc || "Ahmedabad Airport (AMD)", userCoords);
   const routePolyline = generateRoutePolyline(pickupPos, destPos);
 
+  const paymentMethods = [
+    { id: 'wallet', label: 'Empire Wallet', icon: Wallet },
+    { id: 'gpay', label: 'UPI / QR', icon: QrCode },
+    { id: 'cash', label: 'Cash to Driver', icon: Banknote },
+    { id: 'card', label: 'Debit / Credit Card', icon: CreditCard }
+  ];
+
   return (
     <div className="real-mobile-app">
       <div className="full-homescreen-map-wrapper">
@@ -29,84 +37,110 @@ export default function SelectPaymentScreen({
             routePolyline={routePolyline}
           />
 
-          <div className="homescreen-bottom-card">
+          <div className="homescreen-bottom-card" style={{ background: '#FFFFFF', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', boxShadow: '0 -10px 40px rgba(0,0,0,0.12)', padding: '24px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <button 
+                type="button"
                 onClick={onBack}
                 style={{
                   background: '#F1F5F9',
                   border: 'none',
-                  borderRadius: '20px',
-                  padding: '8px 16px',
+                  borderRadius: '16px',
+                  padding: '8px 14px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   cursor: 'pointer',
                   fontFamily: 'Space Grotesk, sans-serif',
                   fontWeight: '700',
-                  fontSize: '14px',
-                  color: '#1E293B'
+                  fontSize: '13px',
+                  color: '#0F172A'
                 }}
               >
-                <span>←</span> Back
+                <ArrowLeft size={16} />
+                <span>Back</span>
               </button>
-              <div style={{ background: '#DCFCE7', color: '#15803D', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
-                ✓ Fare Locked ₹270
+              <div style={{ background: '#ECFDF5', color: '#047857', border: '1px solid #10B981', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <ShieldCheck size={14} color="#10B981" />
+                <span>Fare Guaranteed ₹270</span>
               </div>
             </div>
 
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#1E293B', letterSpacing: '0.3px', margin: '0 0 10px 0' }}>
-              SELECT PAYMENT METHOD
+            <p style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.5px', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+              Select Payment Option
             </p>
             
-            {/* Payment Option Buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '18px' }}>
-              {[
-                { id: 'wallet', label: 'Wallet', icon: '💳' },
-                { id: 'gpay', label: 'UPI / GPay', icon: '🌐' },
-                { id: 'cash', label: 'Cash', icon: '💵' },
-                { id: 'card', label: 'Card', icon: '💳' }
-              ].map((item) => {
+            {/* Payment Option Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '18px' }}>
+              {paymentMethods.map((item) => {
                 const isSelected = selectedPayment === item.id;
+                const IconComponent = item.icon;
                 return (
                   <div 
                     key={item.id}
                     style={{
-                      background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                      background: isSelected ? '#ECFDF5' : '#F8FAFC',
                       border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                       borderRadius: '18px',
-                      padding: '12px 6px',
+                      padding: '12px 14px',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center',
+                      gap: '10px',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 14px rgba(52, 211, 153, 0.25)' : '0 2px 6px rgba(0,0,0,0.02)',
+                      boxShadow: isSelected ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
                       transition: 'all 0.2s ease'
                     }}
                     onClick={() => setSelectedPayment(item.id)}
                   >
-                    <span style={{ fontSize: '22px', marginBottom: '4px' }}>{item.icon}</span>
-                    <span style={{ fontFamily: 'League Spartan', fontWeight: '800', fontSize: '13px', color: '#1E293B' }}>{item.label}</span>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: isSelected ? '#10B981' : '#E2E8F0', color: isSelected ? '#FFFFFF' : '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <IconComponent size={18} />
+                    </div>
+                    <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: '700', fontSize: '13px', color: '#0F172A' }}>{item.label}</span>
                   </div>
                 );
               })}
             </div>
 
-            <p style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#1E293B', letterSpacing: '0.3px', margin: '14px 0 8px 0' }}>
-              PROMO / COUPON CODE
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '14px 0 8px 0' }}>
+              <Tag size={15} color="#10B981" />
+              <p style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.5px', margin: 0, textTransform: 'uppercase' }}>
+                Promo / Voucher Code
+              </p>
+            </div>
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <input 
-                style={{ flex: 1, background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '14px', padding: '12px 16px', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '600', color: '#1E293B' }}
+                style={{ flex: 1, background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '14px', padding: '12px 16px', outline: 'none', fontFamily: 'Space Grotesk, sans-serif', fontSize: '14px', fontWeight: '600', color: '#0F172A' }}
                 placeholder="Enter promo code (e.g. EMPIRE50)"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
               />
             </div>
 
-            <button className="taxigo-btn-primary" onClick={onRequestRide}>
-              Confirm Booking & Search Driver 🚕
+            <button 
+              type="button"
+              className="taxigo-btn-primary" 
+              onClick={onRequestRide}
+              style={{
+                width: '100%',
+                padding: '16px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                fontFamily: 'League Spartan, sans-serif',
+                fontSize: '17px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                letterSpacing: '0.5px'
+              }}
+            >
+              <span>CONFIRM BOOKING & ASSIGN DRIVER</span>
+              <ArrowRight size={20} />
             </button>
           </div>
         </div>

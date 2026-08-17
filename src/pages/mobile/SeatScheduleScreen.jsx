@@ -3,6 +3,7 @@ import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { db } from '../../services/dbService';
+import { Gift, ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function SeatScheduleScreen({ 
   userCoords,
@@ -122,23 +123,25 @@ export default function SeatScheduleScreen({
           <div className="homescreen-bottom-card" style={{ maxHeight: '82vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <button 
+                type="button"
                 onClick={onBack}
                 style={{
                   background: '#F1F5F9',
                   border: 'none',
-                  borderRadius: '20px',
-                  padding: '8px 16px',
+                  borderRadius: '16px',
+                  padding: '8px 14px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   cursor: 'pointer',
                   fontFamily: 'Space Grotesk, sans-serif',
                   fontWeight: '700',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   color: '#0F172A'
                 }}
               >
-                <span>←</span> Back
+                <ArrowLeft size={16} />
+                <span>Back</span>
               </button>
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
                 <span>●</span> {tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`}
@@ -310,8 +313,9 @@ export default function SeatScheduleScreen({
             {walletBalance > 0 && (
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '16px', padding: '12px 16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🎁</span> Apply Wallet Reward Balance
+                  <div style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Gift size={18} color="#10B981" />
+                    <span>Apply Wallet Reward Balance</span>
                   </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '800', color: '#15803D' }}>
                     <input 

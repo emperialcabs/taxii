@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { loadAllInquiriesFromMySQL, updateInquiryStatusInMySQL, saveInquiryToMySQL } from '../../services/mysqlService';
-import { Calendar, Clock3, CheckCircle2, XCircle, Car, ArrowRight, X } from 'lucide-react';
+import { Calendar, Clock3, CheckCircle2, XCircle, Car, ArrowRight, X, Edit3 } from 'lucide-react';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
   const [filter, setFilter] = useState('ALL'); // ALL, SUCCESS, REJECT
@@ -510,25 +510,27 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                 {/* MODAL ACTION BUTTONS */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button
-                    onClick={() => {
-                      setEditForm(selectedInquiry);
-                      setIsEditing(true);
-                    }}
+                    onClick={() => setIsEditing(true)}
                     style={{
                       width: '100%',
-                      background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
                       color: '#FFFFFF',
                       border: 'none',
                       padding: '14px',
                       borderRadius: '16px',
-                      fontFamily: 'League Spartan',
+                      fontFamily: 'League Spartan, sans-serif',
                       fontSize: '16px',
                       fontWeight: '800',
                       cursor: 'pointer',
-                      boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)'
+                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
                     }}
                   >
-                    ✏️ Edit Inquiry Details
+                    <Edit3 size={16} />
+                    <span>Edit Inquiry Details</span>
                   </button>
 
                   {getStatusBadge(selectedInquiry.status).canCancel && (
@@ -541,13 +543,18 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                         color: '#DC2626',
                         padding: '14px',
                         borderRadius: '16px',
-                        fontFamily: 'League Spartan',
+                        fontFamily: 'League Spartan, sans-serif',
                         fontSize: '16px',
                         fontWeight: '800',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
                       }}
                     >
-                      ❌ Cancel Inquiry
+                      <XCircle size={16} />
+                      <span>Cancel Inquiry</span>
                     </button>
                   )}
                 </div>
