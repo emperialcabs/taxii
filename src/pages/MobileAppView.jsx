@@ -316,7 +316,7 @@ export default function MobileAppView() {
           setOtpCode={setOtpCode}
           authMethod={authMethod}
           authEmail={authEmail}
-          onNext={() => setAppStage('NOTIFICATION_OPT')}
+          onNext={() => proceedAfterAuth()}
           onBack={() => setAppStage('LETS_YOU_IN')}
         />
       );

@@ -861,8 +861,11 @@
 
 /* Applied to onboarding SVG graphics */
 .ob-animate-float { animation: obFloatPin 3s ease-in-out infinite; transform-origin: center; }
+.ob-animate-float-slow { animation: obFloatPin 4.5s ease-in-out infinite; transform-origin: center; }
+.ob-animate-float-delay { animation: obFloatPin 3.5s ease-in-out infinite 1.5s; transform-origin: center; }
 .ob-animate-car { animation: obDriveCar 2.5s ease-in-out infinite; transform-origin: center; }
 .ob-animate-pulse { animation: obPulseRing 2s ease-in-out infinite; transform-origin: center; }
 .ob-animate-check { animation: obPopCheck 1.8s ease-in-out infinite; transform-origin: center; }
 .ob-animate-bell { animation: obBellRing 3s ease-in-out infinite; transform-origin: top center; }
+
 
