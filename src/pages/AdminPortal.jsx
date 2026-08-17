@@ -994,16 +994,39 @@ export default function AdminPortal() {
 
   const handleCompleteTrip = (inquiryId) => {
     if (!inquiryId) return;
+    const targetInq = inquiries.find(i => i.id === inquiryId);
+    if (!targetInq) return;
+
+    // Ask admin for reward amount upon completing ride
+    const rewardInput = window.prompt(
+      `Completing Trip ${inquiryId} for ${targetInq.customerName || 'Customer'}.\n\nEnter customer wallet reward amount in ₹ (Enter 0 for no reward):`,
+      "0"
+    );
+
+    // If admin clicks Cancel, abort completion
+    if (rewardInput === null) return;
+
     const actionKey = 'complete_' + inquiryId;
     if (actionLoadingId === actionKey) return;
     setActionLoadingId(actionKey);
 
-    const targetInq = inquiries.find(i => i.id === inquiryId);
+    const rewardVal = Math.max(0, Number(rewardInput) || 0);
+    const hasReward = rewardVal > 0;
+
+    if (hasReward) {
+      db.addRewardToCustomer(targetInq.customerPhone, rewardVal, inquiryId, targetInq.pickup, targetInq.dropoff);
+      updateInquiryRewardInMySQL(inquiryId, true, rewardVal).catch(() => {});
+    }
 
     setInquiries(prev => {
       const updated = prev.map(inq => {
         if (inq.id === inquiryId) {
-          return { ...inq, status: 'Completed' };
+          return { 
+            ...inq, 
+            status: 'Completed',
+            rewardIssued: hasReward ? 1 : 0,
+            rewardAmount: hasReward ? rewardVal : 0
+          };
         }
         return inq;
       });
@@ -1011,34 +1034,44 @@ export default function AdminPortal() {
       return updated;
     });
 
-    if (targetInq) {
-      const fullCompleted = { ...targetInq, status: 'Completed' };
-      localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
-      updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
-      try {
-        db.saveInquiry(fullCompleted);
-      } catch (e) {}
+    const fullCompleted = { 
+      ...targetInq, 
+      status: 'Completed',
+      rewardIssued: hasReward ? 1 : 0,
+      rewardAmount: hasReward ? rewardVal : 0
+    };
 
-      // Direct notification to customer on trip completion
-      notifyCustomer({
-        type: 'trip_completed',
-        title: '🏁 Trip Completed!',
-        body: `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
-        customerPhone: targetInq.customerPhone,
-        customerEmail: targetInq.customerEmail
-      });
+    localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
+    updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
+    try {
+      db.saveInquiry(fullCompleted);
+    } catch (e) {}
 
-      // Post real-time cross-tab BroadcastChannel message
-      try {
-        if ('BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
-          bc.postMessage({ type: 'TRIP_COMPLETED', data: fullCompleted, timestamp: Date.now() });
-          bc.close();
-        }
-      } catch (e) {}
+    // Direct notification to customer on trip completion
+    notifyCustomer({
+      type: 'trip_completed',
+      title: '🏁 Trip Completed!',
+      body: hasReward 
+        ? `Thank you for riding with EMPERIAL CABS! You earned ₹${rewardVal} wallet reward credit!`
+        : `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
+      customerPhone: targetInq.customerPhone,
+      customerEmail: targetInq.customerEmail
+    });
 
-      window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
+    // Post real-time cross-tab BroadcastChannel message
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.postMessage({ type: 'TRIP_COMPLETED', data: fullCompleted, timestamp: Date.now() });
+        bc.close();
+      }
+    } catch (e) {}
+
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
+
+    if (hasReward) {
+      alert(`Trip ${inquiryId} completed! Credited ₹${rewardVal} wallet reward to ${targetInq.customerName || 'customer'}.`);
     }
 
     setTimeout(() => {
@@ -1753,13 +1786,13 @@ export default function AdminPortal() {
           </div>
         )}
 
-        {/* TAB: FINAL TRIPS (Active Ride Pipeline & Reward Workflow) */}
+        {/* TAB: FINAL TRIPS (Active Ride Pipeline) */}
         {activeTab === 'final_trips' && (
           <div className="tab-pane">
             <div className="pane-header flex justify-between align-center">
               <div>
                 <h2>Final Trips Command Center</h2>
-                <p>Manage live ongoing rides. Start trip, complete ride upon arrival, and assign rewards to customers.</p>
+                <p>Manage live ongoing rides. Start trip and complete ride upon arrival.</p>
               </div>
             </div>
 
@@ -1781,12 +1814,10 @@ export default function AdminPortal() {
                     {sortedInquiries.filter(i => 
                       i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
-                      i.status === 'On Ride' || 
-                      (i.status === 'Completed' && !i.rewardIssued)
+                      i.status === 'On Ride'
                     ).map((inq) => {
                       const isConfirmed = inq.status === 'Confirmed';
                       const isInProgress = inq.status === 'In Progress' || inq.status === 'On Ride';
-                      const isCompletedPendingReward = inq.status === 'Completed' && !inq.rewardIssued;
 
                       return (
                         <tr key={inq.id}>
@@ -1818,9 +1849,8 @@ export default function AdminPortal() {
                           <td>
                             {isConfirmed && <span className="status-tag status-confirmed" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Confirmed (Ready)</span>}
                             {isInProgress && <span className="status-tag status-on-ride" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>● Live In Progress</span>}
-                            {isCompletedPendingReward && <span className="status-tag status-active" style={{ padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Ride Finished</span>}
                           </td>
-                          <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '280px' }}>
+                          <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '220px' }}>
                             <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'nowrap' }}>
                               {/* 1. START TRIP BUTTON */}
                               {isConfirmed && (
@@ -1870,30 +1900,6 @@ export default function AdminPortal() {
                                 </button>
                               )}
 
-                              {/* 3. ASSIGN REWARD BUTTON */}
-                              {isCompletedPendingReward && (
-                                <button 
-                                  className="btn-action-reward"
-                                  disabled={actionLoadingId === 'reward_' + inq.id}
-                                  onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
-                                  title="Assign Wallet Reward to Customer"
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '7px 14px',
-                                    borderRadius: '16px',
-                                    fontWeight: '800',
-                                    fontSize: '0.82rem',
-                                    whiteSpace: 'nowrap',
-                                    opacity: actionLoadingId === 'reward_' + inq.id ? 0.7 : 1,
-                                    cursor: actionLoadingId === 'reward_' + inq.id ? 'not-allowed' : 'pointer'
-                                  }}
-                                >
-                                  <Gift size={14} /> {actionLoadingId === 'reward_' + inq.id ? 'Processing...' : 'Assign Reward'}
-                                </button>
-                              )}
-
                               <button 
                                 className="btn-action-view"
                                 disabled={!!actionLoadingId}
@@ -1922,8 +1928,7 @@ export default function AdminPortal() {
                     {sortedInquiries.filter(i => 
                       i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
-                      i.status === 'On Ride' || 
-                      (i.status === 'Completed' && !i.rewardIssued)
+                      i.status === 'On Ride'
                     ).length === 0 && (
                       <tr>
                         <td colSpan={7} className="text-center text-muted p-4">
@@ -1981,36 +1986,14 @@ export default function AdminPortal() {
                         </td>
                         <td><strong className="text-green">₹{Number(inq.fare || 0).toFixed(2)}</strong></td>
                         <td>
-                          {inq.rewardIssued ? (
-                            <span className="status-tag status-confirmed" style={{ whiteSpace: 'nowrap' }}>✓ ₹{inq.rewardAmount || 100} Credited</span>
+                          {inq.rewardIssued && Number(inq.rewardAmount) > 0 ? (
+                            <span className="status-tag status-confirmed" style={{ whiteSpace: 'nowrap' }}>✓ ₹{inq.rewardAmount} Credited</span>
                           ) : (
-                            <span className="status-tag status-pending" style={{ whiteSpace: 'nowrap' }}>Reward Pending</span>
+                            <span className="text-muted" style={{ fontSize: '0.8rem' }}>No Reward</span>
                           )}
                         </td>
-                        <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '220px' }}>
+                        <td className="text-right" style={{ whiteSpace: 'nowrap', minWidth: '140px' }}>
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'nowrap' }}>
-                            {(!inq.rewardIssued || Number(inq.rewardIssued) !== 1) && (
-                              <button 
-                                className="btn-action-reward"
-                                disabled={actionLoadingId === 'reward_' + inq.id}
-                                onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
-                                title="Assign Wallet Reward to Customer"
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  padding: '6px 12px',
-                                  borderRadius: '16px',
-                                  fontWeight: '800',
-                                  fontSize: '0.82rem',
-                                  whiteSpace: 'nowrap',
-                                  opacity: actionLoadingId === 'reward_' + inq.id ? 0.7 : 1,
-                                  cursor: actionLoadingId === 'reward_' + inq.id ? 'not-allowed' : 'pointer'
-                                }}
-                              >
-                                🎁 {actionLoadingId === 'reward_' + inq.id ? 'Processing...' : 'Reward'}
-                              </button>
-                            )}
                             <button 
                               className="btn-action-view"
                               disabled={!!actionLoadingId}
@@ -3681,24 +3664,26 @@ export default function AdminPortal() {
               </div>
             </div>
 
-            {/* Admin Reward Status & Profit Split */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-              <div style={{ background: '#EEF2FF', padding: '12px', borderRadius: '12px', border: '1px solid #C7D2FE' }}>
-                <small style={{ color: '#4338CA', fontWeight: '800', fontSize: '11px', display: 'block' }}>Admin Reward Status</small>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#3730A3', marginTop: '2px' }}>
-                  {(receiptModal.inquiry.rewardIssued == 1 || receiptModal.inquiry.rewardIssued === true) ? (
-                    `✓ ₹${receiptModal.inquiry.rewardAmount || 100} Reward Issued`
-                  ) : (
-                    'Pending Award'
-                  )}
+            {/* Reward Info (Only if rewardAmount > 0) & Commission Split */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: (receiptModal.inquiry.rewardIssued && Number(receiptModal.inquiry.rewardAmount) > 0) ? '1fr 1fr' : '1fr', 
+              gap: '12px', 
+              marginBottom: '24px' 
+            }}>
+              {receiptModal.inquiry.rewardIssued && Number(receiptModal.inquiry.rewardAmount) > 0 ? (
+                <div style={{ background: '#EEF2FF', padding: '12px', borderRadius: '12px', border: '1px solid #C7D2FE' }}>
+                  <small style={{ color: '#4338CA', fontWeight: '800', fontSize: '11px', display: 'block' }}>🎁 Customer Wallet Reward</small>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#3730A3', marginTop: '2px' }}>
+                    ✓ ₹{receiptModal.inquiry.rewardAmount} Credited to Customer
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               <div style={{ background: '#F5F3FF', padding: '12px', borderRadius: '12px', border: '1px solid #DDD6FE' }}>
                 <small style={{ color: '#6D28D9', fontWeight: '800', fontSize: '11px', display: 'block' }}>Commission Split</small>
                 <div style={{ fontSize: '12px', color: '#5B21B6', marginTop: '2px', fontWeight: '700' }}>
-                  Driver ({driverShare}%): ₹{(Number(receiptModal.inquiry.fare) * (driverShare / 100)).toFixed(2)}<br />
-                  Company ({companyShare}%): ₹{(Number(receiptModal.inquiry.fare) * (companyShare / 100)).toFixed(2)}
+                  Driver ({driverShare}%): ₹{(Number(receiptModal.inquiry.fare) * (driverShare / 100)).toFixed(2)} &nbsp;•&nbsp; Company ({companyShare}%): ₹{(Number(receiptModal.inquiry.fare) * (companyShare / 100)).toFixed(2)}
                 </div>
               </div>
             </div>
