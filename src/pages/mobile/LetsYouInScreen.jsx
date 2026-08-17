@@ -51,6 +51,8 @@ export default function LetsYouInScreen({
       uid,
       profession: '',
       area: '',
+      totalRides: 0,
+      totalSpent: 0,
       registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       status: 'Active',
       lastLogin: new Date().toISOString()

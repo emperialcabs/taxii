@@ -92,9 +92,6 @@ class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    try {
-      localStorage.clear();
-    } catch (e) {}
     window.location.reload();
   };
 

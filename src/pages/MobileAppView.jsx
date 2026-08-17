@@ -99,7 +99,9 @@ export default function MobileAppView() {
         const defaultProfile = {
           name: 'Empire Rider',
           phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '+91 98765 43210',
-          email: authEmail || localStorage.getItem('cabsy_user_email_otp_target') || ''
+          email: authEmail || localStorage.getItem('cabsy_user_email_otp_target') || '',
+          totalRides: 0,
+          totalSpent: 0
         };
         localStorage.setItem('cabsy_user_profile', JSON.stringify(defaultProfile));
       }
