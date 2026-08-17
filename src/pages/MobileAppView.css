@@ -859,7 +859,22 @@
   75% { transform: rotate(0deg); }
 }
 
-/* Applied to onboarding SVG graphics */
+/* Applied to onboarding SVG & PNG hero graphics */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes heroSlideIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.onboarding-hero-img {
+  animation: heroFloat 4s ease-in-out infinite;
+  will-change: transform;
+}
+
 .ob-animate-float { animation: obFloatPin 3s ease-in-out infinite; transform-origin: center; }
 .ob-animate-float-slow { animation: obFloatPin 4.5s ease-in-out infinite; transform-origin: center; }
 .ob-animate-float-delay { animation: obFloatPin 3.5s ease-in-out infinite 1.5s; transform-origin: center; }
@@ -867,5 +882,6 @@
 .ob-animate-pulse { animation: obPulseRing 2s ease-in-out infinite; transform-origin: center; }
 .ob-animate-check { animation: obPopCheck 1.8s ease-in-out infinite; transform-origin: center; }
 .ob-animate-bell { animation: obBellRing 3s ease-in-out infinite; transform-origin: top center; }
+
 
 
