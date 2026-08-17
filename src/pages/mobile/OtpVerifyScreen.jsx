@@ -218,56 +218,6 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             </p>
           </div>
 
-          {/* Executive MNC Security Dispatch Banner */}
-          {demoCode && (
-            <div style={{
-              background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
-              border: '1.5px solid #10B981',
-              borderRadius: '20px',
-              padding: '14px 16px',
-              width: '100%',
-              boxSizing: 'border-box',
-              textAlign: 'center',
-              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.15)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
-                <ShieldCheck size={16} color="#10B981" />
-                <span style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '14px', fontWeight: '800', color: '#065F46', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  Empire Auto-Security Dispatch
-                </span>
-              </div>
-              <div style={{ fontFamily: 'monospace', fontSize: '26px', fontWeight: '900', color: '#047857', letterSpacing: '6px', margin: '4px 0 10px 0' }}>
-                {demoCode}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const digits = demoCode.split('');
-                  setCode(digits);
-                  handleVerify(demoCode);
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '14px',
-                  padding: '10px 18px',
-                  fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '14px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Zap size={15} fill="#FFFFFF" />
-                <span>TAP TO AUTO-FILL & VERIFY NOW</span>
-              </button>
-            </div>
-          )}
-
 
 
 

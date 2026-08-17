@@ -489,10 +489,14 @@ export const sendEmailOTP = async (email) => {
 
   // Serverless Backend Proxy (/api/send-email-otp)
   try {
-    const apiEndpoint = '/api/send-email-otp';
+    const baseUrl = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) 
+      ? window.location.origin 
+      : 'https://taxii-three.vercel.app';
+    const apiEndpoint = `${baseUrl}/api/send-email-otp`;
+
     const resp = await fetch(apiEndpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
     });
     const result = await resp.json().catch(() => ({}));
@@ -505,7 +509,7 @@ export const sendEmailOTP = async (email) => {
     console.warn('[Email OTP Backend Proxy] Exception:', err);
   }
 
-  return { success: true };
+  return { success: true, code };
 };
 
 /**
