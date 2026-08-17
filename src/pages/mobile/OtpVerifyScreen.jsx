@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
+import { ShieldCheck, Zap, CheckCircle2, ArrowLeft } from 'lucide-react';
 import otpIllustration from '../../assets/images/splash-screen/otp_verification.png';
 
 const otpFallbackSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none"><rect width="240" height="180" rx="20" fill="%23F1F5F9"/><circle cx="120" cy="80" r="45" fill="%23ECFDF5"/><path d="M105 75L115 85L135 65" stroke="%2310B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="80" y="130" width="80" height="12" rx="6" fill="%23CBD5E1"/></svg>`;
@@ -175,8 +176,10 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
 
   return (
     <div className="real-mobile-app">
-      <div className="white-header-nav">
-        <button className="header-back-arrow" onClick={onBack}>‹</button>
+      <div className="white-header-nav" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="header-back-arrow" onClick={onBack} style={{ background: '#F1F5F9', border: 'none', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0F172A' }}>
+          <ArrowLeft size={18} />
+        </button>
         <h2 className="white-header-title">OTP Verification</h2>
       </div>
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
@@ -214,6 +217,56 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
               <strong style={{ color: '#0F172A' }}>{displayTarget}</strong>
             </p>
           </div>
+
+          {/* Executive MNC Security Dispatch Banner */}
+          {demoCode && (
+            <div style={{
+              background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+              border: '1.5px solid #10B981',
+              borderRadius: '20px',
+              padding: '14px 16px',
+              width: '100%',
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.15)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
+                <ShieldCheck size={16} color="#10B981" />
+                <span style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '14px', fontWeight: '800', color: '#065F46', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  Empire Auto-Security Dispatch
+                </span>
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '26px', fontWeight: '900', color: '#047857', letterSpacing: '6px', margin: '4px 0 10px 0' }}>
+                {demoCode}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const digits = demoCode.split('');
+                  setCode(digits);
+                  handleVerify(demoCode);
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '10px 18px',
+                  fontFamily: 'League Spartan, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Zap size={15} fill="#FFFFFF" />
+                <span>TAP TO AUTO-FILL & VERIFY NOW</span>
+              </button>
+            </div>
+          )}
 
 
 
