@@ -27,36 +27,22 @@
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
   text-decoration: none;
+  padding: 0;
+  margin: 0;
 }
 
-.logo-icon {
-  width: 42px;
-  height: 42px;
-  background: var(--primary-green);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 184, 124, 0.3);
-}
-
-.logo-c {
-  color: #ffffff;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 1.6rem;
-  line-height: 1;
-}
-
-.logo-text {
-  font-family: var(--font-heading);
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--dark-heading);
-  letter-spacing: -0.02em;
+.brand-logo-img {
+  height: 62px;
+  max-height: 68px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  border: none;
+  background: transparent;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transition: height 0.2s ease;
 }
 
 /* Nav Menu */
@@ -149,8 +135,22 @@
 }
 
 .header-cta-btn {
-  padding: 0.7rem 1.6rem;
+  background-color: #ffc107;
+  color: #0f172a;
+  padding: 0.75rem 1.65rem;
   font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  border: 1px solid #e0a800;
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.45);
+  transition: var(--transition);
+}
+
+.header-cta-btn:hover {
+  background-color: #ffb300;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
 }
 
 .mobile-toggle-btn {

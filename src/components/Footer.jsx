@@ -11,11 +11,12 @@ export default function Footer() {
           <div className="footer-grid">
             {/* Brand Column */}
             <div className="footer-brand">
-              <Link to="/" className="brand-logo footer-logo">
-                <div className="logo-icon">
-                  <span className="logo-c">C</span>
-                </div>
-                <span className="logo-text">Empire Cab</span>
+              <Link to="/" className="brand-logo footer-logo" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <img 
+                  src="/assets/images/logo.svg" 
+                  alt="EMPERIAL CABS" 
+                  style={{ height: '48px', width: 'auto', display: 'block', objectFit: 'contain' }}
+                />
               </Link>
               <p className="footer-desc">
                 Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius.

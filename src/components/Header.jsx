@@ -30,10 +30,11 @@ export default function Header({ onOpenBooking }) {
       <div className="container header-container">
         {/* Logo */}
         <Link to="/" className="brand-logo">
-          <div className="logo-icon">
-            <span className="logo-c">C</span>
-          </div>
-          <span className="logo-text">Empire Cab</span>
+          <img 
+            src="/assets/images/logo.svg" 
+            alt="EMPERIAL CABS" 
+            className="brand-logo-img"
+          />
         </Link>
 
         {/* Navigation Menu */}
