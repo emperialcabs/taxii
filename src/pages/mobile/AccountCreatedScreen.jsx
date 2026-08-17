@@ -26,12 +26,11 @@ export default function AccountCreatedScreen({ onNext, onBack }) {
 
       <div className="verify-screen-body" style={{ padding: '20px 20px 28px 20px', display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)', justifyContent: 'space-between', boxSizing: 'border-box' }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: '100%', maxWidth: '320px', minHeight: '260px', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 16px auto' }}>
+          <div style={{ width: '100%', maxWidth: '320px', height: '260px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', margin: '0 auto 16px auto', overflow: 'hidden', borderRadius: '24px' }}>
             <img 
               src={accCreatedImg} 
               alt="Account Created" 
-              className="onboarding-hero-img"
-              style={{ maxWidth: '100%', maxHeight: '280px', objectFit: 'contain', filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.06))' }}
+              className="onboarding-cropped-image"
             />
           </div>
 

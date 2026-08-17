@@ -199,80 +199,15 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
           
-          {/* OTP Verification Animated Vector Object */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '300px', height: '220px', margin: '0 auto' }}>
-            <svg viewBox="0 0 320 230" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-              <defs>
-                <linearGradient id="otpMonitorBg" x1="0" y1="0" x2="320" y2="230" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FAFAFA" />
-                  <stop offset="1" stopColor="#F1F5F9" />
-                </linearGradient>
-                <linearGradient id="goldShield" x1="230" y1="10" x2="300" y2="90" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FFB800" />
-                  <stop offset="1" stopColor="#FF9500" />
-                </linearGradient>
-                <filter id="otpMonitorShadow" x="-10%" y="-10%" width="130%" height="130%">
-                  <feDropShadow dx="0" dy="10" stdDeviation="16" floodColor="#0F172A" floodOpacity="0.14" />
-                </filter>
-                <filter id="shieldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor="#FFB800" floodOpacity="0.4" />
-                </filter>
-              </defs>
-
-              <rect width="320" height="230" rx="28" fill="url(#otpMonitorBg)" />
-
-              {/* Background Plant */}
-              <g transform="translate(240, 130)">
-                <rect x="14" y="32" width="20" height="25" rx="4" fill="#334155" />
-                <path d="M24 32 C10 20 2 0 24 -8 C46 0 38 20 24 32 Z" fill="#FF4D4D" />
-                <path d="M24 28 C12 16 14 0 24 -8 Z" fill="#E11D48" />
-              </g>
-
-              {/* Verification Screen Monitor Window */}
-              <g filter="url(#otpMonitorShadow)" transform="translate(30, 20)">
-                <rect width="210" height="135" rx="14" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" />
-                <rect x="0" y="0" width="210" height="22" rx="14" fill="#334155" />
-                <circle cx="14" cy="11" r="3" fill="#FF4D4D" />
-                <circle cx="24" cy="11" r="3" fill="#FFB800" />
-                <circle cx="34" cy="11" r="3" fill="#10B981" />
-
-                {/* Padlock Icon */}
-                <g transform="translate(98, 30)">
-                  <rect x="2" y="7" width="10" height="9" rx="2" fill="#FFB800" />
-                  <path d="M4 7 V4 C4 2.5 5.5 1 7 1 C8.5 1 10 2.5 10 4 V7" stroke="#FF9500" strokeWidth="1.5" fill="none" />
-                </g>
-
-                {/* Verification Label */}
-                <text x="105" y="55" textAnchor="middle" fontFamily="League Spartan, sans-serif" fontSize="12" fontWeight="800" fill="#0F172A">Verification</text>
-
-                {/* 4 Input Slots */}
-                <g transform="translate(68, 70)">
-                  <rect x="0" y="0" width="16" height="20" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1" />
-                  <rect x="20" y="0" width="16" height="20" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1" />
-                  <rect x="40" y="0" width="16" height="20" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1" />
-                  <rect x="60" y="0" width="16" height="20" rx="4" fill="#FFFBEB" stroke="#FFB800" strokeWidth="1" />
-                </g>
-
-                {/* Golden Submit Button */}
-                <rect x="88" y="102" width="34" height="12" rx="4" fill="#FFAE00" />
-              </g>
-
-              {/* Animated Floating Golden Shield Badge */}
-              <g filter="url(#shieldGlow)" transform="translate(230, 15)" className="ob-animate-float">
-                <path d="M30 0 L60 15 V45 C60 68 30 85 30 85 C30 85 0 68 0 45 V15 L30 0 Z" fill="url(#goldShield)" />
-                <circle cx="30" cy="38" r="15" fill="#1E293B" />
-                <path d="M22 38 L27 43 L38 32" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-              </g>
-
-              {/* Animated Character on Left */}
-              <g transform="translate(5, 90)" className="ob-animate-float-slow">
-                <path d="M10 50 L45 35 L75 80 L35 95 Z" fill="#334155" />
-                <path d="M25 50 L10 100 H20 L35 50 Z" fill="#1E293B" />
-                <path d="M28 25 C28 15 58 15 55 25 L45 75 H20 Z" fill="#10B981" />
-                <circle cx="42" cy="10" r="10" fill="#FCA5A5" />
-                <path d="M34 5 C34 -2 52 -2 50 5 C50 11 46 15 42 15 Z" fill="#1E293B" />
-              </g>
-            </svg>
+          {/* OTP Verification Cropped Image Container */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '320px', height: '240px', margin: '0 auto', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '240px', borderRadius: '20px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+              <img 
+                src={otpVerifyImg} 
+                alt="Verification" 
+                className="onboarding-cropped-image"
+              />
+            </div>
           </div>
 
           <div>
