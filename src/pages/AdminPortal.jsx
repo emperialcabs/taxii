@@ -704,9 +704,17 @@ export default function AdminPortal() {
   const activeDriversCount = drivers.filter(d => d.status !== 'Off Duty').length;
 
   // Confirm inquiry & add money to report
+  // Confirm inquiry & assign driver with instant optimistic updates
   const handleConfirmInquiry = () => {
     if (!assignModal.inquiry) return;
-    const driverObj = drivers.find(d => d.id === selectedDriverId) || drivers[0];
+    let driverObj = drivers.find(d => d.id === selectedDriverId);
+    if (!driverObj) {
+      if (drivers.length > 0) {
+        driverObj = drivers[0];
+      } else {
+        driverObj = { id: 'DRV-101', name: 'Empire Executive Chauffeur', vehicle: assignModal.inquiry.vehicle || 'Empire Regular', plate: 'CAB-8899' };
+      }
+    }
 
     const updatedInquiries = inquiries.map(inq => {
       if (inq.id === assignModal.inquiry.id) {
@@ -720,8 +728,11 @@ export default function AdminPortal() {
     });
 
     setInquiries(updatedInquiries);
+    try {
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
+    } catch (e) {}
 
-    // Sync status to Hostinger MySQL
+    // Sync status to Hostinger MySQL in background
     if (assignModal.inquiry.id) {
       updateInquiryStatusInMySQL(
         assignModal.inquiry.id,
@@ -730,9 +741,9 @@ export default function AdminPortal() {
       ).catch(() => {});
     }
 
-    // Update driver status
+    // Update driver status to 'On Ride'
     setDrivers(prev => prev.map(d => {
-      if (d.id === driverObj.id) {
+      if (d.id === driverObj.id || d.name === driverObj.name) {
         return {
           ...d,
           status: 'On Ride'
@@ -747,24 +758,32 @@ export default function AdminPortal() {
     notifyCustomer({
       type: 'confirmed',
       title: '✅ Ride Booking Confirmed!',
-      body: `Your booking for ${assignModal.inquiry.pickup} → ${assignModal.inquiry.dropoff} is confirmed! Driver: ${driverObj.name} (${driverObj.plate})`,
+      body: `Your booking for ${assignModal.inquiry.pickup} → ${assignModal.inquiry.dropoff} is confirmed! Driver: ${driverObj.name} (${driverObj.plate || 'CAB-8899'})`,
       customerPhone: assignModal.inquiry.customerPhone,
       customerEmail: assignModal.inquiry.customerEmail
     });
 
+    window.dispatchEvent(new Event('storage'));
     setAssignModal({ open: false, inquiry: null });
   };
 
   const handleStartTrip = (inquiryId) => {
     if (!inquiryId) return;
-    setInquiries(prev => prev.map(inq => {
-      if (inq.id === inquiryId) {
-        return { ...inq, status: 'In Progress' };
-      }
-      return inq;
-    }));
-
     const targetInq = inquiries.find(i => i.id === inquiryId);
+
+    setInquiries(prev => {
+      const updated = prev.map(inq => {
+        if (inq.id === inquiryId) {
+          return { ...inq, status: 'In Progress' };
+        }
+        return inq;
+      });
+      try {
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
     if (targetInq) {
       updateInquiryStatusInMySQL(inquiryId, 'In Progress', targetInq.driver || 'Assigned Driver').catch(() => {});
       try {
@@ -780,6 +799,15 @@ export default function AdminPortal() {
         customerEmail: targetInq.customerEmail
       });
     }
+
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.postMessage({ type: 'TRIP_STARTED', inquiryId, timestamp: Date.now() });
+        bc.close();
+      }
+    } catch (e) {}
+
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_started', { detail: { id: inquiryId } }));
   };
@@ -796,18 +824,30 @@ export default function AdminPortal() {
         }
         return inq;
       });
-      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      try {
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      } catch (e) {}
       return updated;
     });
 
     const targetInq = completedInq || inquiries.find(i => i.id === inquiryId);
     if (targetInq) {
       const fullCompleted = { ...targetInq, status: 'Completed' };
-      localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
+      try {
+        localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
+      } catch (e) {}
       updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
       try {
         db.saveInquiry(fullCompleted);
       } catch (e) {}
+
+      // Return driver to active duty
+      setDrivers(prev => prev.map(d => {
+        if (d.name === targetInq.driver) {
+          return { ...d, status: 'Active' };
+        }
+        return d;
+      }));
 
       // Direct notification to customer on trip completion
       notifyCustomer({
@@ -833,35 +873,41 @@ export default function AdminPortal() {
   };
 
   const handleCancelInquiry = (inquiryId) => {
+    if (!inquiryId) return;
     setInquiries(prev => {
-      const target = prev.find(i => i.id === inquiryId);
-      if (target && target.id) {
-        updateInquiryStatusInMySQL(target.id, 'Cancelled').catch(() => {});
-        notifyCustomer({
-          type: 'cancelled',
-          title: '❌ Booking Cancelled',
-          body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by EMPERIAL CABS dispatch.`,
-          customerPhone: target.customerPhone,
-          customerEmail: target.customerEmail
-        });
-      }
-      return prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
+      const updated = prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
+      try {
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
+
+    const target = inquiries.find(i => i.id === inquiryId);
+    if (target && target.id) {
+      updateInquiryStatusInMySQL(target.id, 'Cancelled').catch(() => {});
+      notifyCustomer({
+        type: 'cancelled',
+        title: '❌ Booking Cancelled',
+        body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by EMPERIAL CABS dispatch.`,
+        customerPhone: target.customerPhone,
+        customerEmail: target.customerEmail
+      });
+    }
+    window.dispatchEvent(new Event('storage'));
   };
 
   const handleDeleteInquiry = (inquiryId) => {
     if (!inquiryId) return;
     if (window.confirm("Are you sure you want to delete this inquiry record permanently?")) {
       deleteInquiryFromMySQL(inquiryId).catch(() => {});
-      setInquiries(prev => prev.filter(i => i.id !== inquiryId));
-      try {
-        const saved = localStorage.getItem('cabsy_inquiries');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          const filtered = parsed.filter(i => i.id !== inquiryId);
+      setInquiries(prev => {
+        const filtered = prev.filter(i => i.id !== inquiryId);
+        try {
           localStorage.setItem('cabsy_inquiries', JSON.stringify(filtered));
-        }
-      } catch (e) {}
+        } catch (e) {}
+        return filtered;
+      });
+      window.dispatchEvent(new Event('storage'));
     }
   };
 
@@ -1726,6 +1772,14 @@ export default function AdminPortal() {
                               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                             >
                               <Eye size={14} /> View Details
+                            </button>
+                            <button 
+                              className="btn-action-delete"
+                              onClick={() => handleDeleteInquiry(inq.id)}
+                              title="Delete Record Permanently"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                            >
+                              <Trash2 size={14} /> Delete
                             </button>
                           </div>
                         </td>
