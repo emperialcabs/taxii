@@ -1,3 +1,4 @@
+/** EMPERIAL CABS — Service Engine v1.0.5 [2026-08-17] */
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
