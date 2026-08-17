@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plane, Clock, Navigation, Briefcase, Calendar, Award, ShieldCheck, Wrench, Star } from 'lucide-react';
+import { Plane, Clock, Users, Package, Calendar, Briefcase, ShieldCheck, Wrench, Star } from 'lucide-react';
 import './Pages.css';
 
 export default function Services({ onOpenBooking }) {
@@ -9,13 +9,13 @@ export default function Services({ onOpenBooking }) {
       {/* PAGE BANNER */}
       <section className="page-banner">
         <div className="container">
-          <div className="banner-card" style={{ borderRadius: '24px' }}>
-            <div className="banner-overlay" style={{ background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.92) 100%)' }}></div>
+          <div className="banner-card">
+            <div className="banner-overlay"></div>
             <div className="banner-content">
               <div className="breadcrumb">
-                <Link to="/">Home</Link> &gt; <span style={{ color: '#FFAE00' }}>Services</span>
+                <Link to="/">Home</Link> &gt; <span>Services</span>
               </div>
-              <h1 className="banner-title" style={{ fontSize: '2.8rem', fontWeight: '800' }}>Executive Mobility & Chauffeur Offerings</h1>
+              <h1 className="banner-title">Experience Convenience Our Service Offerings</h1>
             </div>
           </div>
         </div>
@@ -24,49 +24,45 @@ export default function Services({ onOpenBooking }) {
       {/* THE RIGHT VEHICLE FOR YOUR JOURNEY */}
       <section className="section vehicle-fleet-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px auto' }}>
-            <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Our Executive Fleet</span>
-            <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', marginTop: '6px' }}>The Ideal Vehicle for Every Trip</h2>
+          <div className="section-header">
+            <h2>The Right Vehicle for Your Journey</h2>
+            <p>Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et</p>
           </div>
 
           <div className="grid-4-cols">
             <div className="card fleet-card">
-              <h3>Emperial Sedan</h3>
-              <div style={{ background: '#FFFBEB', color: '#D97706', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'inline-block', marginBottom: '8px', border: '1px solid #FDE68A' }}>₹15 / km</div>
-              <p className="fleet-cap">1 - 4 Passengers • Air-Conditioned Comfort</p>
-              <Link to="/book-ride" className="fleet-link-btn" style={{ color: '#FFAE00' }}>Book Now &gt;</Link>
+              <h3>Empire Regular</h3>
+              <p className="fleet-cap">1 - 4 Passenger</p>
+              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80" alt="Emperial Sedan Class" />
+                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80" alt="Empire Regular" />
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Emperial XL SUV</h3>
-              <div style={{ background: '#FFFBEB', color: '#D97706', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'inline-block', marginBottom: '8px', border: '1px solid #FDE68A' }}>₹22 / km</div>
-              <p className="fleet-cap">1 - 6 Passengers • Extra Luggage Capacity</p>
-              <Link to="/book-ride" className="fleet-link-btn" style={{ color: '#FFAE00' }}>Book Now &gt;</Link>
+              <h3>Empire XL</h3>
+              <p className="fleet-cap">1 - 6 Passenger</p>
+              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80" alt="Emperial XL SUV" />
+                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80" alt="Empire XL" />
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Emperial First Class</h3>
-              <div style={{ background: '#FFFBEB', color: '#D97706', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'inline-block', marginBottom: '8px', border: '1px solid #FDE68A' }}>₹35 / km</div>
-              <p className="fleet-cap">1 - 4 Passengers • Mercedes & BMW Fleet</p>
-              <Link to="/book-ride" className="fleet-link-btn" style={{ color: '#FFAE00' }}>Book Now &gt;</Link>
+              <h3>Empire Luxury</h3>
+              <p className="fleet-cap">1 - 4 Passenger</p>
+              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80" alt="Emperial Luxury First Class" />
+                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80" alt="Empire Luxury" />
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Emperial EV Express</h3>
-              <div style={{ background: '#FFFBEB', color: '#D97706', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'inline-block', marginBottom: '8px', border: '1px solid #FDE68A' }}>₹18 / km</div>
-              <p className="fleet-cap">1 - 4 Passengers • Zero-Emission EV</p>
-              <Link to="/book-ride" className="fleet-link-btn" style={{ color: '#FFAE00' }}>Book Now &gt;</Link>
+              <h3>Empire Electric</h3>
+              <p className="fleet-cap">1 - 4 Passenger</p>
+              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80" alt="Emperial Electric EV" />
+                <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80" alt="Empire Electric" />
               </div>
             </div>
           </div>
@@ -76,90 +72,90 @@ export default function Services({ onOpenBooking }) {
       {/* 6 ULTIMATE SERVICES GRID */}
       <section className="section services-grid-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px auto' }}>
-            <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Unmatched Versatility</span>
-            <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', marginTop: '6px' }}>Comprehensive Chauffeur Services</h2>
+          <div className="section-header">
+            <h2>The Ultimate Taxi Service Experience Awaits</h2>
+            <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur</p>
           </div>
 
           <div className="grid-3-cols">
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Plane size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Airport Express Transfers</h3>
-              <p style={{ color: '#475569' }}>Real-time flight tracking, gate side meet & greet, and baggage handling for international flights.</p>
+              <div className="icon-box"><Plane size={26} /></div>
+              <h3>Airport Transfers</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
 
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Clock size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Hourly Chauffeur Rental</h3>
-              <p style={{ color: '#475569' }}>Dedicated vehicle and professional chauffeur at your disposal for flexible corporate itineraries.</p>
+              <div className="icon-box"><Clock size={26} /></div>
+              <h3>Hourly Rentals</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
 
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Navigation size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Intercity Travel</h3>
-              <p style={{ color: '#475569' }}>Seamless long-distance travel between commercial cities with guaranteed upfront rates.</p>
+              <div className="icon-box"><Users size={26} /></div>
+              <h3>Ride-Sharing</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
 
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Briefcase size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Corporate Account Management</h3>
-              <p style={{ color: '#475569' }}>Custom corporate portal access, monthly expense invoicing, and priority executive dispatch.</p>
+              <div className="icon-box"><Package size={26} /></div>
+              <h3>Package Delivery</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
 
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Calendar size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Scheduled Advance Booking</h3>
-              <p style={{ color: '#475569' }}>Schedule trips up to 30 days ahead with guaranteed chauffeur confirmation and SMS reminders.</p>
+              <div className="icon-box"><Calendar size={26} /></div>
+              <h3>Scheduled Rides</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
 
             <div className="card service-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}><Award size={26} /></div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>VIP Event Fleet Logistics</h3>
-              <p style={{ color: '#475569' }}>Multi-vehicle fleet management for corporate galas, delegations, and international summits.</p>
+              <div className="icon-box"><Briefcase size={26} /></div>
+              <h3>Corporate Accounts</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* SIMPLE STEPS TO BOOK YOUR RIDE */}
-      <section className="section steps-section" style={{ background: '#F8FAFC', borderRadius: '24px', margin: '40px 0' }}>
+      <section className="section section-mint steps-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px auto' }}>
-            <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Simple Booking Flow</span>
-            <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', marginTop: '6px' }}>Reserve Your Journey in 4 Easy Steps</h2>
+          <div className="section-header">
+            <h2>Simple Steps to Book Your Ride</h2>
+            <p>Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et</p>
           </div>
 
           <div className="grid-2-cols align-center">
             <div className="steps-list">
-              <div className="step-card active" style={{ borderColor: '#FFAE00' }}>
-                <span className="step-num" style={{ color: '#FFAE00' }}>1.</span>
+              <div className="step-card active">
+                <span className="step-num">1.</span>
                 <div>
-                  <h4>Select Locations</h4>
-                  <p>Enter pickup address and destination or choose from popular airport hubs.</p>
+                  <h4>Type Your Destination</h4>
+                  <p>Totam facilis laudantium cum accusamus ullam voluptatibus commodi numquam, error, est, Ea, consequatur.</p>
                 </div>
               </div>
 
               <div className="step-card">
-                <span className="step-num" style={{ color: '#FFAE00' }}>2.</span>
+                <span className="step-num">2.</span>
                 <div>
-                  <h4>Choose Vehicle Class</h4>
-                  <p>Select Sedan, XL SUV, First Class Luxury, or EV Express according to your party size.</p>
+                  <h4>Confirm Pick-up Location</h4>
+                  <p>Optio, neque qui velit. Magni dolorum quidem ipsum eligendi, totam, facilis laudantium cum accusamus ullam voluptatibus</p>
                 </div>
               </div>
 
               <div className="step-card">
-                <span className="step-num" style={{ color: '#FFAE00' }}>3.</span>
+                <span className="step-num">3.</span>
                 <div>
-                  <h4>Review Upfront Fare</h4>
-                  <p>Get guaranteed fare pricing with zero hidden surcharges or peak multipliers.</p>
+                  <h4>Choose Payment Method</h4>
+                  <p>Facilis laudantium cum accusamus ullam voluptatibus commodi numquam, error, est, Ea, consequatur.</p>
                 </div>
               </div>
 
               <div className="step-card">
-                <span className="step-num" style={{ color: '#FFAE00' }}>4.</span>
+                <span className="step-num">4.</span>
                 <div>
-                  <h4>Live Telemetry Tracking</h4>
-                  <p>Track your driver's exact location in real time with automated arrival notifications.</p>
+                  <h4>Driver On The Way To Pick-up</h4>
+                  <p>Magni dolorum quidem ipsum eligendi, totam, facilis laudantium cum accusamus ullam voluptatibus commodi numquam</p>
                 </div>
               </div>
             </div>
@@ -168,15 +164,16 @@ export default function Services({ onOpenBooking }) {
               <div className="phone-screen-mockup">
                 <img 
                   src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=600&auto=format&fit=crop&q=80" 
-                  alt="EMPERIAL CABS mobile app interface" 
+                  alt="App interface mockup" 
                   className="mockup-img"
-                  style={{ borderRadius: '24px', boxShadow: '0 20px 40px rgba(15,23,42,0.2)' }}
                 />
               </div>
             </div>
           </div>
         </div>
       </section>
+
+
     </div>
   );
 }

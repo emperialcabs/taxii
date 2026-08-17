@@ -12,20 +12,20 @@ export default function About({ onOpenBooking }) {
 
   const safetyItems = [
     {
-      title: "Rigorous Chauffeur Certification & Background Verification",
-      content: "All EMPERIAL CABS drivers undergo mandatory background checks, zero-tolerance substance screening, and advanced defensive driving certifications before operating within our executive fleet."
+      title: "Professional and Trained Drivers",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem."
     },
     {
-      title: "Real-time Telemetry & Live GPS Tracking",
-      content: "Every ride is actively monitored by our 24/7 central dispatch control room with instant SOS response protocols and live trip sharing for complete passenger security."
+      title: "GPS Tracking and Monitoring",
+      content: "Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim."
     },
     {
-      title: "Multinational Fleet Maintenance Standards",
-      content: "Our vehicles undergo daily multi-point mechanical inspections, tire pressure checks, and complete interior UV sanitization prior to every dispatch."
+      title: "Well-Maintained Vehicles",
+      content: "Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue."
     },
     {
-      title: "24/7 Priority Executive Concierge Support",
-      content: "Our dedicated corporate support team is available around the clock via hotline, in-app messaging, and email to assist with route modifications or immediate dispatch."
+      title: "24/7 Customer Support",
+      content: "Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem."
     }
   ];
 
@@ -34,40 +34,39 @@ export default function About({ onOpenBooking }) {
       {/* PAGE BANNER */}
       <section className="page-banner">
         <div className="container">
-          <div className="banner-card" style={{ borderRadius: '24px' }}>
-            <div className="banner-overlay" style={{ background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.92) 100%)' }}></div>
+          <div className="banner-card">
+            <div className="banner-overlay"></div>
             <div className="banner-content">
               <div className="breadcrumb">
-                <Link to="/">Home</Link> &gt; <span style={{ color: '#FFAE00' }}>About</span>
+                <Link to="/">Home</Link> &gt; <span>About</span>
               </div>
-              <h1 className="banner-title" style={{ fontSize: '2.8rem', fontWeight: '800' }}>Pioneering World-Class Chauffeur & Mobility Solutions</h1>
+              <h1 className="banner-title">Our Story of Service and Excellence</h1>
             </div>
           </div>
         </div>
       </section>
 
-      {/* STORY BEHIND EMPERIAL CABS */}
+      {/* STORY BEHIND CABSY */}
       <section className="section story-section">
         <div className="container">
           <div className="grid-2-cols align-center">
             <div className="story-text">
-              <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>The Legacy</span>
-              <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', marginTop: '6px' }}>Setting The Standard in Global Executive Transport</h2>
-              <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.7' }}>
-                Founded with a commitment to reliability, punctuality, and understated luxury, EMPERIAL CABS connects discerning passengers and corporate enterprises with premier chauffeur transport.
+              <h2>Fueling Connections The Story behind EMPERIAL CABS</h2>
+              <p>
+                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum
               </p>
-              <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.7' }}>
-                Our proprietary fleet management ecosystem integrates cutting-edge GPS telemetry, automated fare transparency, and real-time dispatcher dispatching across major metropolitan corridors.
+              <p>
+                Voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum
               </p>
 
               <div className="stats-counters flex-counters">
                 <div className="stat-box">
-                  <div className="stat-num" style={{ color: '#FFAE00' }}>15 +</div>
-                  <div className="stat-lbl">Years of Excellence</div>
+                  <div className="stat-num">24 +</div>
+                  <div className="stat-lbl">Years of Experience</div>
                 </div>
                 <div className="stat-box">
-                  <div className="stat-num" style={{ color: '#0F172A' }}>2,500 +</div>
-                  <div className="stat-lbl">Certified Chauffeurs</div>
+                  <div className="stat-num">1,297 +</div>
+                  <div className="stat-lbl">Professional Drivers</div>
                 </div>
               </div>
             </div>
@@ -75,9 +74,8 @@ export default function About({ onOpenBooking }) {
             <div className="story-media">
               <img 
                 src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&auto=format&fit=crop&q=80" 
-                alt="Chauffeur with EMPERIAL CABS Executive Sedan" 
+                alt="Driver with EMPERIAL CABS Taxi" 
                 className="rounded-img"
-                style={{ borderRadius: '24px' }}
               />
             </div>
           </div>
@@ -85,58 +83,68 @@ export default function About({ onOpenBooking }) {
       </section>
 
       {/* REDEFINING TRANSPORTATION - VISION, MISSION & METRICS */}
-      <section className="section vision-section" style={{ background: '#F8FAFC', borderRadius: '24px', margin: '40px 0' }}>
+      <section className="section section-mint vision-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px auto' }}>
-            <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Our Core Pillars</span>
-            <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', marginTop: '6px' }}>Redefining Corporate Mobility</h2>
+          <div className="section-header">
+            <h2>Redefining Transportation for a Connected World</h2>
+            <p>Voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores porro quisquam est qui dolorem ipsum</p>
           </div>
 
           <div className="grid-3-cols vision-grid">
             <div className="card vision-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}>
+              <div className="icon-box">
                 <Eye size={26} />
               </div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Our Vision</h3>
-              <p style={{ color: '#475569' }}>To be the gold standard in multinational executive ground transportation, delivering zero-friction journeys with zero compromise on safety.</p>
+              <h3>Our Vision</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora consequuntur magni</p>
             </div>
 
             <div className="card vision-card">
-              <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}>
+              <div className="icon-box">
                 <Target size={26} />
               </div>
-              <h3 style={{ color: '#0F172A', fontWeight: '700' }}>Our Mission</h3>
-              <p style={{ color: '#475569' }}>To empower corporate leaders and everyday travelers with seamless booking, certified drivers, and transparent pricing on every trip.</p>
+              <h3>Our Mission</h3>
+              <p>Sed adipisci velit, sed quia non numquam eius modi tempora consequuntur magni</p>
             </div>
 
             <div className="card progress-metrics-card">
               <div className="progress-item">
                 <div className="progress-label">
-                  <span>Passenger Safety Protocol</span>
-                  <span style={{ color: '#FFAE00' }}>99.8%</span>
+                  <span>Safety Ride</span>
+                  <span>92%</span>
                 </div>
                 <div className="progress-bar-bg">
-                  <div className="progress-bar-fill" style={{ width: '99.8%', background: '#FFAE00' }}></div>
+                  <div className="progress-bar-fill" style={{ width: '92%' }}></div>
                 </div>
               </div>
 
               <div className="progress-item">
                 <div className="progress-label">
-                  <span>On-Time Arrival Rate</span>
-                  <span style={{ color: '#FFAE00' }}>98.5%</span>
+                  <span>Quality Service</span>
+                  <span>89%</span>
                 </div>
                 <div className="progress-bar-bg">
-                  <div className="progress-bar-fill" style={{ width: '98.5%', background: '#FFAE00' }}></div>
+                  <div className="progress-bar-fill" style={{ width: '89%' }}></div>
                 </div>
               </div>
 
               <div className="progress-item">
                 <div className="progress-label">
-                  <span>Executive Fleet Satisfaction</span>
-                  <span style={{ color: '#FFAE00' }}>99.2%</span>
+                  <span>Happy Passenger</span>
+                  <span>95%</span>
                 </div>
                 <div className="progress-bar-bg">
-                  <div className="progress-bar-fill" style={{ width: '99.2%', background: '#FFAE00' }}></div>
+                  <div className="progress-bar-fill" style={{ width: '95%' }}></div>
+                </div>
+              </div>
+
+              <div className="progress-item">
+                <div className="progress-label">
+                  <span>Affordable Pricing</span>
+                  <span>85%</span>
+                </div>
+                <div className="progress-bar-bg">
+                  <div className="progress-bar-fill" style={{ width: '85%' }}></div>
                 </div>
               </div>
             </div>
@@ -151,26 +159,27 @@ export default function About({ onOpenBooking }) {
             <div className="safety-acc-media">
               <img 
                 src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80" 
-                alt="Executive passenger relaxing inside ride" 
+                alt="Passenger listening to music in ride" 
                 className="rounded-img"
-                style={{ borderRadius: '24px' }}
               />
             </div>
 
             <div className="safety-acc-content">
-              <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Uncompromising Standards</span>
-              <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', margin: '8px 0 16px 0' }}>Comprehensive Safety Protocols for Total Peace of Mind</h2>
+              <h2>Stringent Safety Measures for Peace of Mind</h2>
+              <p className="section-desc">
+                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui
+              </p>
 
               <div className="accordion-list">
                 {safetyItems.map((item, index) => (
-                  <div key={index} className={`accordion-item ${openAccordion === index ? 'active' : ''}`} style={{ borderColor: openAccordion === index ? '#FFAE00' : '#E2E8F0' }}>
+                  <div key={index} className={`accordion-item ${openAccordion === index ? 'active' : ''}`}>
                     <div className="accordion-header" onClick={() => toggleAccordion(index)}>
                       <span>{item.title}</span>
-                      {openAccordion === index ? <ChevronUp size={20} style={{ color: '#FFAE00' }} /> : <ChevronDown size={20} />}
+                      {openAccordion === index ? <ChevronUp size={20} className="text-green" /> : <ChevronDown size={20} />}
                     </div>
                     {openAccordion === index && (
                       <div className="accordion-body">
-                        <p style={{ color: '#475569', lineHeight: '1.6' }}>{item.content}</p>
+                        <p>{item.content}</p>
                       </div>
                     )}
                   </div>
@@ -186,27 +195,26 @@ export default function About({ onOpenBooking }) {
         <div className="container">
           <div className="grid-2-cols align-center">
             <div className="contact-prev-text">
-              <span style={{ color: '#FFAE00', fontWeight: '800', textTransform: 'uppercase', fontSize: '13px' }}>Reach Out</span>
-              <h2 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#0F172A', margin: '8px 0 16px 0' }}>Contact Our Global Corporate Concierge</h2>
-              <p className="section-desc" style={{ color: '#475569', fontSize: '1.1rem' }}>
-                Our dispatch control center operates 24/7/365 to handle reservations, special event fleets, and enterprise inquiries.
+              <h2>Contact Us for Any Inquiries or Assistance</h2>
+              <p className="section-desc">
+                Fugit sed quia consequuntur magni dolores eos qui ration nesciunt. Excepteur sint occaecat cupidatat non proident sunt in qui.
               </p>
 
               <div className="grid-2-cols info-cards">
                 <div className="card info-mini-card">
-                  <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}>
+                  <div className="icon-box">
                     <MapPin size={22} />
                   </div>
-                  <h4 style={{ color: '#0F172A', fontWeight: '700' }}>Global HQ</h4>
-                  <p className="small-text">Financial District Tower, Suite 1400, New York, NY 10005</p>
+                  <h4>Our Office</h4>
+                  <p className="small-text">Jl. Raya Sesetan No.210, Sesetan, Denpasar, Bali</p>
                 </div>
 
                 <div className="card info-mini-card">
-                  <div className="icon-box" style={{ background: '#FFFBEB', color: '#FFAE00' }}>
+                  <div className="icon-box">
                     <Phone size={22} />
                   </div>
-                  <h4 style={{ color: '#0F172A', fontWeight: '700' }}>24/7 Hotline</h4>
-                  <p className="small-text">+1 (800) 555-EMPERIAL<br />executive@emperialcabs.com</p>
+                  <h4>Contact Info</h4>
+                  <p className="small-text">+62 831-9929-86700<br />contact@domain.com</p>
                 </div>
               </div>
             </div>
@@ -214,9 +222,8 @@ export default function About({ onOpenBooking }) {
             <div className="contact-prev-media">
               <img 
                 src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&auto=format&fit=crop&q=80" 
-                alt="Contact EMPERIAL CABS executive support" 
+                alt="Contact EMPERIAL CABS support" 
                 className="rounded-img"
-                style={{ borderRadius: '24px' }}
               />
             </div>
           </div>

@@ -267,6 +267,7 @@ export default function AdminPortal() {
   const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
   const [receiptModal, setReceiptModal] = useState({ open: false, inquiry: null });
   const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
+  const [actionLoadingId, setActionLoadingId] = useState(null);
   const [companyShare, setCompanyShare] = useState(() => {
     const saved = localStorage.getItem('cabsy_company_share');
     return saved ? Number(saved) : 20;
@@ -277,18 +278,26 @@ export default function AdminPortal() {
   const handleIssueRewardSubmit = () => {
     if (!rewardModal.inquiry) return;
     const inq = rewardModal.inquiry;
+    const actionKey = 'reward_' + inq.id;
+    if (actionLoadingId === actionKey) return;
+    setActionLoadingId(actionKey);
+
     const rewardAmount = Number(rewardModal.amount) || 100;
 
     // 1. Add reward to customer wallet in dbService
     db.addRewardToCustomer(inq.customerPhone, rewardAmount, inq.id, inq.pickup, inq.dropoff);
 
     // 2. Update inquiry state & localStorage
-    setInquiries(prev => prev.map(item => {
-      if (item.id === inq.id) {
-        return { ...item, rewardIssued: 1, rewardAmount: rewardAmount };
-      }
-      return item;
-    }));
+    setInquiries(prev => {
+      const updated = prev.map(item => {
+        if (item.id === inq.id) {
+          return { ...item, rewardIssued: 1, rewardAmount: rewardAmount };
+        }
+        return item;
+      });
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      return updated;
+    });
 
     // 3. Persist to Hostinger MySQL Database
     if (inq.id) {
@@ -317,7 +326,11 @@ export default function AdminPortal() {
 
     window.dispatchEvent(new Event('storage'));
     alert(`Successfully credited ₹${rewardAmount} reward to ${inq.customerName}'s wallet!`);
-    setRewardModal({ open: false, inquiry: null, amount: 100 });
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+      setRewardModal({ open: false, inquiry: null, amount: 100 });
+    }, 350);
   };
 
   // Notification System State
@@ -703,47 +716,42 @@ export default function AdminPortal() {
   const totalRevenue = confirmedInquiries.reduce((sum, item) => sum + Number(item.fare || 0), 0);
   const activeDriversCount = drivers.filter(d => d.status !== 'Off Duty').length;
 
-  // Confirm inquiry & add money to report
-  // Confirm inquiry & assign driver with instant optimistic updates
+  // Confirm inquiry & assign driver with double-click protection
   const handleConfirmInquiry = () => {
     if (!assignModal.inquiry) return;
-    let driverObj = drivers.find(d => d.id === selectedDriverId);
-    if (!driverObj) {
-      if (drivers.length > 0) {
-        driverObj = drivers[0];
-      } else {
-        driverObj = { id: 'DRV-101', name: 'Empire Executive Chauffeur', vehicle: assignModal.inquiry.vehicle || 'Empire Regular', plate: 'CAB-8899' };
-      }
-    }
+    const inq = assignModal.inquiry;
+    const actionKey = 'confirm_' + inq.id;
+    if (actionLoadingId === actionKey) return;
+    setActionLoadingId(actionKey);
 
-    const updatedInquiries = inquiries.map(inq => {
-      if (inq.id === assignModal.inquiry.id) {
+    const driverObj = drivers.find(d => d.id === selectedDriverId) || drivers[0] || { name: 'Assigned Driver', id: 'DRV-DEF', plate: 'CAB-001' };
+
+    const updatedInquiries = inquiries.map(item => {
+      if (item.id === inq.id) {
         return {
-          ...inq,
+          ...item,
           status: 'Confirmed',
           driver: driverObj.name
         };
       }
-      return inq;
+      return item;
     });
 
     setInquiries(updatedInquiries);
-    try {
-      localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
-    } catch (e) {}
+    localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
 
-    // Sync status to Hostinger MySQL in background
-    if (assignModal.inquiry.id) {
+    // Sync status to Hostinger MySQL
+    if (inq.id) {
       updateInquiryStatusInMySQL(
-        assignModal.inquiry.id,
+        inq.id,
         'Confirmed',
         driverObj.name
       ).catch(() => {});
     }
 
-    // Update driver status to 'On Ride'
+    // Update driver status
     setDrivers(prev => prev.map(d => {
-      if (d.id === driverObj.id || d.name === driverObj.name) {
+      if (d.id === driverObj.id) {
         return {
           ...d,
           status: 'On Ride'
@@ -752,23 +760,31 @@ export default function AdminPortal() {
       return d;
     }));
 
-    autoSyncCustomer(assignModal.inquiry.customerName, assignModal.inquiry.customerPhone, assignModal.inquiry.fare);
+    autoSyncCustomer(inq.customerName, inq.customerPhone, inq.fare);
     
     // Direct notification to customer for booking confirmation & driver assignment
     notifyCustomer({
       type: 'confirmed',
       title: '✅ Ride Booking Confirmed!',
-      body: `Your booking for ${assignModal.inquiry.pickup} → ${assignModal.inquiry.dropoff} is confirmed! Driver: ${driverObj.name} (${driverObj.plate || 'CAB-8899'})`,
-      customerPhone: assignModal.inquiry.customerPhone,
-      customerEmail: assignModal.inquiry.customerEmail
+      body: `Your booking for ${inq.pickup} → ${inq.dropoff} is confirmed! Driver: ${driverObj.name} (${driverObj.plate})`,
+      customerPhone: inq.customerPhone,
+      customerEmail: inq.customerEmail
     });
 
     window.dispatchEvent(new Event('storage'));
-    setAssignModal({ open: false, inquiry: null });
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+      setAssignModal({ open: false, inquiry: null });
+    }, 300);
   };
 
   const handleStartTrip = (inquiryId) => {
     if (!inquiryId) return;
+    const actionKey = 'start_' + inquiryId;
+    if (actionLoadingId === actionKey) return;
+    setActionLoadingId(actionKey);
+
     const targetInq = inquiries.find(i => i.id === inquiryId);
 
     setInquiries(prev => {
@@ -778,9 +794,7 @@ export default function AdminPortal() {
         }
         return inq;
       });
-      try {
-        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
-      } catch (e) {}
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
       return updated;
     });
 
@@ -800,54 +814,40 @@ export default function AdminPortal() {
       });
     }
 
-    try {
-      if ('BroadcastChannel' in window) {
-        const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
-        bc.postMessage({ type: 'TRIP_STARTED', inquiryId, timestamp: Date.now() });
-        bc.close();
-      }
-    } catch (e) {}
-
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_started', { detail: { id: inquiryId } }));
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+    }, 300);
   };
 
   const handleCompleteTrip = (inquiryId) => {
     if (!inquiryId) return;
-    let completedInq = null;
+    const actionKey = 'complete_' + inquiryId;
+    if (actionLoadingId === actionKey) return;
+    setActionLoadingId(actionKey);
+
+    const targetInq = inquiries.find(i => i.id === inquiryId);
 
     setInquiries(prev => {
       const updated = prev.map(inq => {
         if (inq.id === inquiryId) {
-          completedInq = { ...inq, status: 'Completed' };
-          return completedInq;
+          return { ...inq, status: 'Completed' };
         }
         return inq;
       });
-      try {
-        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
-      } catch (e) {}
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
       return updated;
     });
 
-    const targetInq = completedInq || inquiries.find(i => i.id === inquiryId);
     if (targetInq) {
       const fullCompleted = { ...targetInq, status: 'Completed' };
-      try {
-        localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
-      } catch (e) {}
+      localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
       updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
       try {
         db.saveInquiry(fullCompleted);
       } catch (e) {}
-
-      // Return driver to active duty
-      setDrivers(prev => prev.map(d => {
-        if (d.name === targetInq.driver) {
-          return { ...d, status: 'Active' };
-        }
-        return d;
-      }));
 
       // Direct notification to customer on trip completion
       notifyCustomer({
@@ -870,44 +870,63 @@ export default function AdminPortal() {
       window.dispatchEvent(new Event('storage'));
       window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
     }
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+    }, 300);
   };
 
   const handleCancelInquiry = (inquiryId) => {
     if (!inquiryId) return;
+    const actionKey = 'cancel_' + inquiryId;
+    if (actionLoadingId === actionKey) return;
+    setActionLoadingId(actionKey);
+
+    const targetInq = inquiries.find(i => i.id === inquiryId);
+
     setInquiries(prev => {
       const updated = prev.map(i => i.id === inquiryId ? { ...i, status: 'Cancelled' } : i);
-      try {
-        localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
-      } catch (e) {}
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
       return updated;
     });
 
-    const target = inquiries.find(i => i.id === inquiryId);
-    if (target && target.id) {
-      updateInquiryStatusInMySQL(target.id, 'Cancelled').catch(() => {});
+    if (targetInq) {
+      updateInquiryStatusInMySQL(inquiryId, 'Cancelled').catch(() => {});
       notifyCustomer({
         type: 'cancelled',
         title: '❌ Booking Cancelled',
-        body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by EMPERIAL CABS dispatch.`,
-        customerPhone: target.customerPhone,
-        customerEmail: target.customerEmail
+        body: `Your booking request for ${targetInq.pickup} → ${targetInq.dropoff} was cancelled by EMPERIAL CABS dispatch.`,
+        customerPhone: targetInq.customerPhone,
+        customerEmail: targetInq.customerEmail
       });
     }
+
     window.dispatchEvent(new Event('storage'));
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+    }, 300);
   };
 
   const handleDeleteInquiry = (inquiryId) => {
     if (!inquiryId) return;
+    const actionKey = 'delete_' + inquiryId;
+    if (actionLoadingId === actionKey) return;
+
     if (window.confirm("Are you sure you want to delete this inquiry record permanently?")) {
+      setActionLoadingId(actionKey);
+
       deleteInquiryFromMySQL(inquiryId).catch(() => {});
       setInquiries(prev => {
         const filtered = prev.filter(i => i.id !== inquiryId);
-        try {
-          localStorage.setItem('cabsy_inquiries', JSON.stringify(filtered));
-        } catch (e) {}
+        localStorage.setItem('cabsy_inquiries', JSON.stringify(filtered));
         return filtered;
       });
       window.dispatchEvent(new Event('storage'));
+
+      setTimeout(() => {
+        setActionLoadingId(null);
+      }, 300);
     }
   };
 
@@ -972,26 +991,45 @@ export default function AdminPortal() {
     setAddCustomerModal(false);
   };
 
-  // Add Manual Inquiry
+  // Add Manual Inquiry with protection & MySQL sync
   const handleAddInquirySubmit = (e) => {
     e.preventDefault();
     if (!newInquiryForm.customerName || !newInquiryForm.pickup) return;
+    if (actionLoadingId === 'add_inquiry') return;
+    setActionLoadingId('add_inquiry');
+
     const createdInquiry = {
       id: 'INQ-' + Math.floor(1000 + Math.random() * 8999),
       customerName: newInquiryForm.customerName,
-      customerPhone: newInquiryForm.customerPhone || '+1 (555) 777-0099',
+      customerPhone: newInquiryForm.customerPhone || '+91 9876543210',
       pickup: newInquiryForm.pickup,
       dropoff: newInquiryForm.dropoff,
-      vehicle: newInquiryForm.vehicle,
+      vehicle: newInquiryForm.vehicle || 'EMPERIAL Regular',
       fare: Number(newInquiryForm.fare || 35),
       status: 'Pending',
       driver: '-',
       date: new Date().toLocaleString().slice(0, 16)
     };
-    setInquiries([createdInquiry, ...inquiries]);
+
+    setInquiries(prev => {
+      const updated = [createdInquiry, ...prev];
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      return updated;
+    });
+
+    saveInquiryToMySQL(createdInquiry).catch(() => {});
+    try {
+      db.saveInquiry(createdInquiry);
+    } catch (e) {}
+
     autoSyncCustomer(createdInquiry.customerName, createdInquiry.customerPhone, 0);
-    setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Empire Regular', fare: 35.00 });
-    setAddInquiryModal(false);
+    setNewInquiryForm({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'EMPERIAL Regular', fare: 35.00 });
+    window.dispatchEvent(new Event('storage'));
+
+    setTimeout(() => {
+      setActionLoadingId(null);
+      setAddInquiryModal(false);
+    }, 300);
   };
 
   // Save Website Settings
@@ -1101,7 +1139,7 @@ export default function AdminPortal() {
       {/* LEFT SIDEBAR NAVIGATION */}
       <aside className="admin-sidebar">
         <div className="admin-brand flex align-center gap-2">
-          <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '60px', width: 'auto', borderRadius: '0px', padding: '2px 4px', background: '#FFFFFF', border: '1px solid #0F172A' }} />
+          <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '36px', width: 'auto' }} />
           <div>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800' }}>EMPERIAL CABS</h3>
             <small className="text-green flex align-center gap-1" style={{ fontSize: '11px' }}>
@@ -1508,6 +1546,7 @@ export default function AdminPortal() {
                             <button 
                               className="btn-action-view"
                               title="View Detailed Trip Receipt & Coupon Info"
+                              disabled={actionLoadingId === 'receipt_' + inq.id}
                               style={{
                                 background: '#EFF6FF',
                                 color: '#1D4ED8',
@@ -1516,11 +1555,12 @@ export default function AdminPortal() {
                                 borderRadius: '16px',
                                 fontSize: '12px',
                                 fontWeight: '800',
-                                cursor: 'pointer',
+                                cursor: actionLoadingId ? 'not-allowed' : 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                opacity: actionLoadingId ? 0.7 : 1
                               }}
                               onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                             >
@@ -1530,10 +1570,19 @@ export default function AdminPortal() {
                               <button 
                                 className="btn-action-assign"
                                 title="Confirm & Assign Driver"
-                                style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
+                                disabled={actionLoadingId === 'confirm_' + inq.id}
+                                style={{
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  opacity: actionLoadingId === 'confirm_' + inq.id ? 0.7 : 1,
+                                  cursor: actionLoadingId === 'confirm_' + inq.id ? 'not-allowed' : 'pointer'
+                                }}
                                 onClick={() => setAssignModal({ open: true, inquiry: inq })}
                               >
-                                <UserCheck size={14} /> Assign Driver
+                                <UserCheck size={14} /> {actionLoadingId === 'confirm_' + inq.id ? 'Processing...' : 'Assign Driver'}
                               </button>
                             )}
 
@@ -1541,19 +1590,37 @@ export default function AdminPortal() {
                               <button 
                                 className="btn-action-cancel"
                                 title="Cancel Booking"
-                                style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
+                                disabled={actionLoadingId === 'cancel_' + inq.id}
+                                style={{
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  opacity: actionLoadingId === 'cancel_' + inq.id ? 0.7 : 1,
+                                  cursor: actionLoadingId === 'cancel_' + inq.id ? 'not-allowed' : 'pointer'
+                                }}
                                 onClick={() => handleCancelInquiry(inq.id)}
                               >
-                                <XCircle size={14} /> Cancel
+                                <XCircle size={14} /> {actionLoadingId === 'cancel_' + inq.id ? 'Cancelling...' : 'Cancel'}
                               </button>
                             )}
                             <button 
                               className="btn-action-delete"
                               title="Delete Inquiry Permanently"
-                              style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
+                              disabled={actionLoadingId === 'delete_' + inq.id}
+                              style={{
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '6px 12px',
+                                opacity: actionLoadingId === 'delete_' + inq.id ? 0.7 : 1,
+                                cursor: actionLoadingId === 'delete_' + inq.id ? 'not-allowed' : 'pointer'
+                              }}
                               onClick={() => handleDeleteInquiry(inq.id)}
                             >
-                              <Trash2 size={14} /> Delete
+                              <Trash2 size={14} /> {actionLoadingId === 'delete_' + inq.id ? 'Deleting...' : 'Delete'}
                             </button>
                           </div>
                         </td>
@@ -1639,11 +1706,23 @@ export default function AdminPortal() {
                               {isConfirmed && (
                                 <button 
                                   className="btn-action-start"
+                                  disabled={actionLoadingId === 'start_' + inq.id}
                                   onClick={() => handleStartTrip(inq.id)}
                                   title="Admin Start Ride"
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '7px 14px',
+                                    borderRadius: '16px',
+                                    fontWeight: '800',
+                                    fontSize: '0.82rem',
+                                    whiteSpace: 'nowrap',
+                                    opacity: actionLoadingId === 'start_' + inq.id ? 0.7 : 1,
+                                    cursor: actionLoadingId === 'start_' + inq.id ? 'not-allowed' : 'pointer'
+                                  }}
                                 >
-                                  <Play size={14} /> Start Trip
+                                  <Play size={14} /> {actionLoadingId === 'start_' + inq.id ? 'Starting...' : 'Start Trip'}
                                 </button>
                               )}
 
@@ -1651,11 +1730,23 @@ export default function AdminPortal() {
                               {isInProgress && (
                                 <button 
                                   className="btn-action-complete"
+                                  disabled={actionLoadingId === 'complete_' + inq.id}
                                   onClick={() => handleCompleteTrip(inq.id)}
                                   title="Admin Complete Ride"
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '7px 14px',
+                                    borderRadius: '16px',
+                                    fontWeight: '800',
+                                    fontSize: '0.82rem',
+                                    whiteSpace: 'nowrap',
+                                    opacity: actionLoadingId === 'complete_' + inq.id ? 0.7 : 1,
+                                    cursor: actionLoadingId === 'complete_' + inq.id ? 'not-allowed' : 'pointer'
+                                  }}
                                 >
-                                  <CheckCircle size={14} /> Complete Trip
+                                  <CheckCircle size={14} /> {actionLoadingId === 'complete_' + inq.id ? 'Completing...' : 'Complete Trip'}
                                 </button>
                               )}
 
@@ -1663,19 +1754,42 @@ export default function AdminPortal() {
                               {isCompletedPendingReward && (
                                 <button 
                                   className="btn-action-reward"
+                                  disabled={actionLoadingId === 'reward_' + inq.id}
                                   onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
                                   title="Assign Wallet Reward to Customer"
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '7px 14px',
+                                    borderRadius: '16px',
+                                    fontWeight: '800',
+                                    fontSize: '0.82rem',
+                                    whiteSpace: 'nowrap',
+                                    opacity: actionLoadingId === 'reward_' + inq.id ? 0.7 : 1,
+                                    cursor: actionLoadingId === 'reward_' + inq.id ? 'not-allowed' : 'pointer'
+                                  }}
                                 >
-                                  <Gift size={14} /> Assign Reward
+                                  <Gift size={14} /> {actionLoadingId === 'reward_' + inq.id ? 'Processing...' : 'Assign Reward'}
                                 </button>
                               )}
 
                               <button 
                                 className="btn-action-view"
+                                disabled={!!actionLoadingId}
                                 onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                                 title="View Trip Details"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '7px 12px',
+                                  borderRadius: '16px',
+                                  fontWeight: '800',
+                                  fontSize: '0.82rem',
+                                  whiteSpace: 'nowrap',
+                                  opacity: actionLoadingId ? 0.7 : 1
+                                }}
                               >
                                 <Eye size={14} /> View
                               </button>
@@ -1758,28 +1872,33 @@ export default function AdminPortal() {
                             {(!inq.rewardIssued || Number(inq.rewardIssued) !== 1) && (
                               <button 
                                 className="btn-action-reward"
+                                disabled={actionLoadingId === 'reward_' + inq.id}
                                 onClick={() => setRewardModal({ open: true, inquiry: inq, amount: 100 })}
                                 title="Assign Wallet Reward to Customer"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '6px 12px',
+                                  borderRadius: '16px',
+                                  fontWeight: '800',
+                                  fontSize: '0.82rem',
+                                  whiteSpace: 'nowrap',
+                                  opacity: actionLoadingId === 'reward_' + inq.id ? 0.7 : 1,
+                                  cursor: actionLoadingId === 'reward_' + inq.id ? 'not-allowed' : 'pointer'
+                                }}
                               >
-                                🎁 Reward
+                                🎁 {actionLoadingId === 'reward_' + inq.id ? 'Processing...' : 'Reward'}
                               </button>
                             )}
                             <button 
                               className="btn-action-view"
+                              disabled={!!actionLoadingId}
                               onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                               title="View Full Trip Details & Receipt"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap', opacity: actionLoadingId ? 0.7 : 1 }}
                             >
                               <Eye size={14} /> View Details
-                            </button>
-                            <button 
-                              className="btn-action-delete"
-                              onClick={() => handleDeleteInquiry(inq.id)}
-                              title="Delete Record Permanently"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '16px', fontWeight: '800', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
-                            >
-                              <Trash2 size={14} /> Delete
                             </button>
                           </div>
                         </td>
@@ -2351,7 +2470,14 @@ export default function AdminPortal() {
 
             <div className="modal-actions-flex mt-4">
               <button className="btn btn-outline" onClick={() => setAssignModal({ open: false, inquiry: null })}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleConfirmInquiry}>Confirm & Dispatch Money to Report</button>
+              <button 
+                className="btn btn-primary" 
+                disabled={!!actionLoadingId} 
+                onClick={handleConfirmInquiry}
+                style={{ opacity: actionLoadingId ? 0.7 : 1, cursor: actionLoadingId ? 'not-allowed' : 'pointer' }}
+              >
+                {actionLoadingId ? 'Confirming...' : 'Confirm & Dispatch Money to Report'}
+              </button>
             </div>
           </div>
         </div>
@@ -2393,10 +2519,11 @@ export default function AdminPortal() {
               <button 
                 type="button" 
                 className="btn btn-primary" 
-                style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', border: 'none', fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800' }} 
+                disabled={!!actionLoadingId}
+                style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', border: 'none', fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', opacity: actionLoadingId ? 0.7 : 1, cursor: actionLoadingId ? 'not-allowed' : 'pointer' }} 
                 onClick={handleIssueRewardSubmit}
               >
-                🎁 Credit ₹{rewardModal.amount || 0} Reward
+                {actionLoadingId ? 'Crediting Reward...' : `🎁 Credit ₹${rewardModal.amount || 0} Reward`}
               </button>
             </div>
           </div>
@@ -2581,7 +2708,14 @@ export default function AdminPortal() {
 
               <div className="modal-actions-flex mt-4">
                 <button type="button" className="btn btn-outline" onClick={() => setAddInquiryModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Create Booking Inquiry</button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={actionLoadingId === 'add_inquiry'}
+                  style={{ opacity: actionLoadingId === 'add_inquiry' ? 0.7 : 1, cursor: actionLoadingId === 'add_inquiry' ? 'not-allowed' : 'pointer' }}
+                >
+                  {actionLoadingId === 'add_inquiry' ? 'Creating...' : 'Create Booking Inquiry'}
+                </button>
               </div>
             </form>
           </div>

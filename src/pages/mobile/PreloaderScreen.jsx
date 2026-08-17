@@ -169,7 +169,7 @@ export default function PreloaderScreen({ onFinish }) {
         {/* Exact User Provided CarShape Component */}
         <CarShape />
 
-        <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '75px', width: 'auto', marginBottom: '12px', borderRadius: '0px', padding: '2px 6px', background: '#FFFFFF', border: '1px solid #0F172A' }} />
+        <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '48px', width: 'auto', marginBottom: '12px' }} />
         
         <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>
           EMPERIAL CABS

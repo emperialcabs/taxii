@@ -487,53 +487,44 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
-  // ──── 1. Client-Side Direct Dispatch (Fires instantly from user browser) ────
-  try {
-    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
-    const userAgent = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : 'Mozilla/5.0';
+  const formKey = 'tb02ffc5d5d331d710c5ea5bf2dd1495';
+  const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
 
-    fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
+  // 1. Send direct to activated Gmail inbox via formKey
+  try {
+    fetch(`https://formsubmit.co/ajax/${formKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': userAgent,
         'Referer': origin
       },
       body: JSON.stringify({
-        _subject: `${code} is your EMPERIAL CABS security code`,
+        _subject: `${code} is your EMPERIAL CABS verification code`,
         _captcha: 'false',
-        _replyto: 'no-reply@empirecab.in',
-        Security_Code: code,
-        Account_Email: cleanEmail,
-        Message: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`
+        _template: 'table',
+        Verification_Code: code,
+        Target_User_Email: cleanEmail,
+        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Please enter this code in your application.`
       })
-    }).catch(err => console.warn('[Client Email OTP Direct] Exception:', err));
+    }).catch(() => {});
   } catch (e) {}
 
-  // ──── 2. Serverless Backend Proxy (/api/send-email-otp) ────
+  // 2. Serverless Backend Proxy (/api/send-email-otp)
   try {
     const baseUrl = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) 
       ? window.location.origin 
       : 'https://taxii-three.vercel.app';
     const apiEndpoint = `${baseUrl}/api/send-email-otp`;
 
-    const resp = await fetch(apiEndpoint, {
+    fetch(apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
-    });
-    const result = await resp.json().catch(() => ({}));
-    if (!resp.ok) {
-      console.warn('[Email OTP Backend] API error:', result);
-    } else {
-      console.log('[Email OTP Backend] Sent successfully via:', result.via);
-    }
-  } catch (err) {
-    console.warn('[Email OTP Backend Proxy] Exception:', err);
-  }
+    }).catch(() => {});
+  } catch (err) {}
 
-  return { success: true, code };
+  return { success: true };
 };
 
 /**

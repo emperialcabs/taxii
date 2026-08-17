@@ -80,7 +80,7 @@
 }
 
 /* 0. PRELOADER & SPLASH SCREEN STYLING */
-.EMPERIAL CABS-preloader-container {
+.emperial-cabs-preloader-container, .EMPERIAL.CABS-preloader-container {
   width: 100%;
   height: 100vh;
   background: #FFFFFF;
@@ -103,7 +103,7 @@
   justify-content: center;
 }
 
-.EMPERIAL CABS-exact-car-svg {
+.emperial-cabs-exact-car-svg, .EMPERIAL.CABS-exact-car-svg {
   width: 100%;
   height: auto;
   overflow: visible;
@@ -154,7 +154,7 @@
   position: relative;
 }
 
-.EMPERIAL CABS-spinner-dots {
+.emperial-cabs-spinner-dots, .EMPERIAL.CABS-spinner-dots {
   width: 54px;
   height: 54px;
   border: 5px solid rgba(52, 211, 153, 0.2);
@@ -207,7 +207,7 @@
 }
 
 /* 1. SPLASH & ONBOARDING STYLING */
-.EMPERIAL CABS-splash-container {
+.emperial-cabs-splash-container, .EMPERIAL.CABS-splash-container {
   width: 100%;
   height: 100vh;
   background: #FFFFFF;
@@ -404,7 +404,7 @@
 .flag-icon-span { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #1E293B; margin-right: 12px; }
 .phone-input-field { width: 100%; border: none; background: transparent; outline: none; padding: 14px 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #1E293B; }
 
-.let-you-signin-btn, .EMPERIAL CABS-btn-primary {
+.let-you-signin-btn, .EMPERIAL.CABS-btn-primary, .emperial-cabs-btn-primary {
   width: 100%;
   background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
@@ -421,7 +421,7 @@
   transition: transform 0.15s ease, opacity 0.2s ease;
 }
 
-.let-you-signin-btn:active, .EMPERIAL CABS-btn-primary:active { transform: scale(0.97); }
+.let-you-signin-btn:active, .EMPERIAL.CABS-btn-primary:active, .emperial-cabs-btn-primary:active { transform: scale(0.97); }
 
 .let-you-footer-txt { text-align: center; color: #64748B; font-size: 15px; margin-top: auto; }
 .let-you-footer-txt span { color: #1E293B; font-weight: 800; cursor: pointer; text-decoration: underline; }
@@ -652,7 +652,7 @@
 
 .home-greeting-txt { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #64748B; margin: 0; }
 
-.EMPERIAL CABS-btn-primary {
+.EMPERIAL.CABS-btn-primary, .emperial-cabs-btn-primary {
   width: 100%;
   height: 56px;
   background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
@@ -671,7 +671,7 @@
   transition: all 0.2s ease;
 }
 
-.EMPERIAL CABS-btn-primary:active {
+.EMPERIAL.CABS-btn-primary:active, .emperial-cabs-btn-primary:active {
   transform: translateY(1px);
 }
 
@@ -719,7 +719,7 @@
 }
 
 /* 5. BOTTOM NAVIGATION TABS */
-.EMPERIAL CABS-bottom-nav {
+.emperial-cabs-bottom-nav, .EMPERIAL.CABS-bottom-nav {
   position: fixed; /* Use fixed so it never gets lost on iOS/Android */
   bottom: 0;
   left: 50%;
@@ -730,9 +730,9 @@
   border-top: 1px solid #E2E8F0;
   display: flex;
   justify-content: space-around;
-  padding: 10px 0 env(safe-area-inset-bottom, 14px) 0; /* iOS notch safety */
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  padding: 10px 0 calc(env(safe-area-inset-bottom, 14px) + 6px) 0; /* iOS notch safety */
+  z-index: 9999;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
   flex-shrink: 0;
 }
 

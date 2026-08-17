@@ -1,31 +1,24 @@
-/* EMPERIAL CABS Design System - Modern Multinational Executive Styling */
+/* EMPERIAL CABS Design System - Modern Vanilla CSS */
 :root {
-  --primary-gold: #FFAE00;
-  --primary-gold-hover: #E09900;
-  --primary-gold-light: #FFFBEB;
-  --primary-gold-dark: #D97706;
-
-  --primary-green: #FFAE00; /* Primary accent updated to Executive Gold */
-  --primary-green-hover: #E09900;
-  --primary-green-light: #FFFBEB;
-  --primary-green-dark: #D97706;
+  --primary-green: #00b87c;
+  --primary-green-hover: #009966;
+  --primary-green-light: #e6f7f0;
+  --primary-green-dark: #008055;
   
-  --dark-heading: #0F172A;
-  --dark-navy: #0F172A;
+  --dark-heading: #0f172a;
   --dark-subtext: #334155;
   --body-text: #475569;
-  --muted-text: #64748B;
-  --light-border: #E2E8F0;
+  --muted-text: #64748b;
+  --light-border: #e2e8f0;
   
-  --bg-mint: #F8FAFC;
-  --bg-light: #F8FAFC;
-  --bg-white: #FFFFFF;
-  --bg-dark-obsidian: #0F172A;
+  --bg-mint: #eef9f4;
+  --bg-light: #f8fafc;
+  --bg-white: #ffffff;
   
   --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 16px 36px rgba(255, 174, 0, 0.16);
-  --shadow-dark: 0 20px 40px rgba(15, 23, 42, 0.35);
+  --shadow-lg: 0 16px 36px rgba(0, 184, 124, 0.12);
+  --shadow-dark: 0 20px 40px rgba(0, 0, 0, 0.25);
 
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
