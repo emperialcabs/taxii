@@ -12,10 +12,13 @@ export default function Footer() {
             {/* Brand Column */}
             <div className="footer-brand">
               <Link to="/" className="brand-logo footer-logo">
-                <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '36px', width: 'auto' }} />
+                <div className="logo-icon">
+                  <span className="logo-c">C</span>
+                </div>
+                <span className="logo-text">Empire Cab</span>
               </Link>
               <p className="footer-desc">
-                EMPERIAL CABS provides premium 24/7 executive cab booking, intercity transfers, and transparent rides with real-time tracking.
+                Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius.
               </p>
             </div>
 
@@ -57,7 +60,7 @@ export default function Footer() {
               </p>
               <p className="contact-item">
                 <Mail size={16} className="contact-icon" />
-                <span>support@emperialcabs.com</span>
+                <span>contact@domain.com</span>
               </p>
             </div>
           </div>
@@ -91,7 +94,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-copyright">
-          <p>© 2026 EMPERIAL CABS. All Rights Reserved.</p>
+          <p>© 2023 - Taxi Company Template Kit By Jegtheme</p>
         </div>
       </div>
     </footer>

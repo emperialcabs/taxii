@@ -29,8 +29,11 @@ export default function Header({ onOpenBooking }) {
     <header className={`cabsy-header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container header-container">
         {/* Logo */}
-        <Link to="/" className="brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '38px', width: 'auto' }} />
+        <Link to="/" className="brand-logo">
+          <div className="logo-icon">
+            <span className="logo-c">C</span>
+          </div>
+          <span className="logo-text">Empire Cab</span>
         </Link>
 
         {/* Navigation Menu */}

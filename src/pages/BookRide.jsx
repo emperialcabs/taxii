@@ -89,10 +89,10 @@ export default function BookRide() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('EMPERIAL CABS_vehicles_updated', handleStorageChange);
+    window.addEventListener('taxigo_vehicles_updated', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('EMPERIAL CABS_vehicles_updated', handleStorageChange);
+      window.removeEventListener('taxigo_vehicles_updated', handleStorageChange);
     };
   }, []);
 

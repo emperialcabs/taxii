@@ -102,7 +102,7 @@ export default function Contact() {
                   <div className="text-center" style={{ padding: '2rem 0' }}>
                     <CheckCircle size={48} className="text-green" style={{ marginBottom: '1rem' }} />
                     <h4>Message Sent Successfully!</h4>
-                    <p>Thank you for contacting EMPERIAL CABS. Our team will get back to you shortly.</p>
+                    <p>Thank you for contacting Empire Cab. Our team will get back to you shortly.</p>
                   </div>
                 )}
               </div>
