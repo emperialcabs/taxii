@@ -51,7 +51,7 @@ export default function About({ onOpenBooking }) {
         <div className="container">
           <div className="grid-2-cols align-center">
             <div className="story-text">
-              <h2>Fueling Connections The Story behind Cabsy</h2>
+              <h2>Fueling Connections The Story behind Empire Cab</h2>
               <p>
                 Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum
               </p>
@@ -74,7 +74,7 @@ export default function About({ onOpenBooking }) {
             <div className="story-media">
               <img 
                 src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&auto=format&fit=crop&q=80" 
-                alt="Driver with Cabsy Taxi" 
+                alt="Driver with Empire Cab Taxi" 
                 className="rounded-img"
               />
             </div>
@@ -222,7 +222,7 @@ export default function About({ onOpenBooking }) {
             <div className="contact-prev-media">
               <img 
                 src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&auto=format&fit=crop&q=80" 
-                alt="Contact Cabsy support" 
+                alt="Contact Empire Cab support" 
                 className="rounded-img"
               />
             </div>

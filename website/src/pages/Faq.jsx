@@ -15,11 +15,11 @@ export default function Faq({ onOpenBooking }) {
     },
     {
       q: "How can I estimate the fare for my ride?",
-      a: "You can easily estimate your fare using our online Booking Studio modal or via the Cabsy mobile app. Simply input your pickup and drop-off locations to view instant upfront fare calculations."
+      a: "You can easily estimate your fare using our online Booking Studio modal or via the Empire Cab mobile app. Simply input your pickup and drop-off locations to view instant upfront fare calculations."
     },
     {
       q: "Can I schedule a ride in advance?",
-      a: "Yes! Cabsy allows you to schedule rides up to 30 days in advance. Select your preferred date and time, and our drivers will arrive on time."
+      a: "Yes! Empire Cab allows you to schedule rides up to 30 days in advance. Select your preferred date and time, and our drivers will arrive on time."
     }
   ];
 
@@ -34,7 +34,7 @@ export default function Faq({ onOpenBooking }) {
     },
     {
       q: "Are your drivers licensed and experienced?",
-      a: "Every Cabsy driver undergoes complete background checks, professional driving verification, and safety training."
+      a: "Every Empire Cab driver undergoes complete background checks, professional driving verification, and safety training."
     }
   ];
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import db from '../services/dbService';
 import { INITIAL_VEHICLES } from '../pages/AdminPortal';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
+import { notifyAdmin } from '../services/notificationEngine';
 import './BookingModal.css';
 
 export default function BookingModal({ isOpen, onClose }) {
@@ -10,6 +11,24 @@ export default function BookingModal({ isOpen, onClose }) {
   const [vehicles, setVehicles] = useState([]);
   const [vehicleId, setVehicleId] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  const [activeRide, setActiveRide] = useState(null);
+
+  useEffect(() => {
+    const checkActiveRide = () => {
+      try {
+        const savedInquiries = localStorage.getItem('cabsy_inquiries');
+        if (savedInquiries) {
+          const list = JSON.parse(savedInquiries);
+          const ongoing = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          setActiveRide(ongoing || null);
+        }
+      } catch (e) {}
+    };
+    checkActiveRide();
+    window.addEventListener('storage', checkActiveRide);
+    return () => window.removeEventListener('storage', checkActiveRide);
+  }, []);
 
   useEffect(() => {
     const loadVehicles = () => {
@@ -41,7 +60,11 @@ export default function BookingModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    db.saveInquiry({
+    if (activeRide) {
+      alert("You already have an active ride in progress. Cannot book a second ride!");
+      return;
+    }
+    const newInq = {
       customerName: 'Web Passenger',
       customerPhone: '+91 98765 00000',
       pickup: pickup || 'Downtown Terminal',
@@ -51,7 +74,16 @@ export default function BookingModal({ isOpen, onClose }) {
       status: 'Pending',
       driver: 'Unassigned',
       date: new Date().toLocaleString('en-IN')
+    };
+    db.saveInquiry(newInq);
+
+    // Send Phone/Desktop Push Notification & Bell Notif to Admin
+    notifyAdmin({
+      type: 'inquiry',
+      title: '🚖 New Ride Inquiry Received!',
+      body: `New booking for ${newInq.customerName}: ${newInq.pickup} → ${newInq.dropoff} (₹${parseFloat(estimatedFare).toFixed(2)})`
     });
+
     setSubmitted(true);
   };
 
@@ -67,7 +99,22 @@ export default function BookingModal({ isOpen, onClose }) {
           <X size={20} />
         </button>
 
-        {!submitted ? (
+        {activeRide ? (
+          <div className="text-center p-4">
+            <div style={{ fontSize: '48px', marginBottom: '8px' }}>🚗</div>
+            <h2>Active Ride In Progress</h2>
+            <p style={{ margin: '12px 0', color: '#64748B' }}>
+              You currently have an active trip (<strong>{activeRide.pickup} → {activeRide.dropoff}</strong>).
+              <br />You cannot book a second ride while your ongoing trip is active!
+            </p>
+            <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0', margin: '16px 0' }}>
+              <strong>Status: <span style={{ color: '#059669' }}>{activeRide.status}</span></strong> • Driver: {activeRide.driver || 'Assigned Driver'}
+            </div>
+            <button onClick={onClose} className="btn btn-primary">
+              Close & View Live Ride Tracking
+            </button>
+          </div>
+        ) : !submitted ? (
           <div>
             <div className="modal-header">
               <span className="pill-badge">

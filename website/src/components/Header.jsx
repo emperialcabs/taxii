@@ -33,7 +33,7 @@ export default function Header({ onOpenBooking }) {
           <div className="logo-icon">
             <span className="logo-c">C</span>
           </div>
-          <span className="logo-text">Cabsy</span>
+          <span className="logo-text">Empire Cab</span>
         </Link>
 
         {/* Navigation Menu */}

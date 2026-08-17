@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import db from '../services/dbService';
 import { 
   MapPin, 
   Car, 
@@ -12,8 +13,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { INITIAL_VEHICLES } from './AdminPortal';
-
-import { saveInquiryToMySQL, saveCustomerToMySQL } from '../../../src/services/mysqlService';
 
 const DEFAULT_PLACES = [
   'Downtown Terminal',
@@ -158,25 +157,7 @@ export default function BookRide() {
       date: `${pickupDate} ${pickupTime}`
     };
 
-    const existing = localStorage.getItem('cabsy_inquiries');
-    const inquiriesList = existing ? JSON.parse(existing) : [];
-    const updatedInquiries = [newInquiry, ...inquiriesList];
-    localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedInquiries));
-
-    // Save to Hostinger MySQL Database
-    saveInquiryToMySQL(newInquiry).catch(() => {});
-    saveCustomerToMySQL({
-      name: customerName,
-      phone: customerPhone,
-      email: customerName.toLowerCase().replace(/\s+/g, '.') + '@empirecab.in',
-      totalRides: 1,
-      totalSpent: parseFloat(calculatedFare)
-    }).catch(() => {});
-
-    // Dispatch events to notify Admin Portal in real time
-    window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('cabsy-new-inquiry', { detail: newInquiry }));
-
+    db.saveInquiry(newInquiry);
     setBookingSuccess(newInquiry);
   };
 

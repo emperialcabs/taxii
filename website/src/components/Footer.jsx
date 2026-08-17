@@ -15,7 +15,7 @@ export default function Footer() {
                 <div className="logo-icon">
                   <span className="logo-c">C</span>
                 </div>
-                <span className="logo-text">Cabsy</span>
+                <span className="logo-text">Empire Cab</span>
               </Link>
               <p className="footer-desc">
                 Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius.

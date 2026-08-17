@@ -1,5 +1,5 @@
-// Redirect website tidbService exports to Hostinger mysqlService
-export * from '../../../src/services/mysqlService';
+// Legacy TiDB alias file — Redirects to Hostinger MySQL Database Service
+export * from './mysqlService';
 export {
   initMySQLTables as initTiDBTables,
   saveInquiryToMySQL as saveInquiryToTiDB,
@@ -7,6 +7,6 @@ export {
   saveCustomerToMySQL as saveCustomerToTiDB,
   loadAllCustomersFromMySQL as loadAllCustomersFromTiDB,
   updateInquiryStatusInMySQL as updateInquiryStatusInTiDB,
-  deleteInquiryFromMySQL as deleteInquiryFromMySQL,
+  deleteInquiryFromMySQL as deleteInquiryFromTiDB,
   purgeDemoDataFromMySQL as purgeDemoDataFromTiDB
-} from '../../../src/services/mysqlService';
+} from './mysqlService';

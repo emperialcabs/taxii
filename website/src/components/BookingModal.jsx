@@ -1,68 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import db from '../services/dbService';
+import { INITIAL_VEHICLES } from '../pages/AdminPortal';
 import { X, MapPin, Navigation, Car, Clock, ShieldCheck, CheckCircle } from 'lucide-react';
+import { notifyAdmin } from '../services/notificationEngine';
 import './BookingModal.css';
-import { saveInquiryToMySQL, saveCustomerToMySQL } from '../../../src/services/mysqlService';
 
 export default function BookingModal({ isOpen, onClose }) {
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
-  const [vehicle, setVehicle] = useState('Reguler');
-  const [passengerCount, setPassengerCount] = useState(1);
+  const [vehicles, setVehicles] = useState([]);
+  const [vehicleId, setVehicleId] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  const [activeRide, setActiveRide] = useState(null);
+
+  useEffect(() => {
+    const checkActiveRide = () => {
+      try {
+        const savedInquiries = localStorage.getItem('cabsy_inquiries');
+        if (savedInquiries) {
+          const list = JSON.parse(savedInquiries);
+          const ongoing = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          setActiveRide(ongoing || null);
+        }
+      } catch (e) {}
+    };
+    checkActiveRide();
+    window.addEventListener('storage', checkActiveRide);
+    return () => window.removeEventListener('storage', checkActiveRide);
+  }, []);
+
+  useEffect(() => {
+    const loadVehicles = () => {
+      const savedVehicles = localStorage.getItem('cabsy_vehicles');
+      const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : INITIAL_VEHICLES;
+      const activeVehicles = parsedVehicles.filter(v => v.status !== 'Inactive');
+      const list = activeVehicles.length > 0 ? activeVehicles : INITIAL_VEHICLES;
+      setVehicles(list);
+      setVehicleId(prev => list.some(v => v.id === prev) ? prev : list[0]?.id || '');
+    };
+
+    loadVehicles();
+
+    window.addEventListener('storage', loadVehicles);
+    window.addEventListener('taxigo_vehicles_updated', loadVehicles);
+    return () => {
+      window.removeEventListener('storage', loadVehicles);
+      window.removeEventListener('taxigo_vehicles_updated', loadVehicles);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
-  const vehicles = [
-    { id: 'Reguler', name: 'Cabsy Reguler', capacity: '1-4 Passenger', ratePerKm: 2.2, icon: '🚕' },
-    { id: 'XL', name: 'Cabsy XL', capacity: '1-6 Passenger', ratePerKm: 3.5, icon: '🚙' },
-    { id: 'Luxury', name: 'Cabsy Luxury', capacity: '1-4 Passenger', ratePerKm: 4.8, icon: '🚘' },
-    { id: 'Electric', name: 'Cabsy Electric', capacity: '1-4 Passenger', ratePerKm: 2.5, icon: '⚡' },
-  ];
-
-  const selectedVeh = vehicles.find(v => v.id === vehicle) || vehicles[0];
+  const selectedVeh = vehicles.find(v => v.id === vehicleId) || vehicles[0] || INITIAL_VEHICLES[0];
+  const ratePerKm = parseFloat(selectedVeh.rate || 15.0);
   const estimatedDist = pickup && dropoff ? 12.5 : 8.0; // km
-  const estimatedFare = (estimatedDist * selectedVeh.ratePerKm + 5.0).toFixed(2);
+  const estimatedFare = (estimatedDist * ratePerKm + 50.0).toFixed(2);
   const estimatedTime = Math.round(estimatedDist * 2.2);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const createdInquiry = {
-      id: 'INQ-' + Math.floor(1000 + Math.random() * 8999),
-      customerName: 'Website Guest',
-      customerPhone: '+91 98250 ' + Math.floor(10000 + Math.random() * 89999),
-      customerEmail: 'guest@empirecab.in',
-      pickup: pickup || 'City Center',
+    if (activeRide) {
+      alert("You already have an active ride in progress. Cannot book a second ride!");
+      return;
+    }
+    const newInq = {
+      customerName: 'Web Passenger',
+      customerPhone: '+91 98765 00000',
+      pickup: pickup || 'Downtown Terminal',
       dropoff: dropoff || 'Airport T3',
       vehicle: selectedVeh.name,
-      fare: Number(estimatedFare),
-      tripType: 'One-Way',
-      scheduledDate: 'Today',
-      scheduledTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      driver: 'Unassigned',
+      fare: parseFloat(estimatedFare),
       status: 'Pending',
-      date: new Date().toLocaleString().slice(0, 16)
+      driver: 'Unassigned',
+      date: new Date().toLocaleString('en-IN')
     };
+    db.saveInquiry(newInq);
 
-    // 1. Save to local storage for instant Admin tab sync
-    try {
-      const existing = JSON.parse(localStorage.getItem('cabsy_inquiries') || '[]');
-      localStorage.setItem('cabsy_inquiries', JSON.stringify([createdInquiry, ...existing]));
-    } catch (err) {}
-
-    // 2. Save directly to Hostinger MySQL Database
-    saveInquiryToMySQL(createdInquiry).catch(() => {});
-    saveCustomerToMySQL({
-      name: createdInquiry.customerName,
-      phone: createdInquiry.customerPhone,
-      email: createdInquiry.customerEmail,
-      totalRides: 1,
-      totalSpent: createdInquiry.fare
-    }).catch(() => {});
-
-    // 3. Dispatch events to notify Admin Portal in real time
-    window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('cabsy-new-inquiry', { detail: createdInquiry }));
+    // Send Phone/Desktop Push Notification & Bell Notif to Admin
+    notifyAdmin({
+      type: 'inquiry',
+      title: '🚖 New Ride Inquiry Received!',
+      body: `New booking for ${newInq.customerName}: ${newInq.pickup} → ${newInq.dropoff} (₹${parseFloat(estimatedFare).toFixed(2)})`
+    });
 
     setSubmitted(true);
   };
@@ -79,13 +99,28 @@ export default function BookingModal({ isOpen, onClose }) {
           <X size={20} />
         </button>
 
-        {!submitted ? (
+        {activeRide ? (
+          <div className="text-center p-4">
+            <div style={{ fontSize: '48px', marginBottom: '8px' }}>🚗</div>
+            <h2>Active Ride In Progress</h2>
+            <p style={{ margin: '12px 0', color: '#64748B' }}>
+              You currently have an active trip (<strong>{activeRide.pickup} → {activeRide.dropoff}</strong>).
+              <br />You cannot book a second ride while your ongoing trip is active!
+            </p>
+            <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0', margin: '16px 0' }}>
+              <strong>Status: <span style={{ color: '#059669' }}>{activeRide.status}</span></strong> • Driver: {activeRide.driver || 'Assigned Driver'}
+            </div>
+            <button onClick={onClose} className="btn btn-primary">
+              Close & View Live Ride Tracking
+            </button>
+          </div>
+        ) : !submitted ? (
           <div>
             <div className="modal-header">
               <span className="pill-badge">
                 <span className="dot"></span> Online Booking Studio
               </span>
-              <h2>Book Your Cabsy Ride</h2>
+              <h2>Book Your Empire Cab Ride</h2>
               <p>Experience safe, reliable, and premium transportation at your fingertips.</p>
             </div>
 
@@ -120,12 +155,16 @@ export default function BookingModal({ isOpen, onClose }) {
                   {vehicles.map((v) => (
                     <div 
                       key={v.id}
-                      className={`vehicle-card ${vehicle === v.id ? 'selected' : ''}`}
-                      onClick={() => setVehicle(v.id)}
+                      className={`vehicle-card ${vehicleId === v.id ? 'selected' : ''}`}
+                      onClick={() => setVehicleId(v.id)}
                     >
-                      <span className="veh-emoji">{v.icon}</span>
+                      {v.image ? (
+                        <img src={v.image} alt={v.name} style={{ width: '40px', height: '28px', objectFit: 'cover', borderRadius: '4px' }} />
+                      ) : (
+                        <span className="veh-emoji">🚕</span>
+                      )}
                       <span className="veh-name">{v.name}</span>
-                      <small className="veh-cap">{v.capacity}</small>
+                      <small className="veh-cap">{v.passengers || '4 Seats'}</small>
                     </div>
                   ))}
                 </div>
@@ -143,7 +182,7 @@ export default function BookingModal({ isOpen, onClose }) {
                 </div>
                 <div className="fare-detail total">
                   <span className="fare-label">Estimated Fare</span>
-                  <span className="fare-price">${estimatedFare}</span>
+                  <span className="fare-price">₹{estimatedFare}</span>
                 </div>
               </div>
 
@@ -165,7 +204,7 @@ export default function BookingModal({ isOpen, onClose }) {
                 <span>Vehicle:</span> <strong>{selectedVeh.name}</strong>
               </div>
               <div className="summary-row">
-                <span>Est. Fare:</span> <strong>${estimatedFare}</strong>
+                <span>Est. Fare:</span> <strong>₹{estimatedFare}</strong>
               </div>
               <div className="summary-row">
                 <span>ETA:</span> <strong>{estimatedTime} mins</strong>

@@ -71,41 +71,45 @@ export default function Home({ onOpenBooking }) {
           <div className="grid-4-cols">
             {/* Reguler */}
             <div className="card fleet-card">
-              <h3>Cabsy Reguler</h3>
+              <h3>Empire Regular</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹15 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80" alt="Cabsy Reguler Sedan" className="fleet-car-img" />
+                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80" alt="Empire Regular Sedan" className="fleet-car-img" />
               </div>
             </div>
 
             {/* XL */}
             <div className="card fleet-card">
-              <h3>Cabsy XL</h3>
+              <h3>Empire XL</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹22 / km</div>
               <p className="fleet-cap">1 - 6 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80" alt="Cabsy XL SUV" className="fleet-car-img" />
+                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80" alt="Empire XL SUV" className="fleet-car-img" />
               </div>
             </div>
 
             {/* Luxury */}
             <div className="card fleet-card">
-              <h3>Cabsy Luxury</h3>
+              <h3>Empire Luxury</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹35 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80" alt="Cabsy Luxury" className="fleet-car-img" />
+                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80" alt="Empire Luxury" className="fleet-car-img" />
               </div>
             </div>
 
             {/* Electric */}
             <div className="card fleet-card">
-              <h3>Cabsy Electric</h3>
+              <h3>Empire Electric</h3>
+              <div style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '4px' }}>₹18 / km</div>
               <p className="fleet-cap">1 - 4 Passenger</p>
               <Link to="/services" className="fleet-link">Learn More &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80" alt="Cabsy Electric EV" className="fleet-car-img" />
+                <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80" alt="Empire Electric EV" className="fleet-car-img" />
               </div>
             </div>
           </div>
