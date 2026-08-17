@@ -41,7 +41,7 @@ const playChimeSound = () => {
 };
 
 // Trigger Phone / Desktop System Tray Push Notification
-export const sendSystemPushNotification = (title, body, tag = 'taxigo-notif') => {
+export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-notif') => {
   playChimeSound();
   if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
     try {
@@ -81,7 +81,7 @@ export const notifyAdmin = ({ type = 'inquiry', title, body, extraData = {} }) =
   sendSystemPushNotification(title, body, 'admin-' + notifObj.id);
 
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('taxigo_admin_notif', { detail: notifObj }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_admin_notif', { detail: notifObj }));
     window.dispatchEvent(new Event('storage'));
   }
 
@@ -113,7 +113,7 @@ export const notifyCustomer = ({ type = 'inquiry', title, body, customerPhone, c
   sendSystemPushNotification(title, body, 'cust-' + notifObj.id);
 
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('taxigo_customer_notif', { detail: notifObj }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_customer_notif', { detail: notifObj }));
     window.dispatchEvent(new Event('storage'));
   }
 

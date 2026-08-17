@@ -1,7 +1,51 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { verifyPhoneOTP, verifyEmailOTP, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
 import { ShieldCheck, Zap, CheckCircle2, ArrowLeft } from 'lucide-react';
-import otpVerifyImg from '../../assets/images/onboarding/03_verification.png';
+
+const OtpVerifyGraphic = () => (
+  <svg viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', maxHeight: '240px' }}>
+    <defs>
+      <linearGradient id="otpBg" x1="0" y1="0" x2="340" y2="240" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FAFAFA" />
+        <stop offset="1" stopColor="#F1F5F9" />
+      </linearGradient>
+      <filter id="otpShadow" x="-10%" y="-10%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="10" stdDeviation="16" floodColor="#0F172A" floodOpacity="0.14" />
+      </filter>
+    </defs>
+    <rect width="340" height="240" rx="28" fill="url(#otpBg)" />
+
+    <g filter="url(#otpShadow)" transform="translate(100, 10)">
+      <rect width="140" height="215" rx="24" fill="#1E293B" />
+      <rect x="6" y="6" width="128" height="203" rx="20" fill="#FFFFFF" />
+      <rect x="40" y="10" width="48" height="7" rx="3.5" fill="#0F172A" />
+
+      {/* Security Padlock Shield */}
+      <g transform="translate(64, 85)">
+        <circle cx="0" cy="0" r="34" fill="#FEF3C7" className="ob-animate-pulse" />
+        <path d="M-14 4 C-14 -12 14 -12 14 4 V12 H-14 Z" fill="none" stroke="#FFAE00" strokeWidth="4" />
+        <rect x="-18" y="10" width="36" height="30" rx="8" fill="#FFAE00" />
+        <circle cx="0" cy="22" r="4" fill="#FFFFFF" />
+        <path d="M0 26 V32" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+      </g>
+
+      {/* Code Dots */}
+      <g transform="translate(24, 160)">
+        <rect x="0" y="0" width="18" height="22" rx="6" fill="#F1F5F9" stroke="#FFAE00" strokeWidth="1.5" />
+        <circle cx="9" cy="11" r="3" fill="#0F172A" />
+
+        <rect x="24" y="0" width="18" height="22" rx="6" fill="#F1F5F9" stroke="#FFAE00" strokeWidth="1.5" />
+        <circle cx="33" cy="11" r="3" fill="#0F172A" />
+
+        <rect x="48" y="0" width="18" height="22" rx="6" fill="#F1F5F9" stroke="#FFAE00" strokeWidth="1.5" />
+        <circle cx="57" cy="11" r="3" fill="#0F172A" />
+
+        <rect x="72" y="0" width="18" height="22" rx="6" fill="#F1F5F9" stroke="#FFAE00" strokeWidth="1.5" />
+        <circle cx="81" cy="11" r="3" fill="#0F172A" />
+      </g>
+    </g>
+  </svg>
+);
 
 const otpFallbackSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none"><rect width="240" height="180" rx="20" fill="%23F1F5F9"/><circle cx="120" cy="80" r="45" fill="%23ECFDF5"/><path d="M105 75L115 85L135 65" stroke="%2310B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="80" y="130" width="80" height="12" rx="6" fill="%23CBD5E1"/></svg>`;
 
@@ -51,7 +95,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       try {
         let activeCode = '';
         if (authMethod === 'email') {
-          let raw = sessionStorage.getItem('taxigo_email_otp');
+          let raw = sessionStorage.getItem('EMPERIAL CABS_email_otp');
           if (!raw) {
             const res = await sendEmailOTP(targetEmail);
             activeCode = res?.code;
@@ -59,7 +103,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             activeCode = JSON.parse(raw)?.code;
           }
         } else {
-          const raw = sessionStorage.getItem('taxigo_phone_otp');
+          const raw = sessionStorage.getItem('EMPERIAL CABS_phone_otp');
           if (raw) activeCode = JSON.parse(raw)?.code;
         }
         if (activeCode && activeCode.length === codeLength) {
@@ -162,8 +206,8 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
 
           try {
             localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
-            localStorage.setItem('taxigo_profile_completed', 'true');
-            localStorage.setItem('taxigo_onboarded', 'true');
+            localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
+            localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
             localStorage.setItem('cabsy_user_email_otp_target', '');
             window.dispatchEvent(new Event('storage'));
           } catch (e) {}
@@ -198,15 +242,9 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
       <div className="verify-screen-body" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
           
-          {/* OTP Verification Cropped Image Container */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '320px', height: '240px', margin: '0 auto', overflow: 'hidden' }}>
-            <div style={{ width: '100%', height: '240px', borderRadius: '20px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-              <img 
-                src={otpVerifyImg} 
-                alt="Verification" 
-                className="onboarding-cropped-image"
-              />
-            </div>
+          {/* OTP Verification Graphic Container */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '320px', minHeight: '220px', margin: '0 auto' }}>
+            <OtpVerifyGraphic />
           </div>
 
           <div>
@@ -292,7 +330,7 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
 
         {/* Verify Button */}
         <button
-          className="taxigo-btn-primary"
+          className="EMPERIAL CABS-btn-primary"
           disabled={verifying || code.join('').length < codeLength}
           onClick={() => handleVerify()}
           style={{

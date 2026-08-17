@@ -100,7 +100,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px', background: '#F8FAFC', color: '#0F172A', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }}>
           <div style={{ fontSize: '54px', marginBottom: '16px' }}>🚖</div>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0' }}>Empire Cab Application</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0' }}>EMPERIAL CABS Application</h2>
           <p style={{ color: '#64748B', maxWidth: '360px', margin: '0 0 20px 0', fontSize: '15px' }}>
             Application view updated. Tap below to reload fresh session.
           </p>

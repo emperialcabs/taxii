@@ -11,7 +11,7 @@ export default function PreferredLangScreen({ selectedLang, setSelectedLang, onN
       </div>
       <div className="verify-screen-body">
         <div>
-          <p className="verify-desc-txt" style={{ textAlign: 'left', marginBottom: '16px' }}>Select your preferred language for the Empire Cab app navigation.</p>
+          <p className="verify-desc-txt" style={{ textAlign: 'left', marginBottom: '16px' }}>Select your preferred language for the EMPERIAL CABS app navigation.</p>
           <div className="language-pills-grid">
             {languagesList.map((lang) => (
               <div 
@@ -24,7 +24,7 @@ export default function PreferredLangScreen({ selectedLang, setSelectedLang, onN
             ))}
           </div>
         </div>
-        <button className="taxigo-btn-primary" onClick={onNext}>Save Language</button>
+        <button className="EMPERIAL CABS-btn-primary" onClick={onNext}>Save Language</button>
       </div>
     </div>
   );

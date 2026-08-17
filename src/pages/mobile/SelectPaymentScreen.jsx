@@ -118,7 +118,7 @@ export default function SelectPaymentScreen({
 
             <button 
               type="button"
-              className="taxigo-btn-primary" 
+              className="EMPERIAL CABS-btn-primary" 
               onClick={onRequestRide}
               style={{
                 width: '100%',

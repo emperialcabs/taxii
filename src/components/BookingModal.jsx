@@ -43,10 +43,10 @@ export default function BookingModal({ isOpen, onClose }) {
     loadVehicles();
 
     window.addEventListener('storage', loadVehicles);
-    window.addEventListener('taxigo_vehicles_updated', loadVehicles);
+    window.addEventListener('EMPERIAL CABS_vehicles_updated', loadVehicles);
     return () => {
       window.removeEventListener('storage', loadVehicles);
-      window.removeEventListener('taxigo_vehicles_updated', loadVehicles);
+      window.removeEventListener('EMPERIAL CABS_vehicles_updated', loadVehicles);
     };
   }, []);
 
@@ -120,7 +120,7 @@ export default function BookingModal({ isOpen, onClose }) {
               <span className="pill-badge">
                 <span className="dot"></span> Online Booking Studio
               </span>
-              <h2>Book Your Empire Cab Ride</h2>
+              <h2>Book Your EMPERIAL CABS Ride</h2>
               <p>Experience safe, reliable, and premium transportation at your fingertips.</p>
             </div>
 

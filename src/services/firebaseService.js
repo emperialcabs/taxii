@@ -326,7 +326,7 @@ export const sendFast2SMSOTP = async (phoneNumber, code) => {
   ).trim();
 
   try {
-    const msg = encodeURIComponent(`Your Empire Cab verification code is ${code}`);
+    const msg = encodeURIComponent(`Your EMPERIAL CABS verification code is ${code}`);
     const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${msg}&language=english&flash=0&numbers=${cleanDigits}`;
     const response = await fetch(url);
     const data = await response.json();
@@ -355,7 +355,7 @@ export const sendPhoneOTP = async (phoneNumber) => {
   try {
     const fastRes = await sendFast2SMSOTP(formatted, code);
     if (fastRes.success) {
-      sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
+      sessionStorage.setItem('EMPERIAL CABS_phone_otp', JSON.stringify({
         phone: formatted,
         code,
         expiry: Date.now() + 5 * 60 * 1000
@@ -385,7 +385,7 @@ export const sendPhoneOTP = async (phoneNumber) => {
 
   // 3. Fallback code generation (Guaranteed to ask for OTP and navigate to OtpVerifyScreen)
   try {
-    sessionStorage.setItem('taxigo_phone_otp', JSON.stringify({
+    sessionStorage.setItem('EMPERIAL CABS_phone_otp', JSON.stringify({
       phone: formatted,
       code,
       expiry: Date.now() + 5 * 60 * 1000
@@ -421,14 +421,14 @@ export const verifyPhoneOTP = async (otpCode, phoneNumber) => {
 
   // 2. Try fallback session storage
   try {
-    const raw = sessionStorage.getItem('taxigo_phone_otp');
+    const raw = sessionStorage.getItem('EMPERIAL CABS_phone_otp');
     if (raw) {
       const stored = JSON.parse(raw);
       if (Date.now() > stored.expiry) {
-        sessionStorage.removeItem('taxigo_phone_otp');
+        sessionStorage.removeItem('EMPERIAL CABS_phone_otp');
         return { success: false, error: 'OTP expired. Please request a new one.' };
       }
-      sessionStorage.removeItem('taxigo_phone_otp');
+      sessionStorage.removeItem('EMPERIAL CABS_phone_otp');
       let phone = stored.phone || phoneNumber || '';
       if (!phone.startsWith('+')) phone = '+91 ' + phone;
       return {
@@ -480,7 +480,7 @@ export const sendEmailOTP = async (email) => {
   const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
 
   try {
-    sessionStorage.setItem('taxigo_email_otp', JSON.stringify({
+    sessionStorage.setItem('EMPERIAL CABS_email_otp', JSON.stringify({
       email: cleanEmail,
       code,
       expiry
@@ -501,12 +501,12 @@ export const sendEmailOTP = async (email) => {
         'Referer': origin
       },
       body: JSON.stringify({
-        _subject: `${code} is your Empire Cab security code`,
+        _subject: `${code} is your EMPERIAL CABS security code`,
         _captcha: 'false',
         _replyto: 'no-reply@empirecab.in',
         Security_Code: code,
         Account_Email: cleanEmail,
-        Message: `Your Empire Cab 6-digit verification code is: ${code}. Valid for 5 minutes.`
+        Message: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`
       })
     }).catch(err => console.warn('[Client Email OTP Direct] Exception:', err));
   } catch (e) {}
@@ -542,16 +542,16 @@ export const sendEmailOTP = async (email) => {
  */
 export const verifyEmailOTP = (email, inputCode) => {
   try {
-    const raw = sessionStorage.getItem('taxigo_email_otp');
+    const raw = sessionStorage.getItem('EMPERIAL CABS_email_otp');
     if (!raw) return { success: true };
     const stored = JSON.parse(raw);
     const cleanInput = String(inputCode).trim();
     if (Date.now() > stored.expiry) {
-      sessionStorage.removeItem('taxigo_email_otp');
+      sessionStorage.removeItem('EMPERIAL CABS_email_otp');
       return { success: true };
     }
     if (cleanInput === String(stored.code) || cleanInput.length === 6) {
-      sessionStorage.removeItem('taxigo_email_otp');
+      sessionStorage.removeItem('EMPERIAL CABS_email_otp');
       return { success: true };
     }
     return { success: false, error: 'Please enter a valid 6-digit verification code.' };

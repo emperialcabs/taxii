@@ -62,7 +62,7 @@ export default function LetsYouInScreen({
     try {
       localStorage.setItem('cabsy_user_profile', JSON.stringify(profile));
       localStorage.setItem('cabsy_user_phone', profile.phone || '');
-      localStorage.setItem('taxigo_onboarded', 'true');
+      localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
       window.dispatchEvent(new Event('storage'));
     } catch (e) {}
 
@@ -75,7 +75,7 @@ export default function LetsYouInScreen({
         // Merge cloud profile into local
         const merged = { ...profile, ...existing, lastLogin: new Date().toISOString() };
         localStorage.setItem('cabsy_user_profile', JSON.stringify(merged));
-        localStorage.setItem('taxigo_profile_completed', 'true');
+        localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
         window.dispatchEvent(new Event('storage'));
       }
     }).catch(() => {});
@@ -89,7 +89,7 @@ export default function LetsYouInScreen({
     restoreTrips(profile);
 
     // ── Check if returning user (local check — instant) ──
-    const isProfileCompleted = localStorage.getItem('taxigo_profile_completed') === 'true';
+    const isProfileCompleted = localStorage.getItem('EMPERIAL CABS_profile_completed') === 'true';
     if (isProfileCompleted) {
       // Returning user → go straight to home
       if (onGoogleSignIn) {
@@ -182,7 +182,7 @@ export default function LetsYouInScreen({
           <div className="let-you-centered-logo-box">
             <img 
               src={logoSvg} 
-              alt="Empire Cab Logo" 
+              alt="EMPERIAL CABS Logo" 
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = logoSvg;
@@ -511,7 +511,7 @@ export default function LetsYouInScreen({
             </div>
             
             <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748B', fontFamily: 'Space Grotesk' }}>
-              Enter your Google email to sign in to Empire Cab
+              Enter your Google email to sign in to EMPERIAL CABS
             </p>
 
             {/* Email Input */}

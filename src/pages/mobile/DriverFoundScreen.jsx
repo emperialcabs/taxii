@@ -55,7 +55,7 @@ export default function DriverFoundScreen({ pickupLoc, dropoffLoc, onNext }) {
               </button>
             </div>
 
-            <button className="taxigo-btn-primary" onClick={onNext}>
+            <button className="EMPERIAL CABS-btn-primary" onClick={onNext}>
               Start Live Trip Tracking →
             </button>
           </div>

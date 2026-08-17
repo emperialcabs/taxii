@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import imgRequestRide from '../../assets/images/onboarding/06_request_a_ride.png';
-import imgVehicleSelection from '../../assets/images/onboarding/05_vehicle_selection.png';
-import imgLiveTracking from '../../assets/images/onboarding/04_live_ride_tracking.png';
-import imgTripSharing from '../../assets/images/onboarding/07_trip_sharing.png';
+import onboarding1 from '../../assets/images/splash-screen/onboarding1.png';
+import onboarding2 from '../../assets/images/splash-screen/onboarding2.png';
+import onboarding3 from '../../assets/images/splash-screen/onboarding3.png';
+import onboarding4 from '../../assets/images/splash-screen/onboarding4.png';
 
 export default function OnboardingScreen({ onFinish }) {
   const [onboardingStep, setOnboardingStep] = useState(0);
@@ -11,22 +11,22 @@ export default function OnboardingScreen({ onFinish }) {
     {
       title: "Request a Ride",
       desc: "Request a ride get picked up by a nearby community driver.",
-      image: imgRequestRide
+      image: onboarding1
     },
     {
       title: "Vehicle Selection",
       desc: "Users have the liberty to choose the type of vehicle as per their need.",
-      image: imgVehicleSelection
+      image: onboarding2
     },
     {
       title: "Live Ride Tracking",
       desc: "Know your driver in advance and be able to view current location in real time on the map.",
-      image: imgLiveTracking
+      image: onboarding3
     },
     {
       title: "Trip Sharing",
       desc: "Passengers can share their ride details with family and friends for safety reasons.",
-      image: imgTripSharing
+      image: onboarding4
     }
   ];
 
@@ -36,27 +36,21 @@ export default function OnboardingScreen({ onFinish }) {
     <div className="real-mobile-app" style={{ background: '#FFFFFF' }}>
       <div className="onboarding-screen-container" style={{ padding: '20px 20px 28px 20px', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', boxSizing: 'border-box' }}>
         
-        {/* Exact Image Display - Top Graphic Portion Only */}
-        <div className="onboarding-image-box" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: '260px', padding: '10px 0', overflow: 'hidden' }}>
-          <div 
-            key={onboardingStep} 
+        {/* Exact Artwork Display Header using Original Template PNG */}
+        <div className="onboarding-image-box" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: '260px', padding: '10px 0' }}>
+          <img 
+            key={onboardingStep}
+            src={currentSlide.image} 
+            alt={currentSlide.title}
+            className="onboarding-hero-img"
             style={{ 
-              width: '100%', 
-              maxWidth: '320px', 
-              height: '280px', 
-              borderRadius: '24px', 
-              overflow: 'hidden', 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'flex-start'
-            }}
-          >
-            <img 
-              src={currentSlide.image} 
-              alt={currentSlide.title}
-              className="onboarding-cropped-image"
-            />
-          </div>
+              maxWidth: '100%', 
+              maxHeight: '280px', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.06))',
+              animation: 'heroFloat 4s ease-in-out infinite, heroSlideIn 0.3s ease'
+            }} 
+          />
         </div>
 
         {/* Text & Content */}

@@ -1,4 +1,4 @@
-// Empire Cab Mobile User Experience & Navigation Engine v1.0.8
+// EMPERIAL CABS Mobile User Experience & Navigation Engine v1.0.8
 import React, { useState, useEffect } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
@@ -35,7 +35,7 @@ export default function MobileAppView() {
   // Navigation Flow State Machine
   const [appStage, setAppStage] = useState(() => {
     try {
-      const hasOnboarded = localStorage.getItem('taxigo_onboarded');
+      const hasOnboarded = localStorage.getItem('EMPERIAL CABS_onboarded');
       return hasOnboarded === 'true' ? 'APP_HOME' : 'PRELOADER';
     } catch (e) {
       return 'PRELOADER';
@@ -80,20 +80,20 @@ export default function MobileAppView() {
     syncActiveRideStage();
 
     window.addEventListener('storage', syncActiveRideStage);
-    window.addEventListener('taxigo_trip_started', syncActiveRideStage);
-    window.addEventListener('taxigo_db_sync', syncActiveRideStage);
+    window.addEventListener('EMPERIAL CABS_trip_started', syncActiveRideStage);
+    window.addEventListener('EMPERIAL CABS_db_sync', syncActiveRideStage);
     return () => {
       window.removeEventListener('storage', syncActiveRideStage);
-      window.removeEventListener('taxigo_trip_started', syncActiveRideStage);
-      window.removeEventListener('taxigo_db_sync', syncActiveRideStage);
+      window.removeEventListener('EMPERIAL CABS_trip_started', syncActiveRideStage);
+      window.removeEventListener('EMPERIAL CABS_db_sync', syncActiveRideStage);
     };
   }, []);
 
   // Helper to complete onboarding & store in localStorage
   const completeOnboarding = () => {
     try {
-      localStorage.setItem('taxigo_onboarded', 'true');
-      localStorage.setItem('taxigo_profile_completed', 'true');
+      localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
+      localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
       const existing = localStorage.getItem('cabsy_user_profile');
       if (!existing) {
         const defaultProfile = {
@@ -112,7 +112,7 @@ export default function MobileAppView() {
   // Skip profile setup for returning users (2nd+ time login)
   const proceedAfterAuth = () => {
     try {
-      const isCompleted = localStorage.getItem('taxigo_profile_completed') === 'true';
+      const isCompleted = localStorage.getItem('EMPERIAL CABS_profile_completed') === 'true';
       const saved = localStorage.getItem('cabsy_user_profile');
       if (isCompleted || (saved && JSON.parse(saved).name)) {
         completeOnboarding();
@@ -125,8 +125,8 @@ export default function MobileAppView() {
   const handleLogout = () => {
     try {
       localStorage.removeItem('cabsy_user_profile');
-      localStorage.removeItem('taxigo_onboarded');
-      localStorage.removeItem('taxigo_profile_completed');
+      localStorage.removeItem('EMPERIAL CABS_onboarded');
+      localStorage.removeItem('EMPERIAL CABS_profile_completed');
     } catch (e) { }
     setSelectedGoogleAccount(null);
     setPhoneNumber('');
@@ -210,7 +210,7 @@ export default function MobileAppView() {
 
     // 5. Dispatch events to notify Admin Portal in real time
     window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('taxigo_ride_booked', { detail: newInquiry }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_ride_booked', { detail: newInquiry }));
 
     setLastCreatedInquiry(newInquiry);
     setAppStage('INQUIRY_SUBMITTED');
@@ -357,7 +357,7 @@ export default function MobileAppView() {
             if (updatedProfile) {
               saveCustomerToMySQL(updatedProfile).catch(() => {});
               window.dispatchEvent(new Event('storage'));
-              window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedProfile } }));
+              window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedProfile } }));
             }
             setAppStage('ACCOUNT_CREATED');
           }}
@@ -495,7 +495,7 @@ export default function MobileAppView() {
 
   return (
     <div
-      id="taxigo-app-root"
+      id="EMPERIAL CABS-app-root"
       style={{
         width: '100%',
         height: '100vh',

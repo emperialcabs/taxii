@@ -28,7 +28,7 @@ export default function ProcessingScreen({ onCancel, onMatched }) {
 
           <div className="homescreen-bottom-card" style={{ textAlign: 'center', padding: '30px 24px' }}>
             <div className="processing-spinner-container">
-              <div className="taxigo-spinner-dots" />
+              <div className="EMPERIAL CABS-spinner-dots" />
             </div>
 
             <h2 style={{ fontFamily: 'League Spartan', fontSize: '24px', color: '#1E293B', margin: '0 0 6px 0', fontWeight: '800' }}>

@@ -198,7 +198,7 @@ export default function SelectCarScreen({
               </div>
             </div>
 
-            <button className="taxigo-btn-primary" onClick={() => onNext && onNext(currentCarObj)}>
+            <button className="EMPERIAL CABS-btn-primary" onClick={() => onNext && onNext(currentCarObj)}>
               Confirm {currentCarObj.name} ({currentCarObj.price}) →
             </button>
           </div>

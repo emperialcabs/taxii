@@ -79,7 +79,7 @@ export default function Driver({ onOpenBooking }) {
                     ))}
                   </div>
                   <h3>{drv.name}</h3>
-                  <p className="driver-since">Empire Cab Driver Since {drv.since}</p>
+                  <p className="driver-since">EMPERIAL CABS Driver Since {drv.since}</p>
                 </div>
               </div>
             ))}
@@ -134,7 +134,7 @@ export default function Driver({ onOpenBooking }) {
           <div className="recruitment-card section-mint">
             <div className="grid-2-cols align-center">
               <div className="recruitment-text">
-                <h2>Wanna Become A Part of Our Dedicated Team of Empire Cab Drivers?</h2>
+                <h2>Wanna Become A Part of Our Dedicated Team of EMPERIAL CABS Drivers?</h2>
                 <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam laboriosam, nisi ut aliquid ex ea commodi consequatur</p>
                 
                 <button onClick={() => setSignUpModalOpen(true)} className="btn btn-primary">
@@ -145,7 +145,7 @@ export default function Driver({ onOpenBooking }) {
               <div className="recruitment-media text-center">
                 <img 
                   src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&auto=format&fit=crop&q=80" 
-                  alt="Become a Empire Cab driver" 
+                  alt="Become a EMPERIAL CABS driver" 
                   className="rounded-img"
                 />
               </div>
@@ -168,11 +168,11 @@ export default function Driver({ onOpenBooking }) {
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=80" alt="Craig Carter" />
               </div>
               <p className="quote-body">
-                "Being Empire Cab taxi driver has not only provided me with a stable income but has also opened doors to endless opportunities and personal growth."
+                "Being EMPERIAL CABS taxi driver has not only provided me with a stable income but has also opened doors to endless opportunities and personal growth."
               </p>
               <div className="quote-author-info">
                 <strong>— Craig Carter</strong>
-                <small>Empire Cab Driver Since 2019</small>
+                <small>EMPERIAL CABS Driver Since 2019</small>
               </div>
             </div>
 
@@ -181,11 +181,11 @@ export default function Driver({ onOpenBooking }) {
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80" alt="Marwane Perez" />
               </div>
               <p className="quote-body">
-                "What I love most about being a driver with Empire Cab is the freedom and flexibility it offers, allowing me to strike a perfect work-life balance."
+                "What I love most about being a driver with EMPERIAL CABS is the freedom and flexibility it offers, allowing me to strike a perfect work-life balance."
               </p>
               <div className="quote-author-info">
                 <strong>— Marwane Perez</strong>
-                <small>Empire Cab Driver Since 2021</small>
+                <small>EMPERIAL CABS Driver Since 2021</small>
               </div>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function Driver({ onOpenBooking }) {
         <div className="modal-overlay" onClick={() => setSignUpModalOpen(false)}>
           <div className="modal-content card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Join Empire Cab Driver Fleet</h2>
+              <h2>Join EMPERIAL CABS Driver Fleet</h2>
               <p>Apply to become a verified driver partner today.</p>
             </div>
             

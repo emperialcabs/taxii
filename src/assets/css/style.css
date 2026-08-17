@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------
-Project: Empire Cab App
+Project: EMPERIAL CABS App
 Author: The_Krishna       
 Last change: 04/03/2024 
 Primary use: Taxi Booking Mobile App PWA
@@ -20,7 +20,7 @@ Primary use: Taxi Booking Mobile App PWA
 12.Privacy Screen CSS
 13.Enable location Screen CSS
 14.Reward Screen CSS
-15.Empire Cab Platinum Screen CSS
+15.EMPERIAL CABS Platinum Screen CSS
 16.Promocode Screen CSS
 17.HomeScreen CSS
 18.Preloader CSS
@@ -160,7 +160,7 @@ body::-webkit-scrollbar {
     width: 24px;
     height: 24px;
 }
-h1.taxigo-txt {
+h1.EMPERIAL CABS-txt {
     color: var(--2, #212B46);
     text-align: center;
     font-family: "League Spartan", sans-serif;
@@ -169,7 +169,7 @@ h1.taxigo-txt {
     font-weight: 600;
     line-height: 60px;
 }
-p.taxigo-title {
+p.EMPERIAL CABS-title {
     color: var(--3, #67696B);
     text-align: center;
     font-family: "Space Grotesk", sans-serif;
@@ -1312,7 +1312,7 @@ label.custom-radio-sel-lang {
 .rewards-screen,
 #currency-page,
 #rewards-screen,
-#taxigo-platinum-content,
+#EMPERIAL CABS-platinum-content,
 #forget-password-screen-content,
 #Package
 {
@@ -1633,9 +1633,9 @@ label.custom-radio-sel-lang {
     border-radius: 16px;
 }
 
-/************************ 15.Empire Cab Platinum Screen CSS ***************************/
+/************************ 15.EMPERIAL CABS Platinum Screen CSS ***************************/
 #header-top{
-    background-image: url(../images/taxigo-platinum/bg-img.png);
+    background-image: url(../images/EMPERIAL CABS-platinum/bg-img.png);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -1644,11 +1644,11 @@ label.custom-radio-sel-lang {
     position: relative;
     padding: 24px 0;
 }
-.header-name-taxigo{
+.header-name-EMPERIAL CABS{
     margin-right: auto;
     margin-left: auto;
 }
-.header-name-taxigo p{
+.header-name-EMPERIAL CABS p{
     color: var(--1, #FFF);
     text-align: center;
     font-family: "League Spartan", sans-serif;

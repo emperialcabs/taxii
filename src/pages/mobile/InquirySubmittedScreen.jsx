@@ -109,7 +109,7 @@ export default function InquirySubmittedScreen({ inquiry, onGoHome, onViewRides 
         {/* Action Buttons */}
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <button 
-            className="taxigo-btn-primary" 
+            className="EMPERIAL CABS-btn-primary" 
             onClick={onViewRides}
             style={{ width: '100%', padding: '16px', fontSize: '17px' }}
           >

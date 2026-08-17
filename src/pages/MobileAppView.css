@@ -1,21 +1,21 @@
-/* EMPIRE CAB NATIVE MOBILE APP — MASTER ULTRA-PREMIUM LIGHT UI DESIGN SYSTEM */
+/* EMPERIAL CABS NATIVE MOBILE APP — MASTER ULTRA-PREMIUM LIGHT UI DESIGN SYSTEM */
 @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --taxigo-yellow: #34D399;
-  --taxigo-orange: #10B981;
-  --taxigo-dark: #1E293B;
-  --taxigo-navy: #0F172A;
-  --taxigo-gray: #64748B;
-  --taxigo-light-bg: #F8FAFC;
-  --taxigo-card-bg: #FFFFFF;
-  --taxigo-red: #EF4444;
-  --taxigo-green: #22C55E;
-  --taxigo-border: #E2E8F0;
-  --taxigo-shadow-sm: 0 2px 8px rgba(0,0,0,0.03);
-  --taxigo-shadow-md: 0 6px 20px rgba(0,0,0,0.06);
-  --taxigo-shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
-  --taxigo-glow-yellow: 0 6px 20px rgba(52, 211, 153, 0.35);
+  --emperial-yellow: #34D399;
+  --emperial-orange: #10B981;
+  --emperial-dark: #1E293B;
+  --emperial-navy: #0F172A;
+  --emperial-gray: #64748B;
+  --emperial-light-bg: #F8FAFC;
+  --emperial-card-bg: #FFFFFF;
+  --emperial-red: #EF4444;
+  --emperial-green: #22C55E;
+  --emperial-border: #E2E8F0;
+  --emperial-shadow-sm: 0 2px 8px rgba(0,0,0,0.03);
+  --emperial-shadow-md: 0 6px 20px rgba(0,0,0,0.06);
+  --emperial-shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
+  --emperial-glow-yellow: 0 6px 20px rgba(52, 211, 153, 0.35);
 }
 
 
@@ -80,7 +80,7 @@
 }
 
 /* 0. PRELOADER & SPLASH SCREEN STYLING */
-.taxigo-preloader-container {
+.EMPERIAL CABS-preloader-container {
   width: 100%;
   height: 100vh;
   background: #FFFFFF;
@@ -103,7 +103,7 @@
   justify-content: center;
 }
 
-.taxigo-exact-car-svg {
+.EMPERIAL CABS-exact-car-svg {
   width: 100%;
   height: auto;
   overflow: visible;
@@ -154,7 +154,7 @@
   position: relative;
 }
 
-.taxigo-spinner-dots {
+.EMPERIAL CABS-spinner-dots {
   width: 54px;
   height: 54px;
   border: 5px solid rgba(52, 211, 153, 0.2);
@@ -207,7 +207,7 @@
 }
 
 /* 1. SPLASH & ONBOARDING STYLING */
-.taxigo-splash-container {
+.EMPERIAL CABS-splash-container {
   width: 100%;
   height: 100vh;
   background: #FFFFFF;
@@ -404,7 +404,7 @@
 .flag-icon-span { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #1E293B; margin-right: 12px; }
 .phone-input-field { width: 100%; border: none; background: transparent; outline: none; padding: 14px 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #1E293B; }
 
-.let-you-signin-btn, .taxigo-btn-primary {
+.let-you-signin-btn, .EMPERIAL CABS-btn-primary {
   width: 100%;
   background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
   color: #FFFFFF;
@@ -421,7 +421,7 @@
   transition: transform 0.15s ease, opacity 0.2s ease;
 }
 
-.let-you-signin-btn:active, .taxigo-btn-primary:active { transform: scale(0.97); }
+.let-you-signin-btn:active, .EMPERIAL CABS-btn-primary:active { transform: scale(0.97); }
 
 .let-you-footer-txt { text-align: center; color: #64748B; font-size: 15px; margin-top: auto; }
 .let-you-footer-txt span { color: #1E293B; font-weight: 800; cursor: pointer; text-decoration: underline; }
@@ -652,7 +652,7 @@
 
 .home-greeting-txt { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #64748B; margin: 0; }
 
-.taxigo-btn-primary {
+.EMPERIAL CABS-btn-primary {
   width: 100%;
   height: 56px;
   background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
@@ -671,7 +671,7 @@
   transition: all 0.2s ease;
 }
 
-.taxigo-btn-primary:active {
+.EMPERIAL CABS-btn-primary:active {
   transform: translateY(1px);
 }
 
@@ -719,7 +719,7 @@
 }
 
 /* 5. BOTTOM NAVIGATION TABS */
-.taxigo-bottom-nav {
+.EMPERIAL CABS-bottom-nav {
   position: fixed; /* Use fixed so it never gets lost on iOS/Android */
   bottom: 0;
   left: 50%;
@@ -879,6 +879,34 @@
   animation: heroFloat 4s ease-in-out infinite, heroSlideIn 0.3s ease;
   will-change: transform;
 }
+
+.ob-animate-float {
+  animation: heroFloat 4s ease-in-out infinite;
+}
+.ob-animate-float-slow {
+  animation: heroFloat 6s ease-in-out infinite;
+}
+.ob-animate-car {
+  animation: obCarMove 4s ease-in-out infinite alternate;
+}
+.ob-animate-bell {
+  animation: obBellRing 3s ease-in-out infinite;
+  transform-origin: 50% 10%;
+}
+.ob-animate-pulse {
+  animation: obPulseRing 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+.ob-animate-check {
+  animation: obPopCheck 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes obCarMove {
+  0% { transform: translate(0px, 0px); }
+  50% { transform: translate(20px, 18px); }
+  100% { transform: translate(40px, 40px); }
+}
+
 
 
 

@@ -1,4 +1,4 @@
-// Empire Cab Admin Portal v1.0.4 - Live Trip Tracking & Chronological Inquiries Engine
+// EMPERIAL CABS Admin Portal v1.0.4 - Live Trip Tracking & Chronological Inquiries Engine
 import React, { useState, useEffect } from 'react';
 import {
   saveInquiryToMySQL,
@@ -310,7 +310,7 @@ export default function AdminPortal() {
     notifyCustomer({
       type: 'reward',
       title: '🎁 Wallet Reward Credited!',
-      body: `Congratulations! You received ₹${rewardAmount} wallet reward credit from Empire Cab for trip ${inq.id}!`,
+      body: `Congratulations! You received ₹${rewardAmount} wallet reward credit from EMPERIAL CABS for trip ${inq.id}!`,
       customerPhone: inq.customerPhone,
       customerEmail: inq.customerEmail
     });
@@ -384,16 +384,16 @@ export default function AdminPortal() {
       fetchAllData();
     };
 
-    window.addEventListener('taxigo_admin_notif', syncAdminNotifs);
-    window.addEventListener('taxigo_db_sync', syncAdminNotifs);
+    window.addEventListener('EMPERIAL CABS_admin_notif', syncAdminNotifs);
+    window.addEventListener('EMPERIAL CABS_db_sync', syncAdminNotifs);
     window.addEventListener('storage', syncAdminNotifs);
     
     // Poll Hostinger MySQL every 1.5s for instant minor-second live cross-device trip updates
     const interval = setInterval(fetchAllData, 1500);
 
     return () => {
-      window.removeEventListener('taxigo_admin_notif', syncAdminNotifs);
-      window.removeEventListener('taxigo_db_sync', syncAdminNotifs);
+      window.removeEventListener('EMPERIAL CABS_admin_notif', syncAdminNotifs);
+      window.removeEventListener('EMPERIAL CABS_db_sync', syncAdminNotifs);
       window.removeEventListener('storage', syncAdminNotifs);
       clearInterval(interval);
     };
@@ -486,12 +486,12 @@ export default function AdminPortal() {
     const handleSyncEvent = () => loadFromCloud();
 
     window.addEventListener('storage', handleSyncEvent);
-    window.addEventListener('taxigo_db_sync', handleSyncEvent);
+    window.addEventListener('EMPERIAL CABS_db_sync', handleSyncEvent);
 
     return () => {
       clearInterval(pollInterval);
       window.removeEventListener('storage', handleSyncEvent);
-      window.removeEventListener('taxigo_db_sync', handleSyncEvent);
+      window.removeEventListener('EMPERIAL CABS_db_sync', handleSyncEvent);
     };
   }, []);
 
@@ -500,7 +500,7 @@ export default function AdminPortal() {
       localStorage.setItem('cabsy_inquiries', JSON.stringify(inquiries));
       try {
         if ('BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('taxigo_realtime_sync');
+          const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
           bc.postMessage({ type: 'INQUIRIES_UPDATED', inquiries, timestamp: Date.now() });
           bc.close();
         }
@@ -518,7 +518,7 @@ export default function AdminPortal() {
 
   useEffect(() => {
     localStorage.setItem('cabsy_vehicles', JSON.stringify(vehicles));
-    window.dispatchEvent(new CustomEvent('taxigo_vehicles_updated', { detail: vehicles }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_vehicles_updated', { detail: vehicles }));
   }, [vehicles]);
 
   useEffect(() => {
@@ -775,13 +775,13 @@ export default function AdminPortal() {
       notifyCustomer({
         type: 'trip_started',
         title: '▶ Your Ride Has Started!',
-        body: `Driver ${targetInq.driver || 'Empire Cab'} has started your trip to ${targetInq.dropoff}. Live map tracking is now active!`,
+        body: `Driver ${targetInq.driver || 'EMPERIAL CABS'} has started your trip to ${targetInq.dropoff}. Live map tracking is now active!`,
         customerPhone: targetInq.customerPhone,
         customerEmail: targetInq.customerEmail
       });
     }
     window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('taxigo_trip_started', { detail: { id: inquiryId } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_started', { detail: { id: inquiryId } }));
   };
 
   const handleCompleteTrip = (inquiryId) => {
@@ -803,7 +803,7 @@ export default function AdminPortal() {
     const targetInq = completedInq || inquiries.find(i => i.id === inquiryId);
     if (targetInq) {
       const fullCompleted = { ...targetInq, status: 'Completed' };
-      localStorage.setItem('taxigo_last_completed_trip', JSON.stringify(fullCompleted));
+      localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
       updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
       try {
         db.saveInquiry(fullCompleted);
@@ -813,7 +813,7 @@ export default function AdminPortal() {
       notifyCustomer({
         type: 'trip_completed',
         title: '🏁 Trip Completed!',
-        body: `Thank you for riding with Empire Cab! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
+        body: `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
         customerPhone: targetInq.customerPhone,
         customerEmail: targetInq.customerEmail
       });
@@ -821,14 +821,14 @@ export default function AdminPortal() {
       // Post real-time cross-tab BroadcastChannel message
       try {
         if ('BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('taxigo_realtime_sync');
+          const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
           bc.postMessage({ type: 'TRIP_COMPLETED', data: fullCompleted, timestamp: Date.now() });
           bc.close();
         }
       } catch (e) {}
 
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('taxigo_trip_completed', { detail: fullCompleted }));
+      window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
     }
   };
 
@@ -840,7 +840,7 @@ export default function AdminPortal() {
         notifyCustomer({
           type: 'cancelled',
           title: '❌ Booking Cancelled',
-          body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by Empire Cab dispatch.`,
+          body: `Your booking request for ${target.pickup} → ${target.dropoff} was cancelled by EMPERIAL CABS dispatch.`,
           customerPhone: target.customerPhone,
           customerEmail: target.customerEmail
         });
@@ -991,7 +991,7 @@ export default function AdminPortal() {
             <div className="lock-icon-badge">
               <Lock size={32} />
             </div>
-            <h2>Empire Cab Admin Security</h2>
+            <h2>EMPERIAL CABS Admin Security</h2>
             <p>Enter 4-Digit Security PIN to Access Dispatcher Portal</p>
           </div>
 
@@ -1055,13 +1055,11 @@ export default function AdminPortal() {
       {/* LEFT SIDEBAR NAVIGATION */}
       <aside className="admin-sidebar">
         <div className="admin-brand flex align-center gap-2">
-          <div className="brand-badge">
-            <span>C</span>
-          </div>
+          <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '60px', width: 'auto', borderRadius: '0px', padding: '2px 4px', background: '#FFFFFF', border: '1px solid #0F172A' }} />
           <div>
-            <h3>Empire Cab Admin</h3>
-            <small className="text-green flex align-center gap-1">
-              <span className="dot"></span> Authorized Portal
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800' }}>EMPERIAL CABS</h3>
+            <small className="text-green flex align-center gap-1" style={{ fontSize: '11px' }}>
+              <span className="dot"></span> Authorized Admin Portal
             </small>
           </div>
         </div>
@@ -3118,7 +3116,7 @@ export default function AdminPortal() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ background: '#10B981', color: '#FFF', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🚕</div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Empire Cab - Detailed Trip Receipt</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>EMPERIAL CABS - Detailed Trip Receipt</h3>
                   <small style={{ color: '#64748B' }}>Booking Ref: <strong>{receiptModal.inquiry.id}</strong> • {receiptModal.inquiry.date || 'Today'}</small>
                 </div>
               </div>

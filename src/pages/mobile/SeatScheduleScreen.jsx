@@ -338,7 +338,7 @@ export default function SeatScheduleScreen({
 
             {/* Direct Booking Submission Button */}
             <button 
-              className="taxigo-btn-primary" 
+              className="EMPERIAL CABS-btn-primary" 
               style={{
                 width: '100%',
                 background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',

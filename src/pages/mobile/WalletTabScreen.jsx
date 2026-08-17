@@ -34,13 +34,13 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
     fetchWallet();
 
     window.addEventListener('storage', fetchWallet);
-    window.addEventListener('taxigo_wallet_updated', fetchWallet);
-    window.addEventListener('taxigo_db_sync', fetchWallet);
+    window.addEventListener('EMPERIAL CABS_wallet_updated', fetchWallet);
+    window.addEventListener('EMPERIAL CABS_db_sync', fetchWallet);
     const interval = setInterval(fetchWallet, 1500);
     return () => {
       window.removeEventListener('storage', fetchWallet);
-      window.removeEventListener('taxigo_wallet_updated', fetchWallet);
-      window.removeEventListener('taxigo_db_sync', fetchWallet);
+      window.removeEventListener('EMPERIAL CABS_wallet_updated', fetchWallet);
+      window.removeEventListener('EMPERIAL CABS_db_sync', fetchWallet);
       clearInterval(interval);
     };
   }, [userPhone]);

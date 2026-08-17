@@ -22,10 +22,10 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
     };
     syncRide();
     window.addEventListener('storage', syncRide);
-    window.addEventListener('taxigo_trip_started', syncRide);
+    window.addEventListener('EMPERIAL CABS_trip_started', syncRide);
     return () => {
       window.removeEventListener('storage', syncRide);
-      window.removeEventListener('taxigo_trip_started', syncRide);
+      window.removeEventListener('EMPERIAL CABS_trip_started', syncRide);
     };
   }, []);
 

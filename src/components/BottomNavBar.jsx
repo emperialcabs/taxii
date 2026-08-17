@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function BottomNavBar({ activeTab, setActiveTab }) {
   return (
-    <div className="taxigo-bottom-nav">
+    <div className="EMPERIAL CABS-bottom-nav">
       <button 
         className={`nav-tab-item ${activeTab === 'home' ? 'active' : ''}`} 
         onClick={() => setActiveTab('home')}

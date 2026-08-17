@@ -1,4 +1,4 @@
-// Hostinger Remote MySQL Central Database Sync Engine for Empire Cab Ecosystem (Website, Android, iPhone)
+// Hostinger Remote MySQL Central Database Sync Engine for EMPERIAL CABS Ecosystem (Website, Android, iPhone)
 // Host: srv1671.hstgr.io | DB: u889282535_taxi
 
 import {
@@ -89,14 +89,14 @@ class DatabaseService {
     saveInquiryToMySQL(newInquiry).catch(() => {});
 
     // Dispatch real-time cross-platform event
-    window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'INQUIRY_ADDED', data: newInquiry } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'INQUIRY_ADDED', data: newInquiry } }));
     return newInquiry;
   }
 
   deleteInquiry(id) {
     const inquiries = this.getInquiries().filter(i => i.id !== id);
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(inquiries));
-    window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'INQUIRY_DELETED', id } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'INQUIRY_DELETED', id } }));
   }
 
   // Customers API
@@ -159,7 +159,7 @@ class DatabaseService {
     // Auto-sync customer profile to Hostinger MySQL Database
     saveCustomerToMySQL(updatedCustomer).catch(() => {});
 
-    window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedCustomer } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: updatedCustomer } }));
     return updatedCustomer;
   }
 
@@ -191,7 +191,7 @@ class DatabaseService {
     try {
       localStorage.setItem(key, JSON.stringify(walletData));
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('taxigo_wallet_updated', { detail: walletData }));
+      window.dispatchEvent(new CustomEvent('EMPERIAL CABS_wallet_updated', { detail: walletData }));
     } catch (e) {}
 
     // Auto-sync wallet to Hostinger MySQL Database
@@ -316,7 +316,7 @@ class DatabaseService {
     localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.DRIVERS, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify([]));
-    window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'DEMO_DATA_CLEARED' } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'DEMO_DATA_CLEARED' } }));
   }
 }
 

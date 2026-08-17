@@ -85,24 +85,24 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     let bc = null;
     try {
       if ('BroadcastChannel' in window) {
-        bc = new BroadcastChannel('taxigo_realtime_sync');
+        bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.onmessage = () => loadInquiries();
       }
     } catch (e) {}
 
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('taxigo_ride_booked', handleStorageChange);
-    window.addEventListener('taxigo_db_sync', handleStorageChange);
-    window.addEventListener('taxigo_trip_completed', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_ride_booked', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_db_sync', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_trip_completed', handleStorageChange);
 
     const interval = setInterval(loadInquiries, 1500);
 
     return () => {
       if (bc) bc.close();
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('taxigo_ride_booked', handleStorageChange);
-      window.removeEventListener('taxigo_db_sync', handleStorageChange);
-      window.removeEventListener('taxigo_trip_completed', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_ride_booked', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_db_sync', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_trip_completed', handleStorageChange);
       clearInterval(interval);
     };
   }, []);
@@ -127,7 +127,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
       }
 
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('taxigo_inquiry_cancelled', { detail: { id: inqId } }));
+      window.dispatchEvent(new CustomEvent('EMPERIAL CABS_inquiry_cancelled', { detail: { id: inqId } }));
     } catch (e) {
       console.error("Error cancelling inquiry:", e);
     }

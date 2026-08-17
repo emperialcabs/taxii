@@ -100,12 +100,12 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
     };
     try {
       localStorage.setItem('cabsy_user_profile', JSON.stringify(finalProfile));
-      localStorage.setItem('taxigo_onboarded', 'true');
-      localStorage.setItem('taxigo_profile_completed', 'true');
+      localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
+      localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
       db.saveCustomer(finalProfile);
       await saveCustomerToMySQL(finalProfile).catch(() => {});
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('taxigo_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: finalProfile } }));
+      window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: { type: 'CUSTOMER_UPDATED', data: finalProfile } }));
     } catch (err) {}
     setSavedSuccess(true);
     setTimeout(() => {

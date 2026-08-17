@@ -20,6 +20,7 @@ export default function TripReceiptScreen({ onDone }) {
           marginBottom: '24px'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '36px', width: 'auto', marginBottom: '16px' }} />
             <div style={{
               width: '64px', height: '64px', borderRadius: '50%',
               background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
@@ -34,7 +35,7 @@ export default function TripReceiptScreen({ onDone }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px' }}>
               <ShieldCheck size={14} color="#10B981" />
               <p style={{ fontSize: '13px', color: '#64748B', margin: 0, fontFamily: 'Space Grotesk, sans-serif', fontWeight: '600' }}>
-                Empire Cab Executive E-Receipt
+                EMPERIAL CABS Executive E-Receipt
               </p>
             </div>
           </div>
@@ -61,7 +62,7 @@ export default function TripReceiptScreen({ onDone }) {
         </div>
 
         <button 
-          className="taxigo-btn-primary" 
+          className="EMPERIAL CABS-btn-primary" 
           onClick={onDone}
           style={{
             width: '100%',

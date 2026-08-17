@@ -164,13 +164,15 @@ export default function PreloaderScreen({ onFinish }) {
 
   return (
     <div className="real-mobile-app" style={{ background: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-      <div className="taxigo-preloader-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
+      <div className="emperial-cabs-preloader-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
         
         {/* Exact User Provided CarShape Component */}
         <CarShape />
 
+        <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ height: '75px', width: 'auto', marginBottom: '12px', borderRadius: '0px', padding: '2px 6px', background: '#FFFFFF', border: '1px solid #0F172A' }} />
+        
         <h2 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>
-          EMPIRE CAB
+          EMPERIAL CABS
         </h2>
         <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '14px', color: '#64748B', margin: 0, fontWeight: '600' }}>
           Loading Executive Experience...

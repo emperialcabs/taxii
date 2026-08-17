@@ -270,7 +270,7 @@ function toggleCustomAmountInput() {
 /*-------------------------------------Anchore Tag Link Added-------------------------------------*/
 $(".location-redirect").wrap('<a href="going1_screen.html"></a>');
 $(".account-redirect").wrap('<a href="account-screen.html"></a>');
-$(".platium-redirect").wrap('<a href="taxigo-platinum.html"></a>');
+$(".platium-redirect").wrap('<a href="EMPERIAL CABS-platinum.html"></a>');
 $(".current-redirect").wrap('<a href="going3_screen.html"></a>');
 $(".going6-redirect").wrap('<a href="going6_screen.html"></a>');
 $(".going2-redirect").wrap('<a href="going2_screen.html"></a>');

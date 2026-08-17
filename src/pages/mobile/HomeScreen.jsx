@@ -41,7 +41,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     const checkActiveRide = () => {
       try {
         const saved = localStorage.getItem('cabsy_inquiries');
-        const lastCompletedRaw = localStorage.getItem('taxigo_last_completed_trip');
+        const lastCompletedRaw = localStorage.getItem('EMPERIAL CABS_last_completed_trip');
         const userProfRaw = localStorage.getItem('cabsy_user_profile');
         const userProf = userProfRaw ? JSON.parse(userProfRaw) : null;
         const uPhone = userProf?.phone ? String(userProf.phone).replace(/\D/g, '') : '';
@@ -93,7 +93,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     let bc = null;
     try {
       if ('BroadcastChannel' in window) {
-        bc = new BroadcastChannel('taxigo_realtime_sync');
+        bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.onmessage = (msg) => {
           if (msg.data?.type === 'TRIP_COMPLETED' && msg.data?.data) {
             setCompletedModal(msg.data.data);
@@ -111,9 +111,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     };
 
     window.addEventListener('storage', checkActiveRide);
-    window.addEventListener('taxigo_trip_started', checkActiveRide);
-    window.addEventListener('taxigo_trip_completed', handleTripCompletedEvent);
-    window.addEventListener('taxigo_db_sync', checkActiveRide);
+    window.addEventListener('EMPERIAL CABS_trip_started', checkActiveRide);
+    window.addEventListener('EMPERIAL CABS_trip_completed', handleTripCompletedEvent);
+    window.addEventListener('EMPERIAL CABS_db_sync', checkActiveRide);
     window.addEventListener('cabsy-new-inquiry', checkActiveRide);
 
     const pollInterval = setInterval(checkActiveRide, 800);
@@ -121,9 +121,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     return () => {
       if (bc) bc.close();
       window.removeEventListener('storage', checkActiveRide);
-      window.removeEventListener('taxigo_trip_started', checkActiveRide);
-      window.removeEventListener('taxigo_trip_completed', handleTripCompletedEvent);
-      window.removeEventListener('taxigo_db_sync', checkActiveRide);
+      window.removeEventListener('EMPERIAL CABS_trip_started', checkActiveRide);
+      window.removeEventListener('EMPERIAL CABS_trip_completed', handleTripCompletedEvent);
+      window.removeEventListener('EMPERIAL CABS_db_sync', checkActiveRide);
       window.removeEventListener('cabsy-new-inquiry', checkActiveRide);
       clearInterval(pollInterval);
     };
@@ -160,7 +160,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
         });
         localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
         window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('taxigo_trip_started'));
+        window.dispatchEvent(new Event('EMPERIAL CABS_trip_started'));
       }
     } catch (e) {}
     setActiveRide(null);
@@ -223,7 +223,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                 type: 'inquiry',
                 icon: '⏳',
                 title: `Ride Inquiry Pending (${inq.id})`,
-                desc: `Inquiry for ${inq.vehicle} (₹${inq.fare}) is under review by Empire Cab dispatchers.`,
+                desc: `Inquiry for ${inq.vehicle} (₹${inq.fare}) is under review by EMPERIAL CABS dispatchers.`,
                 time: inq.date || 'Just now',
                 read: false
               });
@@ -248,18 +248,18 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     loadNotifs();
 
     window.addEventListener('storage', loadNotifs);
-    window.addEventListener('taxigo_ride_booked', loadNotifs);
-    window.addEventListener('taxigo_customer_notif', loadNotifs);
+    window.addEventListener('EMPERIAL CABS_ride_booked', loadNotifs);
+    window.addEventListener('EMPERIAL CABS_customer_notif', loadNotifs);
     return () => {
       window.removeEventListener('storage', loadNotifs);
-      window.removeEventListener('taxigo_ride_booked', loadNotifs);
-      window.removeEventListener('taxigo_customer_notif', loadNotifs);
+      window.removeEventListener('EMPERIAL CABS_ride_booked', loadNotifs);
+      window.removeEventListener('EMPERIAL CABS_customer_notif', loadNotifs);
     };
   }, [customerAddress, userProfile]);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('taxigo_user_location');
+      const saved = localStorage.getItem('EMPERIAL CABS_user_location');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed.lat === 'number' && typeof parsed.lng === 'number') {
@@ -274,7 +274,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     setUserCoords(coords);
     if (addr) setCustomerAddress(addr);
     try {
-      localStorage.setItem('taxigo_user_location', JSON.stringify({ lat: coords.lat, lng: coords.lng, address: addr }));
+      localStorage.setItem('EMPERIAL CABS_user_location', JSON.stringify({ lat: coords.lat, lng: coords.lng, address: addr }));
     } catch (e) {}
   };
 
@@ -503,7 +503,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
             {/* Primary Action Button */}
             <button 
-              className="taxigo-btn-primary" 
+              className="EMPERIAL CABS-btn-primary" 
               style={{ width: '100%', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
               onClick={onStartBooking}
             >
@@ -646,7 +646,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                 Trip Completed!
               </h2>
               <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '14px', color: '#64748B', margin: '0 0 20px 0', fontWeight: '500' }}>
-                Thank you for riding with <strong style={{ color: '#0F172A' }}>Empire Cab</strong>
+                Thank you for riding with <strong style={{ color: '#0F172A' }}>EMPERIAL CABS</strong>
               </p>
 
               {/* Route & Driver Summary Card */}
@@ -745,7 +745,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                 type="button"
                 onClick={() => {
                   setCompletedModal(null);
-                  localStorage.removeItem('taxigo_last_completed_trip');
+                  localStorage.removeItem('EMPERIAL CABS_last_completed_trip');
                 }}
                 style={{
                   width: '100%',

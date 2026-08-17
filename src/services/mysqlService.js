@@ -1,4 +1,4 @@
-// Hostinger Remote MySQL Database Service Engine for Empire Cab Ecosystem
+// Hostinger Remote MySQL Database Service Engine for EMPERIAL CABS Ecosystem
 // Host: srv1671.hstgr.io | Database: u889282535_taxi | Central Backend API: taxii-yth5.vercel.app
 
 const getApiEndpoints = () => {
