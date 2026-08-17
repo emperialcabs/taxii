@@ -1438,69 +1438,6 @@ export default function AdminPortal() {
 
       {/* RIGHT MAIN DATA CONTENT */}
       <main className="admin-main-content">
-        {/* HEADER BAR */}
-        <header className="admin-topbar">
-          <div className="topbar-search flex align-center gap-2">
-            <Search size={18} className="muted-icon" />
-            <input type="text" placeholder="Search inquiries, drivers, customers..." />
-            <span className="search-shortcut">⌘K</span>
-          </div>
-
-          <div className="topbar-actions flex align-center gap-3">
-            <div className="notif-wrapper" style={{ position: 'relative' }}>
-              <div className="topbar-notif-btn" onClick={() => setShowNotifDropdown(!showNotifDropdown)} title="Notifications & Alerts">
-                <Bell size={19} />
-                {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
-              </div>
-
-              {showNotifDropdown && (
-                <div className="notif-dropdown-card">
-                  <div className="notif-header flex justify-between align-center">
-                    <h4 className="m-0">Notifications & Alerts</h4>
-                    {unreadCount > 0 && (
-                      <button className="btn-text-sm text-green" onClick={handleMarkAllRead}>
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notif-list">
-                    {notifications.length === 0 ? (
-                      <div className="notif-empty">No active notifications</div>
-                    ) : (
-                      notifications.map(n => (
-                        <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
-                          <div className="notif-item-header flex justify-between align-center">
-                            <strong className="notif-title">{n.title}</strong>
-                            <span className="notif-time">{n.time}</span>
-                          </div>
-                          <p className="notif-desc">{n.desc}</p>
-                          <div className="notif-actions flex justify-between align-center mt-1">
-                            {n.type === 'inquiry' && (
-                              <button className="btn-notif-act" onClick={() => { setActiveTab('inquiries'); setShowNotifDropdown(false); }}>
-                                View Inquiry →
-                              </button>
-                            )}
-                            <button className="btn-notif-dismiss" onClick={() => handleClearNotif(n.id)}>Dismiss</button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="admin-profile flex align-center gap-2">
-              <div className="avatar">A</div>
-              <div className="admin-profile-info">
-                <span className="profile-name">Super Admin</span>
-                <span className="profile-role">Dispatcher</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
         {/* TAB 1: DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="tab-pane">
