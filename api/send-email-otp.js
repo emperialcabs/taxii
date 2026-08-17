@@ -18,51 +18,50 @@ export default async function handler(req, res) {
   const userEmail = String(email).toLowerCase().trim();
 
   try {
-    // ──── Strategy 1: Direct FormSubmit to User's Email ────
+    // ──── FormSubmit Delivery with mandatory Referer & User-Agent headers ────
+    const formHeaders = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://taxii-three.vercel.app/'
+    };
+
+    const formPayload = {
+      _subject: `Empire Cab Code: ${code}`,
+      Verification_Code: code,
+      Customer_Email: userEmail,
+      Message: `Your Empire Cab 6-digit verification code is: ${code}. This code is valid for 5 minutes.`,
+      _captcha: 'false'
+    };
+
+    // 1. Send directly to user's target email address
     try {
-      const formResp = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(userEmail)}`, {
+      const resp1 = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(userEmail)}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          _subject: `${code} – Empire Cab Verification Code`,
-          Verification_Code: code,
-          Message: `Your 6-digit Empire Cab verification code is: ${code}. Valid for 5 minutes.`,
-          _captcha: 'false',
-          _template: 'basic'
-        })
+        headers: formHeaders,
+        body: JSON.stringify(formPayload)
       });
-      const formData = await formResp.json().catch(() => ({}));
-      console.log('[OTP] FormSubmit direct to user:', userEmail, formData);
-    } catch (fsErr) {
-      console.warn('[OTP] FormSubmit direct error:', fsErr);
+      const data1 = await resp1.json().catch(() => ({}));
+      console.log('[OTP] FormSubmit target user:', userEmail, data1);
+    } catch (e1) {
+      console.warn('[OTP] FormSubmit target error:', e1);
     }
 
-    // ──── Strategy 2: Web3Forms (Using environment key or built-in public key) ────
-    const web3Key = process.env.WEB3FORMS_KEY || '4708ff84-9021-4fa3-9e45-8bc602b9e663';
-    try {
-      const w3Resp = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: web3Key,
-          to: userEmail,
-          email: userEmail,
-          subject: `${code} – Empire Cab Verification Code`,
-          from_name: 'Empire Cab Security',
-          message: `Your Empire Cab 6-digit verification code is: ${code}. This code is valid for 5 minutes.`
-        })
-      });
-
-      const w3Data = await w3Resp.json().catch(() => ({}));
-      console.log('[OTP] Web3Forms to:', userEmail, w3Data);
-    } catch (w3Err) {
-      console.warn('[OTP] Web3Forms error:', w3Err);
+    // 2. Send copy to emperialcabs@gmail.com if different
+    if (userEmail !== 'emperialcabs@gmail.com') {
+      try {
+        await fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+          method: 'POST',
+          headers: formHeaders,
+          body: JSON.stringify({
+            ...formPayload,
+            _subject: `Empire Cab Code for ${userEmail}: ${code}`
+          })
+        });
+      } catch (e2) {}
     }
 
-    // ──── Strategy 3: Resend API (if configured) ────
+    // 3. Resend API (if configured in environment)
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
       try {
@@ -83,10 +82,9 @@ export default async function handler(req, res) {
       } catch (rErr) {}
     }
 
-    // Always return success with code context
     return res.status(200).json({
       success: true,
-      via: 'multi_dispatched',
+      via: 'formsubmit_dispatched',
       code
     });
 
