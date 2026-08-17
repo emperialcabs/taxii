@@ -15,7 +15,7 @@ export default function Services({ onOpenBooking }) {
               <div className="breadcrumb">
                 <Link to="/">Home</Link> &gt; <span>Services</span>
               </div>
-              <h1 className="banner-title">Experience Convenience Our Service Offerings</h1>
+              <h1 className="banner-title">Experience Convenience & Luxury Across Our Service Offerings</h1>
             </div>
           </div>
         </div>
@@ -25,44 +25,64 @@ export default function Services({ onOpenBooking }) {
       <section className="section vehicle-fleet-section">
         <div className="container">
           <div className="section-header">
-            <h2>The Right Vehicle for Your Journey</h2>
-            <p>Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et</p>
+            <h2>The Right Vehicle for Every Journey</h2>
+            <p>Select from our curated fleet of luxury sedans, spacious family SUVs, executive EVs, and premium outstation cabs.</p>
           </div>
 
           <div className="grid-4-cols">
             <div className="card fleet-card">
-              <h3>Empire Regular</h3>
-              <p className="fleet-cap">1 - 4 Passenger</p>
-              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80" alt="Empire Regular" />
+                <img src="/assets/images/exact_tourist_cab.jpg" alt="Emperial Regular Sedan" />
+              </div>
+              <div className="fleet-card-body">
+                <h3>Emperial Regular Sedan</h3>
+                <span className="fleet-cap">1 - 4 Passengers • Dzire / Etios</span>
+                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
+                  Perfect for quick city commutes, business meetings, and rapid airport transfers.
+                </p>
+                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Empire XL</h3>
-              <p className="fleet-cap">1 - 6 Passenger</p>
-              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80" alt="Empire XL" />
+                <img src="/assets/images/steps_tourist_cab.jpg" alt="Emperial XL SUV" />
+              </div>
+              <div className="fleet-card-body">
+                <h3>Emperial XL SUV</h3>
+                <span className="fleet-cap">1 - 6 Passengers • Ertiga / Innova</span>
+                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
+                  Spacious legroom and large boot space for family vacations and group luggage.
+                </p>
+                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Empire Luxury</h3>
-              <p className="fleet-cap">1 - 4 Passenger</p>
-              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80" alt="Empire Luxury" />
+                <img src="/assets/images/yellow_headlight_taxi.png" alt="Emperial Executive Luxury" />
+              </div>
+              <div className="fleet-card-body">
+                <h3>Emperial Executive Luxury</h3>
+                <span className="fleet-cap">1 - 4 Passengers • Camry / Mercedes</span>
+                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
+                  Red-carpet VIP mobility designed for corporate executives, delegations, and weddings.
+                </p>
+                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
               </div>
             </div>
 
             <div className="card fleet-card">
-              <h3>Empire Electric</h3>
-              <p className="fleet-cap">1 - 4 Passenger</p>
-              <Link to="/book-ride" className="fleet-link-btn">Book Now &gt;</Link>
               <div className="fleet-img-wrap">
-                <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80" alt="Empire Electric" />
+                <img src="/assets/images/safety_comfort_spotlight.png" alt="Emperial Eco Green EV" />
+              </div>
+              <div className="fleet-card-body">
+                <h3>Emperial Eco Green EV</h3>
+                <span className="fleet-cap">1 - 4 Passengers • Tigor EV / BYD</span>
+                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
+                  Zero-emission, whisper-quiet electric cabs for eco-conscious city travel.
+                </p>
+                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
               </div>
             </div>
           </div>
@@ -73,45 +93,45 @@ export default function Services({ onOpenBooking }) {
       <section className="section services-grid-section">
         <div className="container">
           <div className="section-header">
-            <h2>The Ultimate Taxi Service Experience Awaits</h2>
-            <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur</p>
+            <h2>The Ultimate Executive Cab Experience Awaits</h2>
+            <p>Tailored mobility solutions engineered for reliability, safety, and business-class comfort across India.</p>
           </div>
 
           <div className="grid-3-cols">
             <div className="card service-card">
               <div className="icon-box"><Plane size={26} /></div>
               <h3>Airport Transfers</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <p>Guaranteed on-time doorstep pickups and flight delay tracking at all major Indian domestic and international airport terminals.</p>
             </div>
 
             <div className="card service-card">
               <div className="icon-box"><Clock size={26} /></div>
-              <h3>Hourly Rentals</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <h3>Hourly Local Rentals</h3>
+              <p>Flexible 4-hour, 8-hour, or 12-hour local cab rentals with unlimited stops for business meetings, shopping, and city tours.</p>
             </div>
 
             <div className="card service-card">
               <div className="icon-box"><Users size={26} /></div>
-              <h3>Ride-Sharing</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <h3>Outstation Intercity Tours</h3>
+              <p>Comfortable one-way and round-trip intercity cabs with transparent per-kilometer pricing and zero hidden driver charges.</p>
             </div>
 
             <div className="card service-card">
               <div className="icon-box"><Package size={26} /></div>
-              <h3>Package Delivery</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <h3>Package & Express Delivery</h3>
+              <p>Fast, trackable, and safe doorstep parcel delivery service for urgent documents and packages across the city.</p>
             </div>
 
             <div className="card service-card">
               <div className="icon-box"><Calendar size={26} /></div>
-              <h3>Scheduled Rides</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <h3>Scheduled & Pre-Booked Rides</h3>
+              <p>Pre-book your cabs days or weeks in advance with guaranteed vehicle assignment and fixed, surge-free fare confirmation.</p>
             </div>
 
             <div className="card service-card">
               <div className="icon-box"><Briefcase size={26} /></div>
-              <h3>Corporate Accounts</h3>
-              <p>Sed adipisci velit, sed quia non numquam eius modi tempora</p>
+              <h3>Corporate Mobility Accounts</h3>
+              <p>Centralized monthly billing, GST-compliant invoicing, priority dispatch, and dedicated account management for corporate enterprises.</p>
             </div>
           </div>
         </div>
@@ -122,7 +142,7 @@ export default function Services({ onOpenBooking }) {
         <div className="container">
           <div className="section-header">
             <h2>Simple Steps to Book Your Ride</h2>
-            <p>Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et</p>
+            <p>Reserve your premium cab in under 60 seconds with our seamless booking workflow.</p>
           </div>
 
           <div className="grid-2-cols align-center">
@@ -130,50 +150,49 @@ export default function Services({ onOpenBooking }) {
               <div className="step-card active">
                 <span className="step-num">1.</span>
                 <div>
-                  <h4>Type Your Destination</h4>
-                  <p>Totam facilis laudantium cum accusamus ullam voluptatibus commodi numquam, error, est, Ea, consequatur.</p>
+                  <h4>Select Pickup & Destination</h4>
+                  <p>Type your pickup location, airport terminal, or destination address for instant transparent fare calculation.</p>
                 </div>
               </div>
 
               <div className="step-card">
                 <span className="step-num">2.</span>
                 <div>
-                  <h4>Confirm Pick-up Location</h4>
-                  <p>Optio, neque qui velit. Magni dolorum quidem ipsum eligendi, totam, facilis laudantium cum accusamus ullam voluptatibus</p>
+                  <h4>Choose Your Preferred Vehicle</h4>
+                  <p>Select from Regular Sedan, XL SUV, Executive Luxury, or Green EV based on passenger capacity and comfort preference.</p>
                 </div>
               </div>
 
               <div className="step-card">
                 <span className="step-num">3.</span>
                 <div>
-                  <h4>Choose Payment Method</h4>
-                  <p>Facilis laudantium cum accusamus ullam voluptatibus commodi numquam, error, est, Ea, consequatur.</p>
+                  <h4>Select Payment Method</h4>
+                  <p>Pay conveniently using UPI, GPay, Paytm, Credit/Debit Cards, or cash directly to your chauffeur upon completion.</p>
                 </div>
               </div>
 
               <div className="step-card">
                 <span className="step-num">4.</span>
                 <div>
-                  <h4>Driver On The Way To Pick-up</h4>
-                  <p>Magni dolorum quidem ipsum eligendi, totam, facilis laudantium cum accusamus ullam voluptatibus commodi numquam</p>
+                  <h4>Driver Dispatched & Live Tracking</h4>
+                  <p>Receive instant driver details, phone number, vehicle registration plate, and real-time live GPS arrival tracking.</p>
                 </div>
               </div>
             </div>
 
             <div className="steps-graphic text-center">
-              <div className="phone-screen-mockup">
+              <div className="feature-media">
                 <img 
-                  src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=600&auto=format&fit=crop&q=80" 
-                  alt="App interface mockup" 
-                  className="mockup-img"
+                  src="/assets/images/simple_steps_infographic.png" 
+                  alt="Emperial Cabs Simple Ride Booking Experience" 
+                  className="rounded-img"
                 />
               </div>
             </div>
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }
+

@@ -12,27 +12,14 @@ import {
   ShieldCheck, 
   ChevronRight
 } from 'lucide-react';
-import { INITIAL_VEHICLES } from './AdminPortal';
+import { INITIAL_VEHICLES, INITIAL_PLACES, INITIAL_DESTINATIONS } from './AdminPortal';
+import './Pages.css';
 
-const DEFAULT_PLACES = [
-  'Downtown Terminal',
-  'International Airport T3',
-  'Grand Central Plaza',
-  'Metro Business Bay',
-  'Westside Marina Resort',
-  'City Convention Center',
-  'Silicon Heights Tower A',
-  'Northside Mall',
-  'Harbor Cruise Port',
-  'Beachside Luxury Resort'
-];
-
-const DEFAULT_DESTINATIONS = [
-  { id: 'DEST-101', name: 'Downtown Terminal → International Airport T3', pickup: 'Downtown Terminal', dropoff: 'International Airport T3', distanceKm: 18 },
-  { id: 'DEST-102', name: 'Grand Central Plaza → Metro Business Bay', pickup: 'Grand Central Plaza', dropoff: 'Metro Business Bay', distanceKm: 12 },
-  { id: 'DEST-103', name: 'Westside Marina Resort → City Convention Center', pickup: 'Westside Marina Resort', dropoff: 'City Convention Center', distanceKm: 25 },
-  { id: 'DEST-104', name: 'Silicon Heights → Northside Mall', pickup: 'Silicon Heights Tower A', dropoff: 'Northside Mall', distanceKm: 8 },
-  { id: 'DEST-105', name: 'Harbor Cruise Port → Beachside Luxury Resort', pickup: 'Harbor Cruise Port', dropoff: 'Beachside Luxury Resort', distanceKm: 34 },
+const FALLBACK_VEHICLES = [
+  { id: 'V-1', name: 'Emperial Regular Sedan', rate: 15, passengers: '1-4 Passengers', status: 'Active', image: '/assets/images/exact_tourist_cab.jpg' },
+  { id: 'V-2', name: 'Emperial XL SUV', rate: 22, passengers: '1-6 Passengers', status: 'Active', image: '/assets/images/steps_tourist_cab_hd.png' },
+  { id: 'V-3', name: 'Emperial Executive Luxury', rate: 45, passengers: '1-4 Passengers', status: 'Active', image: '/assets/images/yellow_headlight_taxi.png' },
+  { id: 'V-4', name: 'Emperial Eco Green EV', rate: 18, passengers: '1-4 Passengers', status: 'Active', image: '/assets/images/safety_comfort_spotlight.png' }
 ];
 
 export default function BookRide() {
@@ -57,28 +44,37 @@ export default function BookRide() {
   // Load places, destinations, and vehicles from Admin Portal storage
   useEffect(() => {
     const loadDynamicData = () => {
+      // 1. Fetch places & destinations added by Admin in Admin Panel
       const savedPlaces = localStorage.getItem('cabsy_places');
-      const parsedPlaces = savedPlaces ? JSON.parse(savedPlaces) : DEFAULT_PLACES;
-      setPlaces(parsedPlaces);
+      const parsedPlaces = savedPlaces ? JSON.parse(savedPlaces) : INITIAL_PLACES;
       
-      const initialFrom = parsedPlaces[0] || 'Downtown Terminal';
-      const initialTo = parsedPlaces[1] || 'International Airport T3';
+      const savedDest = localStorage.getItem('cabsy_destinations');
+      const parsedDest = savedDest ? JSON.parse(savedDest) : INITIAL_DESTINATIONS;
+      setDestinations(parsedDest);
+
+      // Combine all unique admin places, routes & default locations
+      const combinedPlaces = Array.from(new Set([
+        ...(Array.isArray(parsedPlaces) ? parsedPlaces : []),
+        ...(Array.isArray(parsedDest) ? parsedDest.flatMap(d => [d.pickup, d.dropoff]) : []),
+        ...INITIAL_PLACES
+      ].filter(Boolean)));
+
+      setPlaces(combinedPlaces);
+      
+      const initialFrom = combinedPlaces[0] || 'Bhavnagar, Gujarat';
+      const initialTo = combinedPlaces[1] || combinedPlaces[0] || 'Ahmedabad Airport (AMD)';
       setPickupLocation(prev => prev || initialFrom);
       setDropoffDestination(prev => prev || initialTo);
 
-      const savedDest = localStorage.getItem('cabsy_destinations');
-      const parsedDest = savedDest ? JSON.parse(savedDest) : DEFAULT_DESTINATIONS;
-      setDestinations(parsedDest);
-
       const savedVehicles = localStorage.getItem('cabsy_vehicles');
-      const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : INITIAL_VEHICLES;
+      const parsedVehicles = savedVehicles ? JSON.parse(savedVehicles) : (INITIAL_VEHICLES || FALLBACK_VEHICLES);
       const activeVehicles = parsedVehicles.filter(v => v.status !== 'Inactive');
-      const finalVehicles = activeVehicles.length > 0 ? activeVehicles : INITIAL_VEHICLES;
+      const finalVehicles = activeVehicles.length > 0 ? activeVehicles : FALLBACK_VEHICLES;
       setVehicles(finalVehicles);
       
       setSelectedVehicleId(prev => {
         if (finalVehicles.some(v => v.id === prev)) return prev;
-        return finalVehicles[0]?.id || '';
+        return finalVehicles[0]?.id || FALLBACK_VEHICLES[0].id;
       });
     };
 
@@ -90,9 +86,15 @@ export default function BookRide() {
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('taxigo_vehicles_updated', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_vehicles_updated', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_places_updated', handleStorageChange);
+    window.addEventListener('EMPERIAL CABS_destinations_updated', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('taxigo_vehicles_updated', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_vehicles_updated', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_places_updated', handleStorageChange);
+      window.removeEventListener('EMPERIAL CABS_destinations_updated', handleStorageChange);
     };
   }, []);
 
@@ -127,7 +129,7 @@ export default function BookRide() {
     setDropoffDestination(temp);
   };
 
-  const currentVehicle = vehicles.find(v => v.id === selectedVehicleId) || vehicles[0] || DEFAULT_VEHICLES[0];
+  const currentVehicle = vehicles.find(v => v.id === selectedVehicleId) || vehicles[0] || FALLBACK_VEHICLES[0];
   const ratePerKm = parseFloat(currentVehicle?.rate || 15);
   const calculatedFare = (distanceKm * ratePerKm).toFixed(2);
 
@@ -401,9 +403,11 @@ export default function BookRide() {
                 <small className="fare-note">Fixed transparent pricing based on KM</small>
               </div>
 
-              <div className="trust-badge mt-3 flex align-center gap-2">
-                <ShieldCheck size={18} className="text-green" />
-                <small className="text-muted">Instant confirmation & driver dispatch.</small>
+              <div className="trust-badge mt-3">
+                <ShieldCheck size={18} className="text-green" style={{ flexShrink: 0, display: 'block' }} />
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#475569', lineHeight: '1.2' }}>
+                  Instant confirmation & driver dispatch.
+                </span>
               </div>
             </div>
 

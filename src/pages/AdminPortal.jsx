@@ -108,7 +108,7 @@ const INITIAL_INQUIRIES = [];
 
 const INITIAL_CUSTOMERS = [];
 
-const INITIAL_DESTINATIONS = [
+export const INITIAL_DESTINATIONS = [
   { id: 'DEST-101', name: 'Bhavnagar → Railway Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Bhavnagar Railway Station', distanceKm: 18 },
   { id: 'DEST-102', name: 'Bhavnagar → Ahmedabad Airport (AMD)', pickup: 'Bhavnagar, Gujarat', dropoff: 'Ahmedabad Airport (AMD)', distanceKm: 175 },
   { id: 'DEST-103', name: 'Bhavnagar → Vadodara Central Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Vadodara Central Railway Station', distanceKm: 110 },
@@ -118,7 +118,8 @@ const INITIAL_DESTINATIONS = [
   { id: 'DEST-107', name: 'Bhavnagar → Mumbai Central Airport', pickup: 'Bhavnagar, Gujarat', dropoff: 'Mumbai Central Airport (BOM)', distanceKm: 540 }
 ];
 
-const INITIAL_PLACES = [
+export const INITIAL_PLACES = [
+  'Bhavnagar, Gujarat',
   'Bhavnagar Railway Station',
   'Ahmedabad Airport (AMD)',
   'Vadodara Central Railway Station',
@@ -241,6 +242,37 @@ export default function AdminPortal() {
 
   const [newPlaceInput, setNewPlaceInput] = useState('');
 
+  const [contactMessages, setContactMessages] = useState(() => {
+    const saved = localStorage.getItem('cabsy_contact_messages');
+    if (saved) {
+      try { return JSON.parse(saved); } catch(e){}
+    }
+    return [
+      {
+        id: 'MSG-1001',
+        name: 'Amit Sharma',
+        email: 'amit.sharma@gmail.com',
+        phone: '+91 98112 34567',
+        subject: 'Corporate Account',
+        message: 'Hello Emperial Cabs team, we are looking for monthly executive sedan cab services for our office staff in Connaught Place, New Delhi. Please send rate card.',
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        status: 'Unread'
+      },
+      {
+        id: 'MSG-1002',
+        name: 'Priya Patel',
+        email: 'priya.patel@techcorp.in',
+        phone: '+91 99099 88776',
+        subject: 'Taxi Booking Inquiry',
+        message: 'Do you offer round trips from Bhavnagar to Ahmedabad Airport with luggage space for 4 adults? What is the estimated total price?',
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        status: 'Read'
+      }
+    ];
+  });
+
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('cabsy_website_settings');
     return saved ? JSON.parse(saved) : {
@@ -267,6 +299,9 @@ export default function AdminPortal() {
   const [rewardModal, setRewardModal] = useState({ open: false, inquiry: null, amount: 100 });
   const [receiptModal, setReceiptModal] = useState({ open: false, inquiry: null });
   const [driverReportModal, setDriverReportModal] = useState({ open: false, driver: null });
+  const [viewMessageModal, setViewMessageModal] = useState({ open: false, message: null });
+  const [messageCategoryFilter, setMessageCategoryFilter] = useState('All');
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [companyShare, setCompanyShare] = useState(() => {
     const saved = localStorage.getItem('cabsy_company_share');
@@ -274,6 +309,42 @@ export default function AdminPortal() {
   });
   const driverShare = 100 - companyShare;
   const [commissionModal, setCommissionModal] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('cabsy_messages', JSON.stringify(contactMessages));
+    localStorage.setItem('cabsy_contact_messages', JSON.stringify(contactMessages));
+  }, [contactMessages]);
+
+  useEffect(() => {
+    const syncContactMessages = () => {
+      try {
+        const saved = localStorage.getItem('cabsy_messages') || localStorage.getItem('cabsy_contact_messages');
+        if (saved) {
+          setContactMessages(JSON.parse(saved));
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('storage', syncContactMessages);
+    window.addEventListener('EMPERIAL CABS_messages_updated', syncContactMessages);
+    return () => {
+      window.removeEventListener('storage', syncContactMessages);
+      window.removeEventListener('EMPERIAL CABS_messages_updated', syncContactMessages);
+    };
+  }, []);
+
+  const handleMarkMessageRead = (msgId) => {
+    setContactMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: m.status === 'Unread' ? 'Read' : m.status } : m));
+  };
+
+  const handleToggleMessageStatus = (msgId, newStatus) => {
+    setContactMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: newStatus } : m));
+  };
+
+  const handleDeleteMessage = (msgId) => {
+    if (window.confirm("Are you sure you want to delete this contact message?")) {
+      setContactMessages(prev => prev.filter(m => m.id !== msgId));
+    }
+  };
 
   const handleIssueRewardSubmit = () => {
     if (!rewardModal.inquiry) return;
@@ -536,10 +607,14 @@ export default function AdminPortal() {
 
   useEffect(() => {
     localStorage.setItem('cabsy_destinations', JSON.stringify(destinations));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_destinations_updated', { detail: destinations }));
+    window.dispatchEvent(new Event('storage'));
   }, [destinations]);
 
   useEffect(() => {
     localStorage.setItem('cabsy_places', JSON.stringify(places));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_places_updated', { detail: places }));
+    window.dispatchEvent(new Event('storage'));
   }, [places]);
 
   const handleAddPlace = (e) => {
@@ -1224,6 +1299,19 @@ export default function AdminPortal() {
           >
             <Users size={19} />
             <span>Customers</span>
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
+            onClick={() => setActiveTab('messages')}
+          >
+            <Mail size={19} />
+            <span>Contact Messages</span>
+            {contactMessages.filter(m => m.status === 'Unread').length > 0 && (
+              <span className="badge-pending" style={{ background: '#ec4899' }}>
+                {contactMessages.filter(m => m.status === 'Unread').length}
+              </span>
+            )}
           </button>
 
           <button 
@@ -2249,6 +2337,185 @@ export default function AdminPortal() {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CONTACT MESSAGES */}
+        {activeTab === 'messages' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>Customer Contact Messages</h2>
+                <p>Manage and reply to inquiries, partnership requests, and support messages sent from the Contact page.</p>
+              </div>
+              <div className="flex align-center gap-2">
+                <span className="pill-badge" style={{ background: '#FCE7F3', color: '#DB2777', border: '1px solid #FBCFE8', fontWeight: '800' }}>
+                  📬 {contactMessages.filter(m => m.status === 'Unread').length} Unread
+                </span>
+                <span className="pill-badge" style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', fontWeight: '800' }}>
+                  Total: {contactMessages.length} Messages
+                </span>
+              </div>
+            </div>
+
+            {/* Metric Summary Cards */}
+            <div className="reports-summary-grid mb-4">
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Total Messages Received</small>
+                <h3 className="text-purple">{contactMessages.length}</h3>
+                <small className="text-xs text-muted">All contact form entries</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Unread Messages</small>
+                <h3 style={{ color: '#EC4899' }}>{contactMessages.filter(m => m.status === 'Unread').length}</h3>
+                <small className="text-xs text-muted">Requires admin review</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Read / Reviewed</small>
+                <h3 className="text-blue">{contactMessages.filter(m => m.status === 'Read').length}</h3>
+                <small className="text-xs text-muted">Processed messages</small>
+              </div>
+
+              <div className="card summary-stat-box">
+                <small className="text-muted display-block">Replied & Closed</small>
+                <h3 className="text-green">{contactMessages.filter(m => m.status === 'Replied').length}</h3>
+                <small className="text-xs text-muted">Customer responded</small>
+              </div>
+            </div>
+
+            {/* Filter Controls */}
+            <div className="card mb-3 p-3 flex justify-between align-center flex-wrap gap-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+              <div className="flex align-center gap-2 flex-wrap">
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B' }}>Filter by Category:</span>
+                {['All', 'Taxi Booking Inquiry', 'Corporate Account', 'Driver Partnership', 'Other Support'].map(cat => (
+                  <button
+                    key={cat}
+                    className={`btn btn-sm ${messageCategoryFilter === cat ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setMessageCategoryFilter(cat)}
+                    style={{ borderRadius: '20px', fontSize: '12px', padding: '5px 12px' }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Messages Table */}
+            <div className="card admin-table-card">
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Message ID</th>
+                      <th>Date / Time</th>
+                      <th>Sender Name</th>
+                      <th>Email Address</th>
+                      <th>Category</th>
+                      <th>Message Preview</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const filtered = contactMessages.filter(m => {
+                        const matchesCat = messageCategoryFilter === 'All' || m.category === messageCategoryFilter;
+                        const query = messageSearchQuery.toLowerCase();
+                        const matchesSearch = !query || 
+                          m.name?.toLowerCase().includes(query) || 
+                          m.email?.toLowerCase().includes(query) || 
+                          m.message?.toLowerCase().includes(query) ||
+                          m.id?.toLowerCase().includes(query);
+                        return matchesCat && matchesSearch;
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
+                              <div style={{ fontSize: '36px', marginBottom: '10px' }}>📬</div>
+                              <strong style={{ display: 'block', fontSize: '16px', color: '#0F172A', marginBottom: '4px' }}>No Contact Messages Found</strong>
+                              <span style={{ fontSize: '13px' }}>There are currently no customer contact form submissions matching this view.</span>
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return filtered.map(msg => (
+                        <tr key={msg.id} style={{ background: msg.status === 'Unread' ? '#FFF5F5' : 'transparent' }}>
+                          <td><strong>{msg.id}</strong></td>
+                          <td><small className="text-muted">{msg.date}</small></td>
+                          <td><strong>{msg.name}</strong></td>
+                          <td>
+                            <a href={`mailto:${msg.email}`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: '600' }}>
+                              {msg.email}
+                            </a>
+                          </td>
+                          <td>
+                            <span className="pill-badge-sm" style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0' }}>
+                              {msg.category || 'Support'}
+                            </span>
+                          </td>
+                          <td style={{ maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ color: '#334155', fontSize: '13px' }}>{msg.message}</span>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${
+                              msg.status === 'Unread' ? 'status-pending' : 
+                              msg.status === 'Replied' ? 'status-active' : 'status-assigned'
+                            }`}>
+                              {msg.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="action-buttons-flex">
+                              <button 
+                                className="btn btn-sm btn-outline flex align-center gap-1"
+                                onClick={() => {
+                                  handleMarkMessageRead(msg.id);
+                                  setViewMessageModal({ open: true, message: msg });
+                                }}
+                                title="View Message Details"
+                              >
+                                <Eye size={14} /> View
+                              </button>
+
+                              {msg.status !== 'Replied' ? (
+                                <button 
+                                  className="btn btn-sm btn-outline text-green flex align-center gap-1"
+                                  onClick={() => handleToggleMessageStatus(msg.id, 'Replied')}
+                                  title="Mark as Replied"
+                                >
+                                  <CheckCircle2 size={14} /> Reply
+                                </button>
+                              ) : (
+                                <button 
+                                  className="btn btn-sm btn-outline flex align-center gap-1"
+                                  onClick={() => handleToggleMessageStatus(msg.id, 'Read')}
+                                  title="Mark as Read"
+                                >
+                                  Mark Read
+                                </button>
+                              )}
+
+                              <button 
+                                className="btn btn-danger-icon btn-sm"
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                title="Delete Message"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -3417,6 +3684,59 @@ export default function AdminPortal() {
                 type="button" 
                 className="btn btn-primary"
                 onClick={() => setReceiptModal({ open: false, inquiry: null })}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: VIEW CONTACT MESSAGE DETAILS */}
+      {viewMessageModal.open && viewMessageModal.message && (
+        <div className="admin-modal-overlay" onClick={() => setViewMessageModal({ open: false, message: null })}>
+          <div className="admin-modal-box card" style={{ maxWidth: '580px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between align-center mb-3">
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#0F172A' }}>
+                <Mail size={20} className="text-green" /> Contact Message Details
+              </h3>
+              <span className={`status-pill ${
+                viewMessageModal.message.status === 'Unread' ? 'status-pending' : 
+                viewMessageModal.message.status === 'Replied' ? 'status-active' : 'status-assigned'
+              }`}>
+                {viewMessageModal.message.status}
+              </span>
+            </div>
+
+            <div className="modal-info-summary" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}><strong>Message ID:</strong> {viewMessageModal.message.id}</div>
+              <div style={{ marginBottom: '8px' }}><strong>Sender Name:</strong> {viewMessageModal.message.name}</div>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Sender Email:</strong> <a href={`mailto:${viewMessageModal.message.email}`} style={{ color: '#2563EB', fontWeight: '700' }}>{viewMessageModal.message.email}</a>
+              </div>
+              <div style={{ marginBottom: '8px' }}><strong>Category:</strong> {viewMessageModal.message.category || 'General Support'}</div>
+              <div><strong>Received Date:</strong> {viewMessageModal.message.date}</div>
+            </div>
+
+            <div className="input-group mb-4">
+              <label style={{ fontSize: '13px', fontWeight: '800', color: '#475569', marginBottom: '6px', display: 'block' }}>Message Body:</label>
+              <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', padding: '16px', borderRadius: '14px', fontSize: '14px', lineHeight: '1.6', color: '#0F172A', minHeight: '100px', whiteSpace: 'pre-wrap' }}>
+                {viewMessageModal.message.message}
+              </div>
+            </div>
+
+            <div className="modal-actions-flex">
+              <a 
+                href={`mailto:${viewMessageModal.message.email}?subject=Re: Emperial Cabs ${viewMessageModal.message.category || 'Inquiry'} (${viewMessageModal.message.id})`}
+                className="btn btn-primary flex align-center justify-center gap-2"
+                style={{ flex: 1, textDecoration: 'none' }}
+                onClick={() => handleToggleMessageStatus(viewMessageModal.message.id, 'Replied')}
+              >
+                <Mail size={16} /> Send Email Reply
+              </a>
+              <button 
+                className="btn btn-outline"
+                onClick={() => setViewMessageModal({ open: false, message: null })}
               >
                 Close
               </button>

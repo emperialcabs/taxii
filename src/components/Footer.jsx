@@ -19,7 +19,7 @@ export default function Footer() {
                 />
               </Link>
               <p className="footer-desc">
-                Neque porro quisquam est qui dolorem ipsum adipisci velit, sed quia non numquam eius.
+                India's premier executive cab service delivering safe, reliable, and luxury mobility solutions 24/7.
               </p>
             </div>
 
@@ -50,18 +50,18 @@ export default function Footer() {
             <div className="footer-col">
               <h4 className="footer-title">Our Office</h4>
               <p className="office-text">
-                Jl. Raya Sesetan No.210,<br />
-                Sesetan, Denpasar, Bali
+                Emperial Cabs Hub, Outer Ring Road,<br />
+                Connaught Place, New Delhi 110001, India
               </p>
               
               <h4 className="footer-title contact-title">Contact</h4>
               <p className="contact-item">
                 <Phone size={16} className="contact-icon" />
-                <span>+62 831-9929-86700</span>
+                <span>+91 98765 43210</span>
               </p>
               <p className="contact-item">
                 <Mail size={16} className="contact-icon" />
-                <span>contact@domain.com</span>
+                <span>support@emperialcabs.com</span>
               </p>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function Footer() {
             <div className="footer-legal">
               <Link to="/faq">Privacy Policy</Link>
               <span className="separator">|</span>
-              <Link to="/faq">Term & Conditions</Link>
+              <Link to="/faq">Terms & Conditions</Link>
             </div>
 
             <div className="store-badges">
@@ -95,9 +95,10 @@ export default function Footer() {
         </div>
 
         <div className="footer-copyright">
-          <p>© 2023 - Taxi Company Template Kit By Jegtheme</p>
+          <p>© {new Date().getFullYear()} Emperial Cabs. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
   );
 }
+

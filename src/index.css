@@ -1,9 +1,13 @@
-/* Empire Cab Design System - Modern Vanilla CSS */
+/* Empire Cab Design System - Modern Enterprise Taxi System */
 :root {
-  --primary-green: #00b87c;
-  --primary-green-hover: #009966;
-  --primary-green-light: #e6f7f0;
-  --primary-green-dark: #008055;
+  /* Primary & Secondary Color Combination */
+  --primary-color: #FDC511;
+  --primary-color-hover: #E0AC0E;
+  --primary-color-light: #FFFBE6;
+  
+  --secondary-color: #0f172a;
+  --secondary-color-hover: #1e293b;
+  --secondary-color-light: #f8fafc;
   
   --dark-heading: #0f172a;
   --dark-subtext: #334155;
@@ -11,13 +15,13 @@
   --muted-text: #64748b;
   --light-border: #e2e8f0;
   
-  --bg-mint: #eef9f4;
+  --bg-mint: #fffdf0;
   --bg-light: #f8fafc;
   --bg-white: #ffffff;
   
   --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 16px 36px rgba(0, 184, 124, 0.12);
+  --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.12);
   --shadow-dark: 0 20px 40px rgba(0, 0, 0, 0.25);
 
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -46,6 +50,33 @@
 
 .leaflet-zoom-anim .leaflet-zoom-animated {
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* MODERN SLEEK SCROLLBAR STYLES */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00b87c;
+}
+
+/* Firefox Scrollbar */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 * {
@@ -167,12 +198,12 @@ a {
 .pill-badge .dot {
   width: 8px;
   height: 8px;
-  background-color: var(--primary-green);
+  background-color: var(--primary-color);
   border-radius: 50%;
   display: inline-block;
 }
 
-/* Buttons */
+/* Buttons System */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -180,23 +211,37 @@ a {
   gap: 0.6rem;
   padding: 0.9rem 2rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: var(--radius-pill);
   border: 2px solid transparent;
   cursor: pointer;
   transition: var(--transition);
 }
 
+/* Primary Action Button (Yellow + Secondary Text) */
 .btn-primary {
-  background-color: var(--primary-green);
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 184, 124, 0.35);
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-green-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(0, 184, 124, 0.45);
+  background-color: var(--primary-color-hover);
+  color: #000000;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+/* Secondary Action Button (Executive Dark + Primary Accent) */
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-color-hover);
+  color: var(--primary-color);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
 }
 
 .btn-outline-white {
@@ -209,18 +254,17 @@ a {
 .btn-outline-white:hover {
   background-color: #ffffff;
   color: var(--dark-heading);
-  transform: translateY(-2px);
 }
 
 .btn-outline-green {
   background-color: transparent;
-  color: var(--primary-green);
-  border-color: var(--primary-green);
+  color: #0f172a;
+  border-color: #FDC511;
 }
 
 .btn-outline-green:hover {
-  background-color: var(--primary-green);
-  color: #ffffff;
+  background-color: #FDC511;
+  color: #0f172a;
 }
 
 /* Cards */
@@ -236,7 +280,7 @@ a {
 .card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(0, 184, 124, 0.3);
+  border-color: rgba(15, 23, 42, 0.15);
 }
 
 /* Icon Box */
@@ -244,8 +288,8 @@ a {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--primary-green-light);
-  color: var(--primary-green);
+  background: var(--bg-mint);
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
