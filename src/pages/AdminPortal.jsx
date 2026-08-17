@@ -101,12 +101,83 @@ export const INITIAL_VEHICLES = [
   }
 ];
 
-// Clean Database Initialization (Demo Data Removed)
-const INITIAL_DRIVERS = [];
+// Clean Database Initialization with Default Demo Records
+const INITIAL_DRIVERS = [
+  { id: 'DRV-101', name: 'Ramesh Patel', phone: '+91 98250 99887', vehicle: 'Emperial XL SUV', plate: 'GJ-04-AB-1234', status: 'Active', rating: 4.9 },
+  { id: 'DRV-102', name: 'Suresh Verma', phone: '+91 99099 11223', vehicle: 'Emperial Executive Luxury', plate: 'GJ-04-CD-5678', status: 'Active', rating: 4.8 },
+  { id: 'DRV-103', name: 'Amit Singh', phone: '+91 98765 33445', vehicle: 'Emperial Regular Sedan', plate: 'GJ-04-EF-9012', status: 'Active', rating: 4.9 },
+  { id: 'DRV-104', name: 'Hardik Joshi', phone: '+91 97234 55667', vehicle: 'Emperial Eco Green EV', plate: 'GJ-04-EV-3456', status: 'Active', rating: 5.0 }
+];
 
-const INITIAL_INQUIRIES = [];
+const INITIAL_INQUIRIES = [
+  {
+    id: 'INQ-9801',
+    customerName: 'Rajesh Kumar',
+    customerPhone: '+91 98250 12345',
+    customerEmail: 'rajesh.kumar@gmail.com',
+    pickup: 'Bhavnagar, Gujarat',
+    dropoff: 'Ahmedabad Airport (AMD)',
+    vehicle: 'Emperial XL SUV',
+    fare: 2625.00,
+    status: 'Completed',
+    driver: 'Ramesh Patel',
+    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    rewardIssued: 1,
+    rewardAmount: 100
+  },
+  {
+    id: 'INQ-9802',
+    customerName: 'Ananya Sharma',
+    customerPhone: '+91 99099 87654',
+    customerEmail: 'ananya.s@techcorp.in',
+    pickup: 'Bhavnagar, Gujarat',
+    dropoff: 'Vadodara Central Railway Station',
+    vehicle: 'Emperial Executive Luxury',
+    fare: 1650.00,
+    status: 'Confirmed',
+    driver: 'Suresh Verma',
+    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString()
+  },
+  {
+    id: 'INQ-9803',
+    customerName: 'Vikram Mehta',
+    customerPhone: '+91 98765 43210',
+    customerEmail: 'vikram.mehta@yahoo.com',
+    pickup: 'Bhavnagar, Gujarat',
+    dropoff: 'SG Highway IT Park',
+    vehicle: 'Emperial Regular Sedan',
+    fare: 2160.00,
+    status: 'Completed',
+    driver: 'Amit Singh',
+    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
+    rewardIssued: 1,
+    rewardAmount: 100
+  },
+  {
+    id: 'INQ-9804',
+    customerName: 'Priya Desai',
+    customerPhone: '+91 97234 56789',
+    customerEmail: 'priya.desai@gmail.com',
+    pickup: 'Bhavnagar Railway Station',
+    dropoff: 'Alkapuri Commercial Hub',
+    vehicle: 'Emperial Eco Green EV',
+    fare: 1450.00,
+    status: 'Confirmed',
+    driver: 'Hardik Joshi',
+    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+    timestamp: new Date(Date.now() - 3600000 * 18).toISOString()
+  }
+];
 
-const INITIAL_CUSTOMERS = [];
+const INITIAL_CUSTOMERS = [
+  { id: 'CUST-301', name: 'Rajesh Kumar', phone: '+91 98250 12345', email: 'rajesh.kumar@gmail.com', totalRides: 4, totalSpent: 7850, joined: '2026-01-15' },
+  { id: 'CUST-302', name: 'Ananya Sharma', phone: '+91 99099 87654', email: 'ananya.s@techcorp.in', totalRides: 2, totalSpent: 3300, joined: '2026-02-10' },
+  { id: 'CUST-303', name: 'Vikram Mehta', phone: '+91 98765 43210', email: 'vikram.mehta@yahoo.com', totalRides: 3, totalSpent: 5400, joined: '2026-03-01' },
+  { id: 'CUST-304', name: 'Priya Desai', phone: '+91 97234 56789', email: 'priya.desai@gmail.com', totalRides: 1, totalSpent: 1450, joined: '2026-04-20' }
+];
 
 export const INITIAL_DESTINATIONS = [
   { id: 'DEST-101', name: 'Bhavnagar → Railway Station', pickup: 'Bhavnagar, Gujarat', dropoff: 'Bhavnagar Railway Station', distanceKm: 18 },
@@ -163,10 +234,28 @@ export default function AdminPortal() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // State — start empty, Firestore will populate on mount
-  const [inquiries, setInquiries] = useState([]);
+  // State — initialize with localStorage or fallback demo records
+  const [inquiries, setInquiries] = useState(() => {
+    const saved = localStorage.getItem('cabsy_inquiries');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_INQUIRIES;
+  });
   const [firestoreLoading, setFirestoreLoading] = useState(true);
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState(() => {
+    const saved = localStorage.getItem('cabsy_customers');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_CUSTOMERS;
+  });
 
   // Always sort inquiries by newest first (Latest date/timestamp at the top across all 3 tabs)
   const sortedInquiries = React.useMemo(() => {
@@ -786,8 +875,14 @@ export default function AdminPortal() {
     } catch (e) {}
   };
 
-  // Calculations
-  const confirmedInquiries = inquiries.filter(i => i.status === 'Confirmed');
+  // Calculations (Include Confirmed, Completed, In Progress, On Ride, and Assigned trips)
+  const confirmedInquiries = inquiries.filter(i => 
+    i.status === 'Confirmed' || 
+    i.status === 'Completed' || 
+    i.status === 'In Progress' || 
+    i.status === 'On Ride' || 
+    i.status === 'Assigned'
+  );
   const totalRevenue = confirmedInquiries.reduce((sum, item) => sum + Number(item.fare || 0), 0);
   const activeDriversCount = drivers.filter(d => d.status !== 'Off Duty').length;
 
