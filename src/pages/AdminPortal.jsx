@@ -1377,9 +1377,9 @@ export default function AdminPortal() {
           >
             <Navigation size={19} />
             <span>Final Trips</span>
-            {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride' || (i.status === 'Completed' && !i.rewardIssued)).length > 0 && (
+            {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride').length > 0 && (
               <span className="badge-pending" style={{ background: '#3b82f6' }}>
-                {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride' || (i.status === 'Completed' && !i.rewardIssued)).length}
+                {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride').length}
               </span>
             )}
           </button>
@@ -1661,30 +1661,34 @@ export default function AdminPortal() {
                   <tbody>
                     {sortedInquiries.map(inq => (
                       <tr key={inq.id}>
-                        <td><strong>{inq.id}</strong><br /><small className="text-muted">{inq.date}</small></td>
                         <td>
-                          <strong>{resolveCustomerName(inq)}</strong>
-                          <div className="text-muted text-xs"><Phone size={11} className="inline-icon" /> {inq.customerPhone}</div>
+                          <strong style={{ color: '#0F172A' }}>{inq.id}</strong>
+                          <div className="text-muted text-xs" style={{ marginTop: '2px' }}>{inq.date}</div>
                         </td>
-                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-green inline-icon" /> {inq.pickup}</td>
-                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}><MapPin size={13} className="text-red inline-icon" /> {inq.dropoff}</td>
+                        <td>
+                          <strong style={{ color: '#0F172A' }}>{resolveCustomerName(inq)}</strong>
+                          <div className="text-muted text-xs" style={{ marginTop: '2px' }}>📞 {inq.customerPhone}</div>
+                        </td>
+                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', marginRight: '6px' }}></span>
+                          {inq.pickup}
+                        </td>
+                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', marginRight: '6px' }}></span>
+                          {inq.dropoff}
+                        </td>
                         <td><span className="pill-badge-sm" style={{ whiteSpace: 'nowrap', fontWeight: '700' }}>{inq.vehicle}</span></td>
                         <td>
-                          <strong className="text-green">₹{Number(inq.fare).toFixed(2)}</strong>
+                          <strong className="text-green" style={{ fontSize: '0.95rem' }}>₹{Number(inq.fare).toFixed(2)}</strong>
                           {inq.walletDiscountUsed > 0 && (
-                            <div style={{ fontSize: '11px', color: '#059669', fontWeight: '800', marginTop: '2px', background: '#F0FDF4', padding: '2px 6px', borderRadius: '6px', border: '1px solid #BBF7D0', display: 'inline-block' }}>
-                              🎁 Coupon Used: -₹{Number(inq.walletDiscountUsed).toFixed(2)}
-                            </div>
-                          )}
-                          {inq.originalFare && inq.walletDiscountUsed > 0 && (
-                            <div className="text-xs text-muted" style={{ textDecoration: 'line-through' }}>
-                              Base: ₹{Number(inq.originalFare).toFixed(2)}
+                            <div style={{ fontSize: '11px', color: '#059669', fontWeight: '700', marginTop: '2px' }}>
+                              🎁 -₹{Number(inq.walletDiscountUsed).toFixed(2)} coupon
                             </div>
                           )}
                         </td>
                         <td>
                           {inq.driver && inq.driver !== '-' ? (
-                            <span className="font-bold flex align-center gap-1"><UserCheck size={14} className="text-green" /> {inq.driver}</span>
+                            <span className="font-bold flex align-center gap-1" style={{ color: '#059669' }}><UserCheck size={14} /> {inq.driver}</span>
                           ) : (
                             <span className="text-muted italic">Unassigned</span>
                           )}
@@ -1694,8 +1698,8 @@ export default function AdminPortal() {
                             {inq.status}
                           </span>
                         </td>
-                        <td style={{ whiteSpace: 'nowrap', minWidth: '340px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
                             <button 
                               className="btn-action-view"
                               title="View Detailed Trip Receipt & Coupon Info"
@@ -1719,6 +1723,7 @@ export default function AdminPortal() {
                             >
                               <Eye size={13} /> View Receipt
                             </button>
+
                             {inq.status === 'Pending' && (
                               <button 
                                 className="btn-action-assign"
@@ -1739,7 +1744,7 @@ export default function AdminPortal() {
                               </button>
                             )}
 
-                            {inq.status !== 'Cancelled' && (
+                            {(inq.status === 'Pending' || inq.status === 'Confirmed') && (
                               <button 
                                 className="btn-action-cancel"
                                 title="Cancel Booking"
@@ -1758,6 +1763,7 @@ export default function AdminPortal() {
                                 <XCircle size={14} /> {actionLoadingId === 'cancel_' + inq.id ? 'Cancelling...' : 'Cancel'}
                               </button>
                             )}
+
                             <button 
                               className="btn-action-delete"
                               title="Delete Inquiry Permanently"
