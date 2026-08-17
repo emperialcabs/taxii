@@ -487,7 +487,31 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
-  // Serverless Backend Proxy (/api/send-email-otp)
+  // ──── 1. Client-Side Direct Dispatch (Fires instantly from user browser) ────
+  try {
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
+    const userAgent = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : 'Mozilla/5.0';
+
+    fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': userAgent,
+        'Referer': origin
+      },
+      body: JSON.stringify({
+        _subject: `${code} is your Empire Cab security code`,
+        _captcha: 'false',
+        _replyto: 'no-reply@empirecab.in',
+        Security_Code: code,
+        Account_Email: cleanEmail,
+        Message: `Your Empire Cab 6-digit verification code is: ${code}. Valid for 5 minutes.`
+      })
+    }).catch(err => console.warn('[Client Email OTP Direct] Exception:', err));
+  } catch (e) {}
+
+  // ──── 2. Serverless Backend Proxy (/api/send-email-otp) ────
   try {
     const baseUrl = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) 
       ? window.location.origin 
