@@ -18,8 +18,74 @@ export default async function handler(req, res) {
   }
 
   const userEmail = String(email).toLowerCase().trim();
-  const smtpPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD || process.env.VITE_GMAIL_APP_PASSWORD;
 
+  // 1. Brevo Direct REST API (300 Free Emails / Day)
+  const brevoApiKey = process.env.BREVO_API_KEY || process.env.VITE_BREVO_API_KEY;
+  if (brevoApiKey) {
+    try {
+      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'EMPERIAL CABS', email: 'emperialcabs@gmail.com' },
+          to: [{ email: userEmail }],
+          subject: `${code} is your EMPERIAL CABS verification code`,
+          htmlContent: `
+            <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 480px; background: #ffffff; margin: 0 auto;">
+              <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">EMPERIAL CABS</h2>
+              <p style="color: #475569; font-size: 15px;">Your 6-digit security verification code is:</p>
+              <div style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #10b981; background: #f0fdf4; border: 1px solid #10b981; padding: 18px; border-radius: 12px; text-align: center; margin: 20px 0;">${code}</div>
+              <p style="color: #94a3b8; font-size: 13px;">This code will expire in 5 minutes. Do not share it with anyone.</p>
+            </div>
+          `
+        })
+      });
+      if (resp.ok) {
+        return res.status(200).json({ success: true, via: 'brevo_direct', userEmail });
+      }
+    } catch (e) {
+      console.error('Brevo API Error:', e);
+    }
+  }
+
+  // 2. Resend Direct REST API (3,000 Free Emails / Month)
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'EMPERIAL CABS <onboarding@resend.dev>',
+          to: [userEmail],
+          subject: `${code} is your EMPERIAL CABS verification code`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 480px; background: #ffffff; margin: 0 auto;">
+              <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">EMPERIAL CABS</h2>
+              <p style="color: #475569; font-size: 15px;">Your 6-digit security verification code is:</p>
+              <div style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #10b981; background: #f0fdf4; border: 1px solid #10b981; padding: 18px; border-radius: 12px; text-align: center; margin: 20px 0;">${code}</div>
+              <p style="color: #94a3b8; font-size: 13px;">This code will expire in 5 minutes. Do not share it with anyone.</p>
+            </div>
+          `
+        })
+      });
+      if (resp.ok) {
+        return res.status(200).json({ success: true, via: 'resend_direct', userEmail });
+      }
+    } catch (e) {
+      console.error('Resend API Error:', e);
+    }
+  }
+
+  // 3. Gmail SMTP Fallback
+  const smtpPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD || process.env.VITE_GMAIL_APP_PASSWORD;
   if (smtpPass) {
     try {
       const transporter = nodemailer.createTransport({
@@ -51,23 +117,5 @@ export default async function handler(req, res) {
     }
   }
 
-  // Direct Firebase Auth Security Email Dispatch
-  try {
-    fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyC0cdfnTx4EZvPLZQPLdpwEbr_DkDKgvl4', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requestType: 'PASSWORD_RESET',
-        email: userEmail
-      })
-    }).catch(() => {});
-
-    return res.status(200).json({
-      success: true,
-      via: 'firebase_auth_direct',
-      userEmail
-    });
-  } catch (error) {
-    return res.status(200).json({ success: true, via: 'handled' });
-  }
+  return res.status(200).json({ success: true, via: 'handled', userEmail });
 }
