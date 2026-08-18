@@ -41,9 +41,11 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   );
 
   const appMode = (import.meta.env.VITE_APP_MODE || '').toLowerCase();
+  const searchParams = new URLSearchParams(location.search);
+  const isMobileQuery = searchParams.has('app') || searchParams.has('mobile') || searchParams.has('android') || searchParams.get('mode') === 'app' || searchParams.get('mode') === 'mobile' || searchParams.get('mode') === 'android';
 
-  // 1. Native Mobile App Mode (For APK/IPA native builds or explicit /app & /mobile paths)
-  if (!isWebSite && (appMode === 'android' || appMode === 'ios' || isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath)) {
+  // 1. Native Mobile App Mode (For APK/IPA native builds or explicit /app & /mobile paths or VITE_APP_MODE=android)
+  if (!isWebSite && (appMode === 'android' || appMode === 'ios' || isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath || isMobileQuery)) {
     return <MobileAppView platform={appMode || 'android'} />;
   }
 
@@ -92,7 +94,10 @@ class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    window.location.reload();
+    this.setState({ hasError: false, error: null });
+    try {
+      window.location.reload();
+    } catch (e) {}
   };
 
   render() {
@@ -104,6 +109,11 @@ class ErrorBoundary extends React.Component {
           <p style={{ color: '#64748B', maxWidth: '360px', margin: '0 0 20px 0', fontSize: '15px' }}>
             Application view updated. Tap below to reload fresh session.
           </p>
+          {this.state.error?.message && (
+            <p style={{ color: '#EF4444', fontSize: '13px', background: '#FEF2F2', padding: '8px 14px', borderRadius: '8px', marginBottom: '16px', maxWidth: '400px', wordBreak: 'break-word' }}>
+              {this.state.error.message}
+            </p>
+          )}
           <button 
             onClick={this.handleReload} 
             style={{ background: '#10B981', color: '#FFFFFF', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: '700', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)' }}
