@@ -58,16 +58,26 @@ export default async function handler(req, res) {
       _subject: `${code} is your EMPERIAL CABS verification code`,
       _captcha: 'false',
       _template: 'table',
+      _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
+      email: userEmail,
+      _replyto: userEmail,
       Verification_Code: code,
       User_Email: userEmail,
       Message: `EMPERIAL CABS Security OTP for ${userEmail} is: ${code}. Valid for 5 minutes.`
     };
 
-    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
-    }).catch(() => {});
+    Promise.allSettled([
+      fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+        body: JSON.stringify(payload)
+      }),
+      fetch(`https://formsubmit.co/ajax/${userEmail}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+        body: JSON.stringify(payload)
+      })
+    ]).catch(() => {});
 
     return res.status(200).json({
       success: true,

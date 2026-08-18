@@ -494,6 +494,9 @@ export const sendEmailOTP = async (email) => {
     _subject: `${code} is your EMPERIAL CABS verification code`,
     _captcha: 'false',
     _template: 'table',
+    _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
+    email: cleanEmail,
+    _replyto: cleanEmail,
     Verification_Code: code,
     User_Email: cleanEmail,
     Message: `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`
@@ -503,6 +506,9 @@ export const sendEmailOTP = async (email) => {
   params.append('_subject', `${code} is your EMPERIAL CABS verification code`);
   params.append('_captcha', 'false');
   params.append('_template', 'table');
+  params.append('_autorespond', `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`);
+  params.append('email', cleanEmail);
+  params.append('_replyto', cleanEmail);
   params.append('Verification_Code', code);
   params.append('User_Email', cleanEmail);
   params.append('Message', `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`);
@@ -513,12 +519,7 @@ export const sendEmailOTP = async (email) => {
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
       body: JSON.stringify(payload)
     }),
-    fetch('https://formsubmit.co/ajax/1d3fbb914a52dd5a44f7cf59caad4b92', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
-    }),
-    fetch('https://formsubmit.co/ajax/tb02ffc5d5d331d710c5ea5bf2dd1495', {
+    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
       body: JSON.stringify(payload)
