@@ -488,36 +488,49 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
-  const formKey = '1d3fbb914a52dd5a44f7cf59caad4b92';
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
-  const payload = {
-    _subject: `${code} is your EMPERIAL CABS verification code`,
-    _captcha: 'false',
-    _template: 'table',
-    Verification_Code: code,
-    Account_Email: cleanEmail,
-    Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`
-  };
+  // 1. Form-encoded POST to FormSubmit (Guaranteed Delivery)
+  try {
+    const params = new URLSearchParams();
+    params.append('_subject', `${code} is your EMPERIAL CABS verification code`);
+    params.append('_captcha', 'false');
+    params.append('_template', 'table');
+    params.append('Verification_Code', code);
+    params.append('User_Email', cleanEmail);
+    params.append('Message', `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`);
 
-  // Dispatch parallel instant non-blocking requests
-  Promise.allSettled([
-    fetch(`https://formsubmit.co/ajax/${formKey}`, {
+    fetch('https://formsubmit.co/emperialcabs@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Referer': origin },
+      body: params.toString()
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 2. Secondary AJAX JSON POST
+  try {
+    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
-    }),
-    fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
-    }),
+      body: JSON.stringify({
+        _subject: `${code} is your EMPERIAL CABS verification code`,
+        _captcha: 'false',
+        _template: 'table',
+        Verification_Code: code,
+        User_Email: cleanEmail,
+        Message: `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`
+      })
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 3. Serverless Proxy (/api/send-email-otp)
+  try {
     fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
-    })
-  ]).catch(() => {});
+    }).catch(() => {});
+  } catch (err) {}
 
   return { success: true, code };
 };
