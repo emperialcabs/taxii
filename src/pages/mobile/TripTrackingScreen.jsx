@@ -8,7 +8,7 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
   const [activeRide, setActiveRide] = useState(null);
   const [liveGpsCoords, setLiveGpsCoords] = useState(null);
 
-  // 1. Sync Active Ride Data from localStorage / Admin Portal Events
+  // 1. Sync Active Ride Data from localStorage / Admin Portal Events (Sub-second Sync)
   useEffect(() => {
     const syncRide = () => {
       try {
@@ -16,18 +16,32 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
         if (saved) {
           const list = JSON.parse(saved);
           const current = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-          if (current) setActiveRide(current);
+          if (current) {
+            setActiveRide(current);
+          } else {
+            const completed = list.find(i => i.status === 'Completed');
+            if (completed && onCompleteRide) {
+              onCompleteRide();
+            }
+          }
         }
       } catch (e) {}
     };
+
     syncRide();
+    const interval = setInterval(syncRide, 500); // 0.5s sub-second polling
+
     window.addEventListener('storage', syncRide);
     window.addEventListener('EMPERIAL CABS_trip_started', syncRide);
+    window.addEventListener('EMPERIAL CABS_trip_completed', syncRide);
+
     return () => {
+      clearInterval(interval);
       window.removeEventListener('storage', syncRide);
       window.removeEventListener('EMPERIAL CABS_trip_started', syncRide);
+      window.removeEventListener('EMPERIAL CABS_trip_completed', syncRide);
     };
-  }, []);
+  }, [onCompleteRide]);
 
   // 2. Watch Real Device GPS Location Live in Real-Time
   useEffect(() => {
