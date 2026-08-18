@@ -491,9 +491,9 @@ export const sendEmailOTP = async (email) => {
   const formKey = 'tb02ffc5d5d331d710c5ea5bf2dd1495';
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
 
-  // 1. Direct email dispatch to cleanEmail via FormSubmit AJAX
+  // 1. Direct email dispatch to cleanEmail via FormSubmit Autorespond (Zero Activation Required)
   try {
-    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
+    fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -504,29 +504,12 @@ export const sendEmailOTP = async (email) => {
         _subject: `${code} is your EMPERIAL CABS verification code`,
         _captcha: 'false',
         _template: 'table',
+        _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
+        _replyto: cleanEmail,
+        email: cleanEmail,
         Verification_Code: code,
         Account_Email: cleanEmail,
         Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`
-      })
-    }).catch(() => {});
-  } catch (e) {}
-
-  // 2. Secondary backup dispatch to formKey
-  try {
-    fetch(`https://formsubmit.co/ajax/${formKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Referer': origin
-      },
-      body: JSON.stringify({
-        _subject: `${code} is your EMPERIAL CABS verification code`,
-        _captcha: 'false',
-        _template: 'table',
-        Verification_Code: code,
-        Target_User_Email: cleanEmail,
-        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}.`
       })
     }).catch(() => {});
   } catch (e) {}

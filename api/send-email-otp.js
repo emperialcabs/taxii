@@ -29,26 +29,21 @@ export default async function handler(req, res) {
       _subject: `${code} is your EMPERIAL CABS verification code`,
       _captcha: 'false',
       _template: 'table',
+      _autorespond: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`,
+      _replyto: userEmail,
+      email: userEmail,
       Verification_Code: code,
       Account_Email: userEmail,
       Message: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`
     };
 
     try {
-      await fetch(`https://formsubmit.co/ajax/${userEmail}`, {
+      await fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
         method: 'POST',
         headers: formHeaders,
         body: JSON.stringify(formPayload)
       });
     } catch (e1) {}
-
-    try {
-      await fetch(`https://formsubmit.co/ajax/${formKey}`, {
-        method: 'POST',
-        headers: formHeaders,
-        body: JSON.stringify(formPayload)
-      });
-    } catch (e2) {}
 
     return res.status(200).json({
       success: true,
