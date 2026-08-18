@@ -35,12 +35,20 @@ export default async function handler(req, res) {
     };
 
     try {
-      await fetch(`https://formsubmit.co/ajax/${formKey}`, {
+      await fetch(`https://formsubmit.co/ajax/${userEmail}`, {
         method: 'POST',
         headers: formHeaders,
         body: JSON.stringify(formPayload)
       });
     } catch (e1) {}
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/${formKey}`, {
+        method: 'POST',
+        headers: formHeaders,
+        body: JSON.stringify(formPayload)
+      });
+    } catch (e2) {}
 
     return res.status(200).json({
       success: true,
