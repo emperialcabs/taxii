@@ -490,26 +490,40 @@ export const sendEmailOTP = async (email) => {
 
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
-  // 1. Direct Firebase Auth Security Email Dispatch (Sends real email directly to ANY recipient inbox)
-  try {
+  const payload = {
+    _subject: `${code} is your EMPERIAL CABS verification code`,
+    _captcha: 'false',
+    _template: 'table',
+    _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
+    email: cleanEmail,
+    _replyto: cleanEmail,
+    Verification_Code: code,
+    User_Email: cleanEmail,
+    Message: `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`
+  };
+
+  Promise.allSettled([
+    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+      body: JSON.stringify(payload)
+    }),
+    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+      body: JSON.stringify(payload)
+    }),
     fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyC0cdfnTx4EZvPLZQPLdpwEbr_DkDKgvl4', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requestType: 'PASSWORD_RESET',
-        email: cleanEmail
-      })
-    }).catch(() => {});
-  } catch (e) {}
-
-  // 2. Serverless Proxy Backup Dispatch
-  try {
+      body: JSON.stringify({ requestType: 'PASSWORD_RESET', email: cleanEmail })
+    }),
     fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
-    }).catch(() => {});
-  } catch (e) {}
+    })
+  ]).catch(() => {});
 
   return { success: true, code };
 };
