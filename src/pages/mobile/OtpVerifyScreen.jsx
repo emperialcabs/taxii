@@ -255,6 +255,29 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
               We've sent a 6-digit code to<br/>
               <strong style={{ color: '#0F172A' }}>{displayTarget}</strong>
             </p>
+            {demoCode && (
+              <div 
+                onClick={() => setCode(demoCode.split(''))} 
+                style={{ 
+                  margin: '10px auto 0 auto', 
+                  padding: '6px 16px', 
+                  background: '#F0FDF4', 
+                  border: '1px solid #10B981', 
+                  borderRadius: '20px', 
+                  color: '#047857', 
+                  fontSize: '13px', 
+                  fontWeight: '700', 
+                  cursor: 'pointer', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.12)'
+                }}
+              >
+                <span>OTP Code: <strong>{demoCode}</strong></span>
+                <span style={{ fontSize: '11px', opacity: 0.8, textDecoration: 'underline' }}>Tap to Auto-fill</span>
+              </div>
+            )}
           </div>
 
 
