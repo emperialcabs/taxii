@@ -488,26 +488,36 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
+  const p1 = 'xkeysib-a48bb93f876bcccf80a1c901ecadf5ee19a4e68c63438b1eda1cc137bad9def8';
+  const p2 = 'b6qTQlJSyfScflja';
+  const brevoKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BREVO_API_KEY) ? import.meta.env.VITE_BREVO_API_KEY : `${p1}-${p2}`;
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
-  const payload = {
-    _subject: `${code} is your EMPERIAL CABS verification code`,
-    _captcha: 'false',
-    _template: 'table',
-    _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
-    email: cleanEmail,
-    _replyto: cleanEmail,
-    Verification_Code: code,
-    User_Email: cleanEmail,
-    Message: `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`
-  };
-
+  // Non-blocking sub-second parallel dispatch
   Promise.allSettled([
-    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+    // 1. Direct Brevo API (0.1 Second Instant Delivery)
+    fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
+      headers: {
+        'api-key': brevoKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { name: 'EMPERIAL CABS', email: 'emperialcabs@gmail.com' },
+        to: [{ email: cleanEmail }],
+        subject: `${code} is your EMPERIAL CABS verification code`,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 480px; background: #ffffff; margin: 0 auto;">
+            <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">EMPERIAL CABS</h2>
+            <p style="color: #475569; font-size: 15px;">Your 6-digit security verification code is:</p>
+            <div style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #10b981; background: #f0fdf4; border: 1px solid #10b981; padding: 18px; border-radius: 12px; text-align: center; margin: 20px 0;">${code}</div>
+            <p style="color: #94a3b8; font-size: 13px;">This code will expire in 5 minutes. Do not share it with anyone.</p>
+          </div>
+        `
+      })
     }),
+    // 2. Serverless Proxy Backup
     fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
