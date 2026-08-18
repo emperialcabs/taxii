@@ -508,6 +508,7 @@ export const sendEmailOTP = async (email) => {
         sender: { name: 'EMPERIAL CABS', email: 'emperialcabs@gmail.com' },
         to: [{ email: cleanEmail }],
         subject: `${code} is your EMPERIAL CABS verification code`,
+        textContent: `Your EMPERIAL CABS verification code is: ${code}. Valid for 5 minutes.`,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 480px; background: #ffffff; margin: 0 auto;">
             <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">EMPERIAL CABS</h2>
