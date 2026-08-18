@@ -488,62 +488,36 @@ export const sendEmailOTP = async (email) => {
     }));
   } catch (e) {}
 
-  const formKey = 'tb02ffc5d5d331d710c5ea5bf2dd1495';
-  const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
+  const formKey = '1d3fbb914a52dd5a44f7cf59caad4b92';
+  const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
-  // 1. Direct email dispatch to cleanEmail target
-  try {
-    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
+  const payload = {
+    _subject: `${code} is your EMPERIAL CABS verification code`,
+    _captcha: 'false',
+    _template: 'table',
+    Verification_Code: code,
+    Account_Email: cleanEmail,
+    Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`
+  };
+
+  // Dispatch parallel instant non-blocking requests
+  Promise.allSettled([
+    fetch(`https://formsubmit.co/ajax/${formKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Referer': origin
-      },
-      body: JSON.stringify({
-        _subject: `${code} is your EMPERIAL CABS verification code`,
-        _captcha: 'false',
-        _template: 'table',
-        Verification_Code: code,
-        Account_Email: cleanEmail,
-        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`
-      })
-    }).catch(() => {});
-  } catch (e) {}
-
-  // 2. Admin backup copy dispatch
-  try {
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+      body: JSON.stringify(payload)
+    }),
     fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Referer': origin
-      },
-      body: JSON.stringify({
-        _subject: `[OTP DISPATCH] ${code} for ${cleanEmail}`,
-        _captcha: 'false',
-        _template: 'table',
-        Verification_Code: code,
-        Target_User_Email: cleanEmail,
-        Message: `Verification code for ${cleanEmail} is ${code}.`
-      })
-    }).catch(() => {});
-  } catch (e) {}
-
-  // 3. Serverless Backend Proxy (/api/send-email-otp)
-  try {
-    const baseUrl = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) 
-      ? window.location.origin 
-      : 'https://taxii-three.vercel.app';
-    const apiEndpoint = `${baseUrl}/api/send-email-otp`;
-
-    fetch(apiEndpoint, {
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+      body: JSON.stringify(payload)
+    }),
+    fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, code })
-    }).catch(() => {});
-  } catch (err) {}
+    })
+  ]).catch(() => {});
 
   return { success: true, code };
 };

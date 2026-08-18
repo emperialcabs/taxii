@@ -16,45 +16,36 @@ export default async function handler(req, res) {
   }
 
   const userEmail = String(email).toLowerCase().trim();
-  const formKey = 'tb02ffc5d5d331d710c5ea5bf2dd1495';
+  const formKey = '1d3fbb914a52dd5a44f7cf59caad4b92';
 
   try {
     const formHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Referer': 'https://taxii-three.vercel.app/'
+      'Referer': 'https://android-two-rouge.vercel.app/'
     };
 
     const formPayload = {
       _subject: `${code} is your EMPERIAL CABS verification code`,
       _captcha: 'false',
       _template: 'table',
-      _autorespond: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`,
-      _replyto: userEmail,
-      email: userEmail,
       Verification_Code: code,
       Account_Email: userEmail,
       Message: `Your EMPERIAL CABS 6-digit verification code is: ${code}. Valid for 5 minutes.`
     };
 
-    try {
-      await fetch(`https://formsubmit.co/ajax/${userEmail}`, {
+    Promise.allSettled([
+      fetch(`https://formsubmit.co/ajax/${formKey}`, {
         method: 'POST',
         headers: formHeaders,
         body: JSON.stringify(formPayload)
-      });
-    } catch (e1) {}
-
-    try {
-      await fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
+      }),
+      fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
         method: 'POST',
         headers: formHeaders,
-        body: JSON.stringify({
-          ...formPayload,
-          _subject: `[OTP DISPATCH] ${code} for ${userEmail}`
-        })
-      });
-    } catch (e2) {}
+        body: JSON.stringify(formPayload)
+      })
+    ]).catch(() => {});
 
     return res.status(200).json({
       success: true,
