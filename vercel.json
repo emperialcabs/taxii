@@ -43,18 +43,6 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/Taxigo.apk",
-      "destination": "https://github.com/emperialcabs/taxii/raw/main/Taxigo.apk",
-      "permanent": false
-    },
-    {
-      "source": "/taxigo.apk",
-      "destination": "https://github.com/emperialcabs/taxii/raw/main/Taxigo.apk",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/:path*",
