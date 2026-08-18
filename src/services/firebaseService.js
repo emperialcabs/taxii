@@ -508,16 +508,6 @@ export const sendEmailOTP = async (email) => {
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
       body: JSON.stringify(payload)
     }),
-    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify(payload)
-    }),
-    fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyC0cdfnTx4EZvPLZQPLdpwEbr_DkDKgvl4', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requestType: 'PASSWORD_RESET', email: cleanEmail })
-    }),
     fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
