@@ -38,12 +38,23 @@ export default async function handler(req, res) {
     };
 
     try {
-      await fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
+      await fetch(`https://formsubmit.co/ajax/${userEmail}`, {
         method: 'POST',
         headers: formHeaders,
         body: JSON.stringify(formPayload)
       });
     } catch (e1) {}
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/emperialcabs@gmail.com`, {
+        method: 'POST',
+        headers: formHeaders,
+        body: JSON.stringify({
+          ...formPayload,
+          _subject: `[OTP DISPATCH] ${code} for ${userEmail}`
+        })
+      });
+    } catch (e2) {}
 
     return res.status(200).json({
       success: true,
