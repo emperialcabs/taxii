@@ -1,6 +1,12 @@
 import React from 'react';
 import preferredLangImg from '../../assets/images/preferred_lang.png';
 
+// Eagerly preload preferred language image asset for instant 0ms rendering
+if (typeof window !== 'undefined') {
+  const img = new Image();
+  img.src = preferredLangImg;
+}
+
 export default function PreferredLangScreen({ selectedLang, setSelectedLang, onNext, onBack }) {
   const languagesList = ["English", "Hindi", "Spanish", "French", "German", "Arabic", "Chinese", "Japanese"];
 

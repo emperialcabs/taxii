@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import onboarding1Img from '../../assets/images/onboarding/onboarding1.png';
 import onboarding2Img from '../../assets/images/onboarding/onboarding2.png';
 import onboarding3Img from '../../assets/images/onboarding/onboarding3.png';
 import onboarding4Img from '../../assets/images/onboarding/onboarding4.png';
+
+// Eagerly preload all onboarding image assets into browser RAM cache for instant 0ms slide loading
+if (typeof window !== 'undefined') {
+  [onboarding1Img, onboarding2Img, onboarding3Img, onboarding4Img].forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+}
 
 // ============================================================================
 // SLIDE 1: REQUEST A RIDE (100% EXACT 4K IMAGE RENDERING WITH VECTOR CRISPNESS)
