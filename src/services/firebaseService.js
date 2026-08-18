@@ -491,6 +491,7 @@ export const sendEmailOTP = async (email) => {
   const p1 = 'xkeysib-a48bb93f876bcccf80a1c901ecadf5ee19a4e68c63438b1eda1cc137bad9def8';
   const p2 = 'b6qTQlJSyfScflja';
   const brevoKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BREVO_API_KEY) ? import.meta.env.VITE_BREVO_API_KEY : `${p1}-${p2}`;
+  const activeKey = brevoKey || `${p1}-${p2}`;
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
   // Non-blocking sub-second parallel dispatch
@@ -499,7 +500,7 @@ export const sendEmailOTP = async (email) => {
     fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'api-key': brevoKey,
+        'api-key': activeKey,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
