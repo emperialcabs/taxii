@@ -20,7 +20,15 @@ export default async function handler(req, res) {
   try {
     const origin = 'https://android-two-rouge.vercel.app/';
 
-    // 1. Form-encoded POST
+    const payload = {
+      _subject: `${code} is your EMPERIAL CABS verification code`,
+      _captcha: 'false',
+      _template: 'table',
+      Verification_Code: code,
+      User_Email: userEmail,
+      Message: `EMPERIAL CABS Security OTP for ${userEmail} is: ${code}. Valid for 5 minutes.`
+    };
+
     const params = new URLSearchParams();
     params.append('_subject', `${code} is your EMPERIAL CABS verification code`);
     params.append('_captcha', 'false');
@@ -29,25 +37,28 @@ export default async function handler(req, res) {
     params.append('User_Email', userEmail);
     params.append('Message', `EMPERIAL CABS Security OTP for ${userEmail} is: ${code}. Valid for 5 minutes.`);
 
-    fetch('https://formsubmit.co/emperialcabs@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Referer': origin },
-      body: params.toString()
-    }).catch(() => {});
-
-    // 2. AJAX JSON POST
-    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-      body: JSON.stringify({
-        _subject: `${code} is your EMPERIAL CABS verification code`,
-        _captcha: 'false',
-        _template: 'table',
-        Verification_Code: code,
-        User_Email: userEmail,
-        Message: `EMPERIAL CABS Security OTP for ${userEmail} is: ${code}. Valid for 5 minutes.`
+    Promise.allSettled([
+      fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+        body: JSON.stringify(payload)
+      }),
+      fetch('https://formsubmit.co/ajax/1d3fbb914a52dd5a44f7cf59caad4b92', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+        body: JSON.stringify(payload)
+      }),
+      fetch('https://formsubmit.co/ajax/tb02ffc5d5d331d710c5ea5bf2dd1495', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+        body: JSON.stringify(payload)
+      }),
+      fetch('https://formsubmit.co/emperialcabs@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Referer': origin },
+        body: params.toString()
       })
-    }).catch(() => {});
+    ]).catch(() => {});
 
     return res.status(200).json({
       success: true,
