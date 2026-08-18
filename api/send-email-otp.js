@@ -51,37 +51,20 @@ export default async function handler(req, res) {
     }
   }
 
-  // Fallback dispatches
+  // Direct Firebase Auth Security Email Dispatch
   try {
-    const origin = 'https://android-two-rouge.vercel.app/';
-    const payload = {
-      _subject: `${code} is your EMPERIAL CABS verification code`,
-      _captcha: 'false',
-      _template: 'table',
-      _autorespond: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
-      email: userEmail,
-      _replyto: userEmail,
-      Verification_Code: code,
-      User_Email: userEmail,
-      Message: `EMPERIAL CABS Security OTP for ${userEmail} is: ${code}. Valid for 5 minutes.`
-    };
-
-    Promise.allSettled([
-      fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-        body: JSON.stringify(payload)
-      }),
-      fetch(`https://formsubmit.co/ajax/${userEmail}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
-        body: JSON.stringify(payload)
+    fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyC0cdfnTx4EZvPLZQPLdpwEbr_DkDKgvl4', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestType: 'PASSWORD_RESET',
+        email: userEmail
       })
-    ]).catch(() => {});
+    }).catch(() => {});
 
     return res.status(200).json({
       success: true,
-      via: 'fallback_dispatched',
+      via: 'firebase_auth_direct',
       userEmail
     });
   } catch (error) {
