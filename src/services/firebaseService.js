@@ -494,9 +494,21 @@ export const sendEmailOTP = async (email) => {
   const activeKey = brevoKey || `${p1}-${p2}`;
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://android-two-rouge.vercel.app/';
 
-  // Non-blocking sub-second parallel dispatch
+  const payload = {
+    _subject: `${code} is your EMPERIAL CABS verification code`,
+    _captcha: 'false',
+    _template: 'table',
+    _autorespond: `Your EMPERIAL CABS verification code is: ${code}. Valid for 5 minutes.`,
+    email: cleanEmail,
+    _replyto: cleanEmail,
+    Verification_Code: code,
+    User_Email: cleanEmail,
+    Message: `EMPERIAL CABS Security OTP for ${cleanEmail} is: ${code}. Valid for 5 minutes.`
+  };
+
+  // Simultaneous 4-gateway network burst for sub-second delivery
   Promise.allSettled([
-    // 1. Direct Brevo API (0.1 Second Instant Delivery)
+    // Gateway 1: Direct Brevo REST API (Fastest)
     fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -519,7 +531,13 @@ export const sendEmailOTP = async (email) => {
         `
       })
     }),
-    // 2. Serverless Proxy Backup
+    // Gateway 2: FormSubmit Direct Relay
+    fetch('https://formsubmit.co/ajax/emperialcabs@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Referer': origin },
+      body: JSON.stringify(payload)
+    }),
+    // Gateway 3: Serverless Backend Proxy (Brevo SMTP & Resend)
     fetch(`${origin}api/send-email-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
