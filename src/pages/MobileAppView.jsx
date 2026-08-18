@@ -32,15 +32,8 @@ import InquirySubmittedScreen from './mobile/InquirySubmittedScreen';
 
 export default function MobileAppView() {
 
-  // Navigation Flow State Machine
-  const [appStage, setAppStage] = useState(() => {
-    try {
-      const hasOnboarded = localStorage.getItem('EMPERIAL CABS_onboarded');
-      return hasOnboarded === 'true' ? 'APP_HOME' : 'PRELOADER';
-    } catch (e) {
-      return 'PRELOADER';
-    }
-  });
+  // Navigation Flow State Machine - Always start at PRELOADER for 2-second splash
+  const [appStage, setAppStage] = useState('PRELOADER');
 
   // User Input & Booking States
   const [selectedGoogleAccount, setSelectedGoogleAccount] = useState(null);

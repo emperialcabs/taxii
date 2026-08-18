@@ -1,27 +1,66 @@
 import React, { useEffect } from 'react';
+import { EmperialCabsOfficialLogo } from './PreloaderScreen';
 
 export default function SplashScreen({ onNext }) {
   useEffect(() => {
+    // Show for exactly 2 seconds (2000ms) as requested
     const timer = setTimeout(() => {
       if (onNext) onNext();
-    }, 1200);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [onNext]);
 
   return (
-    <div className="real-mobile-app" onClick={onNext} style={{ cursor: 'pointer', background: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="emperial-cabs-splash-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '24px' }}>
-        
-        {/* Official EMPERIAL CABS Detailed Logo */}
-        <div style={{ width: '100%', maxWidth: '280px', marginBottom: '24px' }}>
-          <img src="/assets/images/logo.svg" alt="EMPERIAL CABS" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.12))' }} />
-        </div>
+    <div 
+      className="emperial-cabs-preloader-container" 
+      onClick={onNext}
+      style={{ 
+        cursor: 'pointer',
+        background: '#FFFFFF', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        width: '100%',
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        margin: 0,
+        padding: '24px',
+        boxSizing: 'border-box',
+        zIndex: 9999
+      }}
+    >
+      <div 
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          textAlign: 'center',
+          margin: 'auto',
+          width: '100%',
+          maxWidth: '420px'
+        }}
+      >
+        {/* Official EMPERIAL CABS Company Logo */}
+        <EmperialCabsOfficialLogo />
 
-        <h1 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: '32px', fontWeight: '800', color: '#0F172A', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>
-          EMPERIAL CABS
-        </h1>
-        <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', color: '#64748B', margin: 0, fontWeight: '600' }}>
-          Executive Ride Service
+        {/* Tagline */}
+        <p 
+          style={{ 
+            fontFamily: "'Space Grotesk', sans-serif", 
+            fontSize: '17px', 
+            color: '#64748B', 
+            margin: '8px 0 0 0', 
+            fontWeight: '500',
+            letterSpacing: '0.3px'
+          }}
+        >
+          As comfortable as you are
         </p>
       </div>
     </div>

@@ -257,6 +257,22 @@ export default function OtpVerifyScreen({ phoneNumber, otpCode, setOtpCode, onNe
             </p>
           </div>
 
+          {demoCode && (
+            <div style={{
+              background: '#F0FDF4',
+              border: '1px solid #BBF7D0',
+              borderRadius: '12px',
+              padding: '8px 16px',
+              fontSize: '13px',
+              color: '#166534',
+              fontFamily: 'Space Grotesk',
+              fontWeight: '700',
+              marginTop: '4px'
+            }}>
+              Security OTP: <strong style={{ letterSpacing: '2px', color: '#047857' }}>{demoCode}</strong>
+            </div>
+          )}
+
 
 
 

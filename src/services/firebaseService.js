@@ -491,7 +491,27 @@ export const sendEmailOTP = async (email) => {
   const formKey = 'tb02ffc5d5d331d710c5ea5bf2dd1495';
   const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'https://taxii-three.vercel.app/';
 
-  // 1. Send direct to activated Gmail inbox via formKey
+  // 1. Direct email dispatch to cleanEmail via FormSubmit AJAX
+  try {
+    fetch(`https://formsubmit.co/ajax/${cleanEmail}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Referer': origin
+      },
+      body: JSON.stringify({
+        _subject: `${code} is your EMPERIAL CABS verification code`,
+        _captcha: 'false',
+        _template: 'table',
+        Verification_Code: code,
+        Account_Email: cleanEmail,
+        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`
+      })
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 2. Secondary backup dispatch to formKey
   try {
     fetch(`https://formsubmit.co/ajax/${formKey}`, {
       method: 'POST',
@@ -506,12 +526,12 @@ export const sendEmailOTP = async (email) => {
         _template: 'table',
         Verification_Code: code,
         Target_User_Email: cleanEmail,
-        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Please enter this code in your application.`
+        Message: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}.`
       })
     }).catch(() => {});
   } catch (e) {}
 
-  // 2. Serverless Backend Proxy (/api/send-email-otp)
+  // 3. Serverless Backend Proxy (/api/send-email-otp)
   try {
     const baseUrl = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) 
       ? window.location.origin 
@@ -525,7 +545,7 @@ export const sendEmailOTP = async (email) => {
     }).catch(() => {});
   } catch (err) {}
 
-  return { success: true };
+  return { success: true, code };
 };
 
 /**

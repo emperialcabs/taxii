@@ -28,15 +28,13 @@
   height: 100dvh;
   max-height: 100vh;
   max-height: 100dvh;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
   background: #F8FAFC;
   display: flex;
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(0,0,0,0.08);
   /* Do NOT start at opacity:0 — causes white flash if GPU compositing stalls */
   will-change: transform;
   touch-action: pan-y;
@@ -83,14 +81,15 @@
 .emperial-cabs-preloader-container, .EMPERIAL.CABS-preloader-container {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   background: #FFFFFF;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: fixed;
   inset: 0;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
   z-index: 9999;
 }
 
@@ -210,6 +209,7 @@
 .emperial-cabs-splash-container, .EMPERIAL.CABS-splash-container {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   background: #FFFFFF;
   display: flex;
   flex-direction: column;
@@ -218,8 +218,7 @@
   text-align: center;
   position: fixed;
   inset: 0;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .splash-logo-img { width: 140px; margin-bottom: 24px; }
@@ -473,8 +472,7 @@
   background: #FFFFFF;
   position: fixed;
   inset: 60px 0 0 0;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
   z-index: 960;
   display: flex;
   flex-direction: column;
@@ -722,10 +720,9 @@
 .emperial-cabs-bottom-nav, .EMPERIAL.CABS-bottom-nav {
   position: fixed; /* Use fixed so it never gets lost on iOS/Android */
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
-  max-width: 600px;
   background: #FFFFFF;
   border-top: 1px solid #E2E8F0;
   display: flex;
