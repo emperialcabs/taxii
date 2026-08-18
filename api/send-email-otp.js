@@ -19,8 +19,11 @@ export default async function handler(req, res) {
 
   const userEmail = String(email).toLowerCase().trim();
 
-  // 1. Brevo Direct REST API (300 Free Emails / Day)
+  // 1. Brevo Direct REST API & SMTP Engine
   const brevoApiKey = process.env.BREVO_API_KEY || process.env.VITE_BREVO_API_KEY;
+  const brevoUser = process.env.BREVO_USER || process.env.VITE_BREVO_USER || 'b5efd3001@smtp-brevo.com';
+  const brevoPass = process.env.BREVO_PASS || process.env.VITE_BREVO_PASS || brevoApiKey;
+
   if (brevoApiKey) {
     try {
       const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -49,6 +52,39 @@ export default async function handler(req, res) {
       }
     } catch (e) {
       console.error('Brevo API Error:', e);
+    }
+  }
+
+  if (brevoPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: 'smtp-relay.brevo.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: brevoUser,
+          pass: brevoPass
+        }
+      });
+
+      await transporter.sendMail({
+        from: '"EMPERIAL CABS" <emperialcabs@gmail.com>',
+        to: userEmail,
+        subject: `${code} is your EMPERIAL CABS verification code`,
+        text: `Your EMPERIAL CABS 6-digit security OTP code is: ${code}. Valid for 5 minutes.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 480px; background: #ffffff; margin: 0 auto;">
+            <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">EMPERIAL CABS</h2>
+            <p style="color: #475569; font-size: 15px;">Your 6-digit security verification code is:</p>
+            <div style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #10b981; background: #f0fdf4; border: 1px solid #10b981; padding: 18px; border-radius: 12px; text-align: center; margin: 20px 0;">${code}</div>
+            <p style="color: #94a3b8; font-size: 13px;">This code will expire in 5 minutes. Do not share it with anyone.</p>
+          </div>
+        `
+      });
+
+      return res.status(200).json({ success: true, via: 'brevo_smtp', userEmail });
+    } catch (e) {
+      console.error('Brevo SMTP Error:', e);
     }
   }
 
