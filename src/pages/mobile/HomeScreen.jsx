@@ -116,8 +116,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     window.addEventListener('EMPERIAL CABS_db_sync', checkActiveRide);
     window.addEventListener('cabsy-new-inquiry', checkActiveRide);
 
-    const pollInterval = setInterval(checkActiveRide, 800);
-
     return () => {
       if (bc) bc.close();
       window.removeEventListener('storage', checkActiveRide);
@@ -125,7 +123,6 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
       window.removeEventListener('EMPERIAL CABS_trip_completed', handleTripCompletedEvent);
       window.removeEventListener('EMPERIAL CABS_db_sync', checkActiveRide);
       window.removeEventListener('cabsy-new-inquiry', checkActiveRide);
-      clearInterval(pollInterval);
     };
   }, []);
 

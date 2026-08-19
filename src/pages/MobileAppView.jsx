@@ -311,8 +311,9 @@ export default function MobileAppView() {
 
   const renderTabContent = () => {
     return (
-      <div className="mobile-tabs-keep-alive-wrapper" style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'home' ? 1 : 0, visibility: activeTab === 'home' ? 'visible' : 'hidden', pointerEvents: activeTab === 'home' ? 'auto' : 'none', transform: activeTab === 'home' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
+      <div className="mobile-tabs-keep-alive-wrapper" style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', background: '#F8FAFC' }}>
+        {/* Tab 1: Home Screen with Live Map */}
+        <div style={{ position: 'absolute', inset: 0, display: activeTab === 'home' ? 'flex' : 'none', flexDirection: 'column', zIndex: activeTab === 'home' ? 2 : 1 }}>
           <HomeScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -321,7 +322,8 @@ export default function MobileAppView() {
           />
         </div>
 
-        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'rides' ? 1 : 0, visibility: activeTab === 'rides' ? 'visible' : 'hidden', pointerEvents: activeTab === 'rides' ? 'auto' : 'none', transform: activeTab === 'rides' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
+        {/* Tab 2: My Rides / Bookings */}
+        <div style={{ position: 'absolute', inset: 0, display: activeTab === 'rides' ? 'flex' : 'none', flexDirection: 'column', zIndex: activeTab === 'rides' ? 2 : 1 }}>
           <RidesTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -332,14 +334,16 @@ export default function MobileAppView() {
           />
         </div>
 
-        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'wallet' ? 1 : 0, visibility: activeTab === 'wallet' ? 'visible' : 'hidden', pointerEvents: activeTab === 'wallet' ? 'auto' : 'none', transform: activeTab === 'wallet' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
+        {/* Tab 3: Empire Wallet & Rewards */}
+        <div style={{ position: 'absolute', inset: 0, display: activeTab === 'wallet' ? 'flex' : 'none', flexDirection: 'column', zIndex: activeTab === 'wallet' ? 2 : 1 }}>
           <WalletTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
 
-        <div style={{ position: 'absolute', inset: 0, opacity: activeTab === 'account' ? 1 : 0, visibility: activeTab === 'account' ? 'visible' : 'hidden', pointerEvents: activeTab === 'account' ? 'auto' : 'none', transform: activeTab === 'account' ? 'translate3d(0,0,0)' : 'translate3d(0,6px,0)', transition: 'opacity 0.22s cubic-bezier(0.16,1,0.3,1), transform 0.22s cubic-bezier(0.16,1,0.3,1)', display: 'flex', flexDirection: 'column' }}>
+        {/* Tab 4: Account & Rider Profile */}
+        <div style={{ position: 'absolute', inset: 0, display: activeTab === 'account' ? 'flex' : 'none', flexDirection: 'column', zIndex: activeTab === 'account' ? 2 : 1 }}>
           <AccountTabScreen
             activeTab={activeTab}
             setActiveTab={setActiveTab}
