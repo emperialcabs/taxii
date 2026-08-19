@@ -98,6 +98,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           if (msg.data?.type === 'TRIP_COMPLETED' && msg.data?.data) {
             setCompletedModal(msg.data.data);
             setActiveRide(null);
+          } else if (msg.data?.type === 'CUSTOMER_NOTIFICATION' && msg.data?.data) {
+            loadNotifs();
           } else {
             checkActiveRide();
           }

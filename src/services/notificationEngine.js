@@ -148,6 +148,15 @@ export const notifyCustomer = ({ type = 'inquiry', title, body, customerPhone, c
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_customer_notif', { detail: notifObj }));
     window.dispatchEvent(new Event('storage'));
+
+    // Real-time Cross-Tab Broadcast Channel Sync
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.postMessage({ type: 'CUSTOMER_NOTIFICATION', data: notifObj });
+        bc.close();
+      }
+    } catch (e) {}
   }
 
   return notifObj;
