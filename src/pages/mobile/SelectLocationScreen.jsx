@@ -188,11 +188,6 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
                 <MapPin size={16} color="#EF4444" />
                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
               </div>
-              {currentDistance && (
-                <span style={{ background: '#F0FDF4', border: '1.5px solid #6EE7B7', color: '#059669', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(5, 150, 105, 0.12)' }}>
-                  Distance: {currentDistance}
-                </span>
-              )}
             </div>
             <input 
               style={{ 
