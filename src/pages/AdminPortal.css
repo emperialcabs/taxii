@@ -4,10 +4,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw / 0.9);
+  height: calc(100vh / 0.9);
   background-color: #f8fafc;
   font-family: var(--font-main, 'Inter', sans-serif);
   color: #0f172a;
@@ -15,7 +13,8 @@
   overflow: hidden;
   align-items: stretch;
   z-index: 1000;
-  zoom: 1 !important;
+  zoom: 0.9 !important;
+  transform-origin: top left;
 }
 
 /* PIN SECURITY UNLOCK SCREEN */
@@ -714,7 +713,7 @@
 }
 
 .admin-table th {
-  padding: 0.75rem 0.6rem;
+  padding: 0.65rem 0.45rem;
   background: #f8fafc;
   color: #64748b;
   font-size: 0.72rem;
@@ -726,7 +725,7 @@
 }
 
 .admin-table td {
-  padding: 0.75rem 0.6rem;
+  padding: 0.6rem 0.45rem;
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.82rem;
   color: #334155;
