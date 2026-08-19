@@ -43,17 +43,41 @@ const playChimeSound = () => {
 // Trigger Phone / Desktop System Tray Push Notification
 export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-notif') => {
   playChimeSound();
-  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-    try {
-      new Notification(title, {
-        body: body,
-        icon: '/assets/images/splash-screen/logo.png',
-        badge: '/assets/images/splash-screen/logo.png',
-        tag: tag,
-        renotify: true
-      });
-    } catch (e) {
-      console.warn('System push notification error:', e);
+
+  // Trigger device vibration if supported (pattern: 200ms vibrate, 100ms pause, 200ms vibrate)
+  try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
+  } catch (e) {}
+
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body: body,
+          icon: '/assets/images/splash-screen/logo.png',
+          badge: '/assets/images/splash-screen/logo.png',
+          tag: tag,
+          renotify: true
+        });
+      } catch (e) {
+        console.warn('System push notification error:', e);
+      }
+    } else if (Notification.permission === 'default') {
+      try {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            new Notification(title, {
+              body: body,
+              icon: '/assets/images/splash-screen/logo.png',
+              badge: '/assets/images/splash-screen/logo.png',
+              tag: tag,
+              renotify: true
+            });
+          }
+        }).catch(() => {});
+      } catch (e) {}
     }
   }
 };

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './MobileAppView.css';
 import { db } from '../services/dbService';
 import { saveInquiryToMySQL, saveCustomerToMySQL } from '../services/mysqlService';
-import { notifyAdmin } from '../services/notificationEngine';
+import { notifyAdmin, notifyCustomer, requestNotificationPermission } from '../services/notificationEngine';
 
 // Import Modular Mobile Screen Components
 import PreloaderScreen from './mobile/PreloaderScreen';
@@ -55,8 +55,10 @@ export default function MobileAppView() {
   const [activeTab, setActiveTab] = useState('home');
   const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
-  // Ensure appStage remains on APP_HOME so live ride renders directly on the Home Screen map
+  // Request notification permission and ensure active ride stage on mount
   useEffect(() => {
+    requestNotificationPermission().catch(() => {});
+
     const syncActiveRideStage = () => {
       try {
         const savedInquiries = localStorage.getItem('cabsy_inquiries');
@@ -205,36 +207,84 @@ export default function MobileAppView() {
         localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(finalProfile));
       }
       db.saveCustomer(finalProfile);
+      saveCustomerToMySQL(finalProfile).catch(() => {});
     } catch (e) { }
-    setAppStage('APP_HOME');
+
+    const asked = localStorage.getItem('EMPERIAL CABS_permissions_asked') === 'true';
+    if (!asked) {
+      setAppStage('NOTIFICATION_OPT');
+    } else {
+      setAppStage('APP_HOME');
+    }
   };
 
-  // Skip profile setup for returning users (restore profile by phone)
-  const proceedAfterAuth = () => {
+  // Dynamic Authentication Resolution: Check if user exists in Database or local storage
+  const proceedAfterAuth = async () => {
     try {
       const activePhone = phoneNumber || localStorage.getItem('cabsy_user_phone') || '';
-      const cleanPhone = activePhone.replace(/\D/g, '');
+      const cleanPhone = activePhone.replace(/\D/g, '').slice(-10);
+
       if (activePhone) {
         localStorage.setItem('cabsy_user_phone', activePhone);
       }
       localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
-      localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
 
+      let foundProfile = null;
+
+      // 1. Check local profile by user key
       const userKey = cleanPhone ? `cabsy_user_profile_${cleanPhone}` : 'cabsy_user_profile';
       const savedUserProf = localStorage.getItem(userKey) || localStorage.getItem('cabsy_user_profile');
 
       if (savedUserProf) {
-        const parsed = JSON.parse(savedUserProf);
-        if (parsed && (parsed.name || parsed.phone)) {
-          localStorage.setItem('cabsy_user_profile', JSON.stringify(parsed));
-          if (cleanPhone) {
-            localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(parsed));
+        try {
+          const parsed = JSON.parse(savedUserProf);
+          if (parsed && (parsed.name || parsed.phone)) {
+            foundProfile = parsed;
           }
-          setAppStage('APP_HOME');
-          return;
+        } catch (e) {}
+      }
+
+      // 2. Check local dbService customer database
+      if (!foundProfile && cleanPhone) {
+        const localCustomers = db.getCustomers();
+        const match = localCustomers.find(c => {
+          const p = c.phone ? String(c.phone).replace(/\D/g, '').slice(-10) : '';
+          return p === cleanPhone && (c.name || c.email);
+        });
+        if (match) foundProfile = match;
+      }
+
+      // 3. Check Hostinger MySQL database customers
+      if (!foundProfile && cleanPhone) {
+        try {
+          const mysqlCustomers = await loadAllCustomersFromMySQL();
+          const match = mysqlCustomers.find(c => {
+            const p = c.phone ? String(c.phone).replace(/\D/g, '').slice(-10) : '';
+            return p === cleanPhone && (c.name || c.email);
+          });
+          if (match) foundProfile = match;
+        } catch (e) {}
+      }
+
+      if (foundProfile) {
+        // User ALREADY exists in database! Save profile & shift directly to Home Screen or Permissions
+        localStorage.setItem('cabsy_user_profile', JSON.stringify(foundProfile));
+        localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
+        if (cleanPhone) {
+          localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(foundProfile));
         }
+
+        const asked = localStorage.getItem('EMPERIAL CABS_permissions_asked') === 'true';
+        if (!asked) {
+          setAppStage('NOTIFICATION_OPT');
+        } else {
+          setAppStage('APP_HOME');
+        }
+        return;
       }
     } catch (e) {}
+
+    // NEW USER: User not found in database -> Shift to Create Account Profile
     setAppStage('CREATE_PROFILE');
   };
 
@@ -325,12 +375,20 @@ export default function MobileAppView() {
     // 1. Save into dbService (single source of truth for localStorage inquiries)
     db.saveInquiry(newInquiry);
 
-    // 2. Trigger System Push & Admin Bell Notification
+    // 2. Trigger System Push & Notifications
     notifyAdmin({
       type: 'inquiry',
       title: `🚖 New Ride Inquiry ${newInquiryId}`,
       body: `Customer ${userProf.name} requested ${newInquiry.pickup} → ${newInquiry.dropoff} (₹${totalFareNum})`,
       extraData: { inquiryId: newInquiryId }
+    });
+
+    notifyCustomer({
+      type: 'inquiry',
+      title: '🚖 Booking Request Received!',
+      body: `Your booking for ${newInquiry.pickup} → ${newInquiry.dropoff} is submitted. Driver assignment in progress!`,
+      customerPhone: userProf.phone,
+      customerEmail: userProf.email
     });
 
     // 3. Save directly to Hostinger MySQL Database
@@ -468,8 +526,11 @@ export default function MobileAppView() {
     case 'NOTIFICATION_OPT':
       return (
         <NotificationOptScreen
-          onNext={() => setAppStage('PREFERRED_LANG')}
-          onBack={() => setAppStage('OTP_VERIFY')}
+          onNext={() => setAppStage('LOCATION_PERM')}
+          onBack={() => {
+            localStorage.setItem('EMPERIAL CABS_permissions_asked', 'true');
+            setAppStage('APP_HOME');
+          }}
         />
       );
 
@@ -486,8 +547,14 @@ export default function MobileAppView() {
     case 'LOCATION_PERM':
       return (
         <LocationPermScreen
-          onNext={() => setAppStage('CREATE_PROFILE')}
-          onBack={() => setAppStage('PREFERRED_LANG')}
+          onNext={() => {
+            localStorage.setItem('EMPERIAL CABS_permissions_asked', 'true');
+            setAppStage('APP_HOME');
+          }}
+          onBack={() => {
+            localStorage.setItem('EMPERIAL CABS_permissions_asked', 'true');
+            setAppStage('APP_HOME');
+          }}
         />
       );
 
@@ -496,7 +563,7 @@ export default function MobileAppView() {
         <AccountDetailScreen
           isCreateMode={true}
           googleData={selectedGoogleAccount}
-          onBack={() => setAppStage('LOCATION_PERM')}
+          onBack={() => setAppStage('LETS_YOU_IN')}
           onSave={(updatedProfile) => {
             if (updatedProfile) {
               saveCustomerToMySQL(updatedProfile).catch(() => {});

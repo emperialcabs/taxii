@@ -1095,6 +1095,11 @@ export default function AdminPortal() {
 
     if (targetInq) {
       updateInquiryStatusInMySQL(inquiryId, 'Cancelled').catch(() => {});
+
+      if (Number(targetInq.walletDiscountUsed) > 0 && targetInq.customerPhone) {
+        db.refundWalletCoins(targetInq.customerPhone, targetInq.walletDiscountUsed, inquiryId, targetInq.pickup, targetInq.dropoff);
+      }
+
       notifyCustomer({
         type: 'cancelled',
         title: '❌ Booking Cancelled',

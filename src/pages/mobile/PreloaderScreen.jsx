@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
+import logoImg from '../../assets/images/let-you-screen/logo.png';
 
 // Official EMPERIAL CABS Vector Logo Graphic Component
 export function EmperialCabsOfficialLogo() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', width: '100%', padding: '0 12px', boxSizing: 'border-box' }}>
       <img 
-        src="/assets/images/logo.svg" 
+        src={logoImg} 
         alt="EMPERIAL CABS" 
         style={{ 
           width: '100%', 
-          maxWidth: '340px', 
-          height: 'auto',
+          maxWidth: '320px', 
+          maxHeight: '180px',
           objectFit: 'contain',
           display: 'block'
         }} 

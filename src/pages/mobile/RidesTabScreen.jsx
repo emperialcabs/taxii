@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../../components/BottomNavBar';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { loadAllInquiriesFromMySQL, updateInquiryStatusInMySQL, saveInquiryToMySQL } from '../../services/mysqlService';
+import db from '../../services/dbService';
 import { Calendar, Clock3, CheckCircle2, XCircle, Car, ArrowRight, X, Edit3 } from 'lucide-react';
 
 export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide }) {
@@ -112,6 +113,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     if (!window.confirm("Are you sure you want to cancel this booking inquiry?")) return;
 
     try {
+      const targetInq = inquiries.find(item => item.id === inqId || item.createdAt === inqId);
       updateInquiryStatusInMySQL(inqId, 'Cancelled').catch(() => {});
       const updatedList = inquiries.map(item => {
         if (item.id === inqId || (item.createdAt && item.createdAt === inqId)) {
@@ -119,6 +121,11 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
         }
         return item;
       });
+
+      // Auto-refund coupon/wallet coins used for this booking
+      if (targetInq && Number(targetInq.walletDiscountUsed) > 0 && targetInq.customerPhone) {
+        db.refundWalletCoins(targetInq.customerPhone, targetInq.walletDiscountUsed, inqId, targetInq.pickup, targetInq.dropoff);
+      }
 
       localStorage.setItem('cabsy_inquiries', JSON.stringify(updatedList));
       setInquiries(updatedList);

@@ -75,29 +75,63 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
         </div>
 
         {/* Recent Wallet Activity */}
-        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>Recent Wallet Transactions</h3>
+        <h3 style={{ fontFamily: 'League Spartan', fontSize: '18px', color: '#0F172A', marginBottom: '12px', fontWeight: '800' }}>
+          Recent Wallet Transactions
+        </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(!wallet?.transactions || wallet.transactions.length === 0) ? (
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', textOverflow: 'ellipsis', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
-              No transactions recorded yet. Completed trips & admin rewards will appear here.
+              No transactions recorded yet. Completed trips, refunds & rewards will appear here.
             </div>
           ) : (
-            (wallet.transactions || []).map((txn, idx) => (
-              <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk' }}>{txn?.title || 'Wallet Transaction'}</div>
-                  <div style={{ fontSize: '12px', color: '#64748B' }}>{txn?.date || 'Today'}</div>
-                </div>
-                <div style={{ 
-                  fontFamily: 'League Spartan', 
-                  fontWeight: '800', 
-                  fontSize: '16px', 
-                  color: txn?.type === 'credit' ? '#22C55E' : '#E11D48' 
-                }}>
-                  {txn?.amount || '₹0'}
-                </div>
-              </div>
-            ))
+            // Deep Audit: Filter out duplicate or malformed transactions
+            (() => {
+              const seen = new Set();
+              const cleanTxns = (wallet.transactions || []).filter(txn => {
+                if (!txn || !txn.amount) return false;
+                const key = `${txn.inquiryId || ''}_${txn.title}_${txn.amount}_${txn.date}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              });
+
+              if (cleanTxns.length === 0) {
+                return (
+                  <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+                    No valid transactions recorded yet.
+                  </div>
+                );
+              }
+
+              return cleanTxns.map((txn, idx) => {
+                const isCredit = txn?.type === 'credit';
+                const isRefund = (txn?.title || '').toLowerCase().includes('refund') || (txn?.title || '').toLowerCase().includes('cancelled');
+                
+                return (
+                  <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', fontFamily: 'Space Grotesk', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {txn?.title || 'Wallet Transaction'}
+                        {isRefund && (
+                          <span style={{ background: '#EFF6FF', color: '#2563EB', fontSize: '10px', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
+                            REFUND
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{txn?.date || 'Today'}</div>
+                    </div>
+                    <div style={{ 
+                      fontFamily: 'League Spartan', 
+                      fontWeight: '800', 
+                      fontSize: '16px', 
+                      color: isCredit ? '#22C55E' : '#E11D48' 
+                    }}>
+                      {txn?.amount || '₹0'}
+                    </div>
+                  </div>
+                );
+              });
+            })()
           )}
         </div>
       </div>

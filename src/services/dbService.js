@@ -238,6 +238,40 @@ class DatabaseService {
     return wallet;
   }
 
+  refundWalletCoins(phone, amountToRefund, inquiryId, pickup, dropoff) {
+    const amountNum = Number(amountToRefund) || 0;
+    if (amountNum <= 0) return null;
+
+    const wallet = this.getCustomerWallet(phone);
+
+    // Guard against duplicate refunds for the same inquiry
+    const alreadyRefunded = wallet.transactions && wallet.transactions.some(t => 
+      t.inquiryId === inquiryId && (t.title.includes('Cancelled') || t.title.includes('Refund'))
+    );
+    if (alreadyRefunded) return wallet;
+
+    wallet.balance += amountNum;
+
+    let title = 'Trip Cancelled - Coins Refunded';
+    if (pickup && dropoff) {
+      const p = pickup.split(',')[0].trim();
+      const d = dropoff.split(',')[0].trim();
+      title = `Cancelled Refund (${p} → ${d})`;
+    }
+
+    if (!wallet.transactions) wallet.transactions = [];
+    wallet.transactions.unshift({
+      title,
+      date: new Date().toLocaleDateString('en-IN'),
+      amount: `+₹${amountNum.toFixed(2)}`,
+      type: 'credit',
+      inquiryId
+    });
+
+    this.saveCustomerWallet(phone, wallet);
+    return wallet;
+  }
+
   async reconcileCustomerWallet(phone) {
     const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
     if (!cleanPhone) return this.getCustomerWallet(phone);
@@ -283,6 +317,39 @@ class DatabaseService {
           title,
           date: inq.date || new Date().toLocaleDateString('en-IN'),
           amount: `+₹${rewardAmt.toFixed(2)}`,
+          type: 'credit',
+          inquiryId: inq.id
+        });
+        updated = true;
+      }
+    }
+
+    // 3. Audit for cancelled trips that used coupon/wallet coins and haven't been refunded yet
+    const cancelledInquiriesWithDiscount = allInquiries.filter(inq => {
+      const p = inq.customerPhone ? String(inq.customerPhone).replace(/\D/g, '').slice(-10) : '';
+      const inqStatus = (inq.status || '').toLowerCase();
+      const hasDiscount = Number(inq.walletDiscountUsed) > 0;
+      return p === cleanPhone && (inqStatus.includes('cancel') || inqStatus.includes('reject')) && hasDiscount;
+    });
+
+    for (const inq of cancelledInquiriesWithDiscount) {
+      const alreadyRefunded = wallet.transactions && wallet.transactions.some(t => 
+        t.inquiryId === inq.id && (t.title.includes('Cancelled') || t.title.includes('Refund'))
+      );
+      if (!alreadyRefunded) {
+        const refundAmt = Number(inq.walletDiscountUsed) || 0;
+        wallet.balance += refundAmt;
+        let title = 'Trip Cancelled - Coins Refunded';
+        if (inq.pickup && inq.dropoff) {
+          const p = inq.pickup.split(',')[0].trim();
+          const d = inq.dropoff.split(',')[0].trim();
+          title = `Cancelled Refund (${p} → ${d})`;
+        }
+        if (!wallet.transactions) wallet.transactions = [];
+        wallet.transactions.unshift({
+          title,
+          date: inq.date || new Date().toLocaleDateString('en-IN'),
+          amount: `+₹${refundAmt.toFixed(2)}`,
           type: 'credit',
           inquiryId: inq.id
         });
