@@ -966,36 +966,45 @@ export default function AdminPortal() {
     setActionLoadingId(actionKey);
 
     const targetInq = inquiries.find(i => i.id === inquiryId);
+    if (!targetInq) return;
+
+    const fullStarted = { ...targetInq, status: 'In Progress' };
 
     setInquiries(prev => {
-      const updated = prev.map(inq => {
-        if (inq.id === inquiryId) {
-          return { ...inq, status: 'In Progress' };
-        }
-        return inq;
-      });
+      const updated = prev.map(inq => inq.id === inquiryId ? fullStarted : inq);
       localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
       return updated;
     });
 
-    if (targetInq) {
-      updateInquiryStatusInMySQL(inquiryId, 'In Progress', targetInq.driver || 'Assigned Driver').catch(() => {});
-      try {
-        db.saveInquiry({ ...targetInq, status: 'In Progress' });
-      } catch (e) {}
+    localStorage.setItem('EMPERIAL CABS_active_trip', JSON.stringify(fullStarted));
+    updateInquiryStatusInMySQL(inquiryId, 'In Progress', targetInq.driver || 'Assigned Driver').catch(() => {});
+    try {
+      db.saveInquiry(fullStarted);
+    } catch (e) {}
 
-      // Direct notification to customer on trip start
-      notifyCustomer({
-        type: 'trip_started',
-        title: '▶ Your Ride Has Started!',
-        body: `Driver ${targetInq.driver || 'EMPERIAL CABS'} has started your trip to ${targetInq.dropoff}. Live map tracking is now active!`,
-        customerPhone: targetInq.customerPhone,
-        customerEmail: targetInq.customerEmail
-      });
-    }
+    // 1. Direct system push notification to customer on trip start
+    notifyCustomer({
+      type: 'trip_started',
+      title: '▶ Your Ride Has Started!',
+      body: `Chauffeur ${targetInq.driver || 'EMPERIAL CABS'} has started your trip to ${targetInq.dropoff}. Live map tracking is active now!`,
+      customerPhone: targetInq.customerPhone,
+      customerEmail: targetInq.customerEmail
+    });
 
+    // 2. Real-time cross-tab & cross-window BroadcastChannel message
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.postMessage({ type: 'TRIP_STARTED', data: fullStarted, timestamp: Date.now() });
+        bc.close();
+      }
+    } catch (e) {}
+
+    // 3. Dispatch DOM Custom Events for instant reactive updates
     window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_started', { detail: { id: inquiryId } }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_started', { detail: fullStarted }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: fullStarted }));
+    window.dispatchEvent(new CustomEvent('cabsy-new-inquiry', { detail: fullStarted }));
 
     setTimeout(() => {
       setActionLoadingId(null);
@@ -1028,22 +1037,6 @@ export default function AdminPortal() {
       updateInquiryRewardInMySQL(inquiryId, true, rewardVal).catch(() => {});
     }
 
-    setInquiries(prev => {
-      const updated = prev.map(inq => {
-        if (inq.id === inquiryId) {
-          return { 
-            ...inq, 
-            status: 'Completed',
-            rewardIssued: hasReward ? 1 : 0,
-            rewardAmount: hasReward ? rewardVal : 0
-          };
-        }
-        return inq;
-      });
-      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
-      return updated;
-    });
-
     const fullCompleted = { 
       ...targetInq, 
       status: 'Completed',
@@ -1051,19 +1044,26 @@ export default function AdminPortal() {
       rewardAmount: hasReward ? rewardVal : 0
     };
 
+    setInquiries(prev => {
+      const updated = prev.map(inq => inq.id === inquiryId ? fullCompleted : inq);
+      localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
+      return updated;
+    });
+
     localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
+    localStorage.removeItem('EMPERIAL CABS_active_trip');
     updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
     try {
       db.saveInquiry(fullCompleted);
     } catch (e) {}
 
-    // Direct notification to customer on trip completion
+    // Direct push notification to customer on trip completion
     notifyCustomer({
       type: 'trip_completed',
-      title: '🏁 Trip Completed!',
+      title: '🏁 Trip Completed Successfully!',
       body: hasReward 
-        ? `Thank you for riding with EMPERIAL CABS! You earned ₹${rewardVal} wallet reward credit!`
-        : `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}.`,
+        ? `Thank you for riding with EMPERIAL CABS! You earned ₹${rewardVal} wallet reward credit! Tap to view your receipt.`
+        : `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}. Tap to view your receipt.`,
       customerPhone: targetInq.customerPhone,
       customerEmail: targetInq.customerEmail
     });
@@ -1079,6 +1079,7 @@ export default function AdminPortal() {
 
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
+    window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: fullCompleted }));
 
     if (hasReward) {
       alert(`Trip ${inquiryId} completed! Credited ₹${rewardVal} wallet reward to ${targetInq.customerName || 'customer'}.`);

@@ -73,11 +73,12 @@ export default function MobileAppView() {
             if (!i) return false;
             const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
             const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+            const isMatch = !uPhone && !uEmail ? true :
+                            (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                             (uEmail && iEmail && uEmail === iEmail);
             return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
           });
-          if (activeRide && appStage !== 'APP_HOME') {
+          if (activeRide && appStage !== 'APP_HOME' && appStage !== 'TRACKING') {
             setAppStage('APP_HOME');
           }
         }
@@ -86,15 +87,36 @@ export default function MobileAppView() {
 
     syncActiveRideStage();
 
+    let bc = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.onmessage = (msg) => {
+          if (msg.data?.type === 'TRIP_STARTED') {
+            syncActiveRideStage();
+          } else if (msg.data?.type === 'TRIP_COMPLETED') {
+            setAppStage('RECEIPT');
+          }
+        };
+      }
+    } catch (e) {}
+
+    const handleTripStarted = () => syncActiveRideStage();
+    const handleTripCompleted = () => setAppStage('RECEIPT');
+
     window.addEventListener('storage', syncActiveRideStage);
-    window.addEventListener('EMPERIAL CABS_trip_started', syncActiveRideStage);
+    window.addEventListener('EMPERIAL CABS_trip_started', handleTripStarted);
+    window.addEventListener('EMPERIAL CABS_trip_completed', handleTripCompleted);
     window.addEventListener('EMPERIAL CABS_db_sync', syncActiveRideStage);
+    
     return () => {
+      if (bc) bc.close();
       window.removeEventListener('storage', syncActiveRideStage);
-      window.removeEventListener('EMPERIAL CABS_trip_started', syncActiveRideStage);
+      window.removeEventListener('EMPERIAL CABS_trip_started', handleTripStarted);
+      window.removeEventListener('EMPERIAL CABS_trip_completed', handleTripCompleted);
       window.removeEventListener('EMPERIAL CABS_db_sync', syncActiveRideStage);
     };
-  }, []);
+  }, [appStage]);
 
   // Utility: Validate authenticated session state
   const isSessionValid = () => {

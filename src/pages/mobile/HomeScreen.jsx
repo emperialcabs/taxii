@@ -59,12 +59,13 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
         if (saved) {
           const list = JSON.parse(saved);
           if (Array.isArray(list) && list.length > 0) {
-            // Find current user's active ride OR the latest active ride in system
+            // Find current user's active ride OR latest active ride in system
             const matchedRide = list.find(i => {
               if (!i) return false;
               const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
               const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-              const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+              const isMatch = !uPhone && !uEmail ? true :
+                              (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                               (uEmail && iEmail && uEmail === iEmail);
               return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
             });
@@ -73,11 +74,16 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               setActiveRide(matchedRide);
               prevActiveRideIdRef.current = matchedRide.id;
               return;
-            } else if (prevActiveRideIdRef.current) {
-              // Active trip was just marked completed by Admin!
-              const completedTrip = list.find(i => i.id === prevActiveRideIdRef.current && i.status === 'Completed');
-              if (completedTrip) {
-                setCompletedModal(completedTrip);
+            } else {
+              // Check if trip was completed to present official receipt modal
+              const lastCompletedRaw = localStorage.getItem('EMPERIAL CABS_last_completed_trip');
+              if (lastCompletedRaw) {
+                try {
+                  const parsedLast = JSON.parse(lastCompletedRaw);
+                  if (parsedLast && parsedLast.id && !parsedLast.dismissed) {
+                    setCompletedModal(parsedLast);
+                  }
+                } catch(e) {}
               }
               prevActiveRideIdRef.current = null;
             }
@@ -95,7 +101,9 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
       if ('BroadcastChannel' in window) {
         bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.onmessage = (msg) => {
-          if (msg.data?.type === 'TRIP_COMPLETED' && msg.data?.data) {
+          if (msg.data?.type === 'TRIP_STARTED') {
+            checkActiveRide();
+          } else if (msg.data?.type === 'TRIP_COMPLETED' && msg.data?.data) {
             setCompletedModal(msg.data.data);
             setActiveRide(null);
           } else if (msg.data?.type === 'CUSTOMER_NOTIFICATION' && msg.data?.data) {
