@@ -44,8 +44,8 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const searchParams = new URLSearchParams(location.search);
   const isMobileQuery = searchParams.has('app') || searchParams.has('mobile') || searchParams.has('android') || searchParams.get('mode') === 'app' || searchParams.get('mode') === 'mobile' || searchParams.get('mode') === 'android';
 
-  // 1. Native Mobile App Mode (For APK/IPA native builds or explicit /app & /mobile paths or VITE_APP_MODE=android)
-  if (!isWebSite && (appMode === 'android' || appMode === 'ios' || isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath || isMobileQuery)) {
+  // 1. Native Mobile App Mode (Only active inside Capacitor APK/IPA binary or explicit /app, /mobile paths or ?mode=app)
+  if (!isWebSite && (isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath || isMobileQuery)) {
     return <MobileAppView platform={appMode || 'android'} />;
   }
 

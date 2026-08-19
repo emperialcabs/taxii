@@ -2707,3 +2707,132 @@
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
   padding: 0.5rem;
 }
+
+/* ===================================================
+   PC & ANDROID PHONE RESPONSIVE ADAPTATION RULES
+   =================================================== */
+
+@media (max-width: 992px) {
+  .hero-card {
+    grid-template-columns: 1fr !important;
+    padding: 2.5rem 1.5rem !important;
+    min-height: auto !important;
+    text-align: center;
+    gap: 2rem !important;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 6vw, 3.2rem) !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem !important;
+  }
+
+  .hero-cta-group {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .grid-4-cols {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .grid-3-cols {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .grid-2-cols {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .steps-grid-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .download-card {
+    grid-template-columns: 1fr !important;
+    padding: 1.75rem 1.25rem !important;
+    text-align: center;
+  }
+
+  .download-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .store-badges {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 0.25rem 0 1rem 0 !important;
+  }
+
+  .hero-card {
+    padding: 1.75rem 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+    padding: 0.85rem 1.5rem !important;
+    font-size: 1rem !important;
+  }
+
+  .ios-phone-frame {
+    width: 280px !important;
+    height: 480px !important;
+  }
+
+  .grid-4-cols, .grid-3-cols, .grid-2-cols {
+    grid-template-columns: 1fr !important;
+  }
+
+  .fleet-card {
+    min-height: auto !important;
+  }
+
+  .fleet-car-img, .fleet-img-wrap img {
+    height: 210px !important;
+  }
+
+  .safety-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rounded-img {
+    height: auto !important;
+    max-height: 380px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.85rem !important;
+  }
+
+  .ios-phone-frame {
+    width: 260px !important;
+    height: 440px !important;
+  }
+}
+
