@@ -4,6 +4,55 @@ import { Plane, Clock, Users, Package, Calendar, Briefcase, ShieldCheck, Wrench,
 import './Pages.css';
 
 export default function Services({ onOpenBooking }) {
+  const [vehicles, setVehicles] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('cabsy_vehicles');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [
+      { id: 1, name: 'Emperial Regular Sedan', rate: '15', passengers: '1 - 4 Passengers • Dzire / Etios', image: '/assets/images/exact_tourist_cab.jpg', description: 'Perfect for quick city commutes, business meetings, and rapid airport transfers.' },
+      { id: 2, name: 'Emperial XL SUV', rate: '22', passengers: '1 - 6 Passengers • Ertiga / Innova', image: '/assets/images/steps_tourist_cab.jpg', description: 'Spacious legroom and large boot space for family vacations and group luggage.' },
+      { id: 3, name: 'Emperial Executive Luxury', rate: '35', passengers: '1 - 4 Passengers • Camry / Mercedes', image: '/assets/images/yellow_headlight_taxi.png', description: 'Red-carpet VIP mobility designed for corporate executives, delegations, and weddings.' },
+      { id: 4, name: 'Emperial Eco Green EV', rate: '18', passengers: '1 - 4 Passengers • Tigor EV / BYD', image: '/assets/images/safety_comfort_spotlight.png', description: 'Zero-emission, whisper-quiet electric cabs for eco-conscious city travel.' }
+    ];
+  });
+
+  React.useEffect(() => {
+    const syncVehicles = () => {
+      try {
+        const saved = localStorage.getItem('cabsy_vehicles');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) setVehicles(parsed);
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('storage', syncVehicles);
+    window.addEventListener('EMPERIAL CABS_vehicles_updated', syncVehicles);
+
+    let bc;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
+        bc.onmessage = (event) => {
+          if (event.data && event.data.type === 'VEHICLES_UPDATED') {
+            syncVehicles();
+          }
+        };
+      }
+    } catch (e) {}
+
+    return () => {
+      window.removeEventListener('storage', syncVehicles);
+      window.removeEventListener('EMPERIAL CABS_vehicles_updated', syncVehicles);
+      if (bc) bc.close();
+    };
+  }, []);
+
   return (
     <div className="page-services">
       {/* PAGE BANNER */}
@@ -30,61 +79,21 @@ export default function Services({ onOpenBooking }) {
           </div>
 
           <div className="grid-4-cols">
-            <div className="card fleet-card">
-              <div className="fleet-img-wrap">
-                <img src="/assets/images/exact_tourist_cab.jpg" alt="Emperial Regular Sedan" />
+            {vehicles.map((car, idx) => (
+              <div key={car.id || idx} className="card fleet-card">
+                <div className="fleet-img-wrap">
+                  <img src={car.image} alt={car.name} />
+                </div>
+                <div className="fleet-card-body">
+                  <h3>{car.name}</h3>
+                  <span className="fleet-cap">{car.passengers || '1 - 4 Passengers'}</span>
+                  <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
+                    {car.description || 'Executive fleet cab vehicle.'}
+                  </p>
+                  <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
+                </div>
               </div>
-              <div className="fleet-card-body">
-                <h3>Emperial Regular Sedan</h3>
-                <span className="fleet-cap">1 - 4 Passengers • Dzire / Etios</span>
-                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
-                  Perfect for quick city commutes, business meetings, and rapid airport transfers.
-                </p>
-                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
-              </div>
-            </div>
-
-            <div className="card fleet-card">
-              <div className="fleet-img-wrap">
-                <img src="/assets/images/steps_tourist_cab.jpg" alt="Emperial XL SUV" />
-              </div>
-              <div className="fleet-card-body">
-                <h3>Emperial XL SUV</h3>
-                <span className="fleet-cap">1 - 6 Passengers • Ertiga / Innova</span>
-                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
-                  Spacious legroom and large boot space for family vacations and group luggage.
-                </p>
-                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
-              </div>
-            </div>
-
-            <div className="card fleet-card">
-              <div className="fleet-img-wrap">
-                <img src="/assets/images/yellow_headlight_taxi.png" alt="Emperial Executive Luxury" />
-              </div>
-              <div className="fleet-card-body">
-                <h3>Emperial Executive Luxury</h3>
-                <span className="fleet-cap">1 - 4 Passengers • Camry / Mercedes</span>
-                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
-                  Red-carpet VIP mobility designed for corporate executives, delegations, and weddings.
-                </p>
-                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
-              </div>
-            </div>
-
-            <div className="card fleet-card">
-              <div className="fleet-img-wrap">
-                <img src="/assets/images/safety_comfort_spotlight.png" alt="Emperial Eco Green EV" />
-              </div>
-              <div className="fleet-card-body">
-                <h3>Emperial Eco Green EV</h3>
-                <span className="fleet-cap">1 - 4 Passengers • Tigor EV / BYD</span>
-                <p className="small-text" style={{ margin: '0.6rem 0 1rem', color: 'var(--body-text)' }}>
-                  Zero-emission, whisper-quiet electric cabs for eco-conscious city travel.
-                </p>
-                <Link to="/book-ride" className="btn btn-primary fleet-link-btn">Book Now &gt;</Link>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
