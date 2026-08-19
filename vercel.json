@@ -45,6 +45,14 @@
   ],
   "rewrites": [
     {
+      "source": "/Taxigo.apk",
+      "destination": "/Taxigo.apk"
+    },
+    {
+      "source": "/taxigo.apk",
+      "destination": "/Taxigo.apk"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     },

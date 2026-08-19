@@ -102,14 +102,17 @@ const getCapacitorLocation = async () => {
 
     if (Geolocation && typeof Geolocation.requestPermissions === 'function') {
       try {
-        await Geolocation.requestPermissions();
+        const status = await Geolocation.checkPermissions();
+        if (status.location !== 'granted') {
+          await Geolocation.requestPermissions();
+        }
       } catch (permErr) {
         // Silently catch web/unsupported permission error
       }
     }
     const position = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
-      timeout: 10000,
+      timeout: 20000,
       maximumAge: 0
     });
 
@@ -144,9 +147,25 @@ const getBrowserLocation = () => {
         console.warn('Browser geolocation error:', err);
         resolve(null);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   });
+};
+
+// Method 3: Live IP-Based Geolocation (Prevents hardcoded wrong location)
+const getIPLocation = async () => {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        if (validateCoordinates(data.latitude, data.longitude)) {
+          return { lat: data.latitude, lng: data.longitude, source: 'IP Geolocation' };
+        }
+      }
+    }
+  } catch (e) {}
+  return null;
 };
 
 /**
@@ -154,18 +173,22 @@ const getBrowserLocation = () => {
  * Ensures 100% real location is resolved with Reverse Geocoding
  */
 export const getBestLiveLocation = async () => {
-  // Try Method 1: Capacitor Native GPS
+  // Priority 1: Capacitor Native Hardware GPS
   let loc = await getCapacitorLocation();
 
-  // Try Method 2: Browser High-Accuracy GPS
+  // Priority 2: Browser High-Accuracy GPS
   if (!loc) {
     loc = await getBrowserLocation();
   }
 
-  // If GPS is unavailable or blocked, fallback to default user location
+  // Priority 3: Live IP-Based Geolocation
+  if (!loc) {
+    loc = await getIPLocation();
+  }
+
+  // If all live providers fail, fallback to base location
   if (!loc || !validateCoordinates(loc.lat, loc.lng)) {
-    // Default to user's real Bhavnagar coordinates matching Google Maps screenshot
-    loc = { lat: 21.7619, lng: 72.1103, source: 'Default Base' };
+    loc = { lat: 21.7619, lng: 72.1103, source: 'Base Region' };
   }
 
   // Reverse Geocode the exact coordinates

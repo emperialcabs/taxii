@@ -154,7 +154,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
 
         {/* Logout Button */}
         <button 
-          onClick={onLogout}
+          onClick={() => setShowLogoutConfirm(true)}
           style={{ 
             width: '100%', 
             background: '#FEF2F2', 
@@ -175,6 +175,40 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
           <LogOut size={18} /> Logout Account
         </button>
       </div>
+
+      {/* Logout Confirmation Modal Overlay */}
+      {showLogoutConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.65)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '24px', maxWidth: '340px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FEF2F2', color: '#E11D48', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <LogOut size={24} />
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A' }}>
+              Logout of EMPERIAL CABS?
+            </h3>
+            <p style={{ fontFamily: 'Space Grotesk', fontSize: '14px', color: '#64748B', lineHeight: '1.45', margin: '0 0 20px 0' }}>
+              You will need to sign in again to book rides or view ongoing trip history.
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{ flex: 1, background: '#F1F5F9', color: '#475569', border: 'none', padding: '14px', borderRadius: '14px', fontWeight: '700', fontSize: '15px', cursor: 'pointer', fontFamily: 'Space Grotesk' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  if (onLogout) onLogout();
+                }}
+                style={{ flex: 1, background: '#E11D48', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '14px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', fontFamily: 'League Spartan', boxShadow: '0 4px 14px rgba(225, 29, 72, 0.35)' }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info Modal Overlay */}
       {showInfoModal && (

@@ -82,6 +82,93 @@ export default function MobileAppView() {
     };
   }, []);
 
+  // Utility: Validate authenticated session state
+  const isSessionValid = () => {
+    try {
+      const savedProfile = localStorage.getItem('cabsy_user_profile');
+      if (!savedProfile) return false;
+      const parsed = JSON.parse(savedProfile);
+      return Boolean(parsed && (parsed.name || parsed.phone || parsed.email));
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // ─── Dynamic Startup Router Executed After Preloader Splash ─────────────────
+  const handlePreloaderFinish = () => {
+    try {
+      const isOnboarded = localStorage.getItem('EMPERIAL CABS_onboarded') === 'true';
+      const isProfileCompleted = localStorage.getItem('EMPERIAL CABS_profile_completed') === 'true';
+      const validSession = isSessionValid();
+
+      if (isOnboarded) {
+        if (validSession && isProfileCompleted) {
+          // Returning Logged-In User -> Navigate directly to APP_HOME (Main App)
+          setAppStage('APP_HOME');
+        } else {
+          // Returning Logged-Out User -> Navigate directly to LETS_YOU_IN (Login Screen)
+          setAppStage('LETS_YOU_IN');
+        }
+      } else {
+        // First Launch / New User -> Proceed to Intro Splash & Onboarding Flow
+        setAppStage('SPLASH');
+      }
+    } catch (e) {
+      setAppStage('LETS_YOU_IN');
+    }
+  };
+
+  // ─── Protected Routes Guarding ──────────────────────────────────────────────
+  useEffect(() => {
+    const protectedStages = [
+      'APP_HOME', 'ACCOUNT_DETAILS', 'SELECT_LOCATION_LIST',
+      'GOING_SEAT_SCHEDULE', 'SELECT_CAR', 'SELECT_PAYMENT',
+      'RADAR', 'MATCHED', 'TRACKING', 'RECEIPT', 'INQUIRY_SUBMITTED'
+    ];
+
+    // Exclude PRELOADER, SPLASH, ONBOARDING, LETS_YOU_IN, OTP_VERIFY from guards
+    if (protectedStages.includes(appStage)) {
+      if (!isSessionValid()) {
+        console.warn(`[AuthGuard] Unauthenticated access attempt to '${appStage}' -> Redirecting to Login`);
+        setAppStage('LETS_YOU_IN');
+      }
+    }
+  }, [appStage]);
+
+  // ─── Native Hardware Back Button Handler (Capacitor Android APK) ─────────────
+  useEffect(() => {
+    let backListener = null;
+    const setupHardwareBack = async () => {
+      try {
+        if (typeof window !== 'undefined' && (Boolean(window.Capacitor?.isNativePlatform?.()) || window.location.protocol === 'file:' || window.location.protocol === 'capacitor:')) {
+          const { App } = await import('@capacitor/app');
+          backListener = await App.addListener('backButton', () => {
+            setAppStage((currentStage) => {
+              // Root stages minimize app instead of breaking navigation
+              if (currentStage === 'APP_HOME' || currentStage === 'LETS_YOU_IN' || currentStage === 'PRELOADER' || currentStage === 'SPLASH') {
+                App.minimizeApp();
+                return currentStage;
+              }
+              if (currentStage === 'OTP_VERIFY') return 'LETS_YOU_IN';
+              if (currentStage === 'SELECT_LOCATION_LIST' || currentStage === 'ACCOUNT_DETAILS') return 'APP_HOME';
+              if (currentStage === 'GOING_SEAT_SCHEDULE') return 'SELECT_LOCATION_LIST';
+              if (currentStage === 'SELECT_CAR') return 'GOING_SEAT_SCHEDULE';
+              if (currentStage === 'ONBOARDING') return 'SPLASH';
+              return 'APP_HOME';
+            });
+          });
+        }
+      } catch (e) {}
+    };
+
+    setupHardwareBack();
+    return () => {
+      if (backListener && typeof backListener.remove === 'function') {
+        backListener.remove();
+      }
+    };
+  }, []);
+
   // Helper to complete onboarding & store in localStorage
   const completeOnboarding = () => {
     try {
@@ -118,8 +205,10 @@ export default function MobileAppView() {
   const handleLogout = () => {
     try {
       localStorage.removeItem('cabsy_user_profile');
-      localStorage.removeItem('EMPERIAL CABS_onboarded');
       localStorage.removeItem('EMPERIAL CABS_profile_completed');
+      localStorage.removeItem('cabsy_user_phone');
+      localStorage.removeItem('cabsy_user_email_otp_target');
+      // EMPERIAL CABS_onboarded remains 'true' so returning users land directly on Login
     } catch (e) { }
     setSelectedGoogleAccount(null);
     setPhoneNumber('');
@@ -271,13 +360,24 @@ export default function MobileAppView() {
   // so that all child screens with height:100% resolve correctly on iOS/Android
   const renderStage = () => { switch (appStage) {
     case 'PRELOADER':
-      return <PreloaderScreen onFinish={() => setAppStage('SPLASH')} />;
+      return <PreloaderScreen onFinish={handlePreloaderFinish} />;
 
     case 'SPLASH':
       return <SplashScreen onNext={() => setAppStage('ONBOARDING')} />;
 
     case 'ONBOARDING':
-      return <OnboardingScreen onSkip={() => setAppStage('LETS_YOU_IN')} onFinish={() => setAppStage('LETS_YOU_IN')} />;
+      return (
+        <OnboardingScreen
+          onSkip={() => {
+            try { localStorage.setItem('EMPERIAL CABS_onboarded', 'true'); } catch (e) {}
+            setAppStage('LETS_YOU_IN');
+          }}
+          onFinish={() => {
+            try { localStorage.setItem('EMPERIAL CABS_onboarded', 'true'); } catch (e) {}
+            setAppStage('LETS_YOU_IN');
+          }}
+        />
+      );
 
     case 'LETS_YOU_IN':
       return (

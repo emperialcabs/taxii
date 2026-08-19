@@ -67,7 +67,7 @@ const createDestinationPinIcon = (label = "Dropoff") => {
   });
 };
 
-// Component to dynamically re-center & auto-fit route bounds on map view update smoothly
+// Component to dynamically re-center & auto-fit route bounds on map view update with ultra-smooth motion
 function MapRecenter({ center, destination, routePolyline, zoom }) {
   const map = useMap();
   const prevCenterRef = React.useRef(center);
@@ -85,9 +85,7 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
 
     refreshMapSize();
     const t1 = setTimeout(refreshMapSize, 100);
-    const t2 = setTimeout(refreshMapSize, 400);
-
-    window.addEventListener('resize', refreshMapSize);
+    const t2 = setTimeout(refreshMapSize, 350);
 
     try {
       if (destination && typeof destination.lat === 'number' && typeof destination.lng === 'number' && center && typeof center.lat === 'number') {
@@ -95,15 +93,14 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
           [center.lat, center.lng],
           [destination.lat, destination.lng]
         ]);
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true, duration: 0.8 });
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true, duration: 1.0, easeLinearity: 0.2 });
       } else if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
-        const prev = prevCenterRef.current;
-        const dist = prev ? Math.hypot(center.lat - prev.lat, center.lng - prev.lng) : 1;
-        // Only pan if shift is significant to avoid fighting manual drag gestures
-        if (dist > 0.0003) {
-          map.panTo([center.lat, center.lng], { animate: true, duration: 0.6, easeLinearity: 0.25 });
-          prevCenterRef.current = center;
-        }
+        map.flyTo([center.lat, center.lng], zoom || 15, {
+          animate: true,
+          duration: 1.0,
+          easeLinearity: 0.15
+        });
+        prevCenterRef.current = center;
       }
     } catch (err) {
       console.warn("Leaflet map view set notice:", err);
@@ -112,7 +109,6 @@ function MapRecenter({ center, destination, routePolyline, zoom }) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      window.removeEventListener('resize', refreshMapSize);
     };
   }, [center?.lat, center?.lng, destination?.lat, destination?.lng, zoom, map]);
 
@@ -246,24 +242,14 @@ export default function InteractiveMap({
             maxNativeZoom={20}
           />
 
-          {/* User GPS Location Marker */}
+          {/* User GPS Location Marker — FIXED & NON-MOVEABLE */}
           {showUserPin && (!isSameSpotAsDriver) && (
             <Marker 
               position={[safeLat, safeLng]} 
               icon={createUserPinIcon(userLabel)}
-              draggable={true}
-              eventHandlers={{
-                dragend: (e) => {
-                  if (e.target && e.target.getLatLng) {
-                    const newPos = e.target.getLatLng();
-                    if (onUserLocationChange) {
-                      onUserLocationChange({ lat: newPos.lat, lng: newPos.lng });
-                    }
-                  }
-                }
-              }}
+              draggable={false}
             >
-              <Popup>📍 Drag pin to set pickup spot!</Popup>
+              <Popup>📍 Your Live GPS Location</Popup>
             </Marker>
           )}
 

@@ -35,21 +35,29 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Leaflet Map Smooth Hardware Acceleration */
-.leaflet-tile-container {
+/* Leaflet Map Smooth 60FPS Hardware Acceleration & Fluid Motion */
+.leaflet-container, .leaflet-tile-container, .leaflet-marker-pane, .leaflet-overlay-pane, .leaflet-pane {
   will-change: transform;
   transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.leaflet-tile {
+  will-change: transform, opacity;
+  transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .leaflet-marker-icon, .custom-leaflet-user-pin, .custom-leaflet-blue-arrow-pin, .custom-leaflet-dest-pin {
-  will-change: transform;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, left, top;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .leaflet-zoom-anim .leaflet-zoom-animated {
-  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* MODERN SLEEK SCROLLBAR STYLES */
@@ -79,10 +87,29 @@ html {
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
+/* Remove Blue Selection Box and Focus Ring on Mobile Touch/Click */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+*:focus, *:focus-visible {
+  outline: none !important;
+}
+
+button:focus, button:active, a:focus, a:active, input:focus, select:focus, textarea:focus, div:focus, div:active, span:focus, img:focus {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+/* Leaflet Map Specific Focus & Touch Highlight Removal */
+.leaflet-container, .leaflet-interactive, .leaflet-marker-icon, .leaflet-popup, .leaflet-control, .interactive-google-map-container {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 html {

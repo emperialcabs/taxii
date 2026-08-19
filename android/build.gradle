@@ -22,7 +22,7 @@ allprojects {
         google()
         mavenCentral()
     }
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.compilerArgs << "-Xlint:unchecked"
     }
 }
@@ -35,6 +35,11 @@ subprojects {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
+            }
+        }
+        if (project.extensions.findByName('kotlin') != null) {
+            project.kotlin {
+                jvmToolchain(17)
             }
         }
         project.tasks.matching { it.name.startsWith("compile") && it.name.endsWith("Kotlin") }.configureEach {
