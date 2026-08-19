@@ -153,53 +153,55 @@ export default function SeatScheduleScreen({
               1. SELECT TRIP TYPE
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <button
                 type="button"
                 onClick={() => setTripType('one-way')}
                 style={{
-                  padding: '14px 16px',
+                  padding: '12px',
                   borderRadius: '16px',
                   border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'one-way' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
                   transition: 'all 0.2s ease',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'space-between'
+                  gap: '2px'
                 }}
               >
                 <span>One-Way Trip</span>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#059669', background: tripType === 'one-way' ? '#DCFCE7' : '#F1F5F9', padding: '4px 10px', borderRadius: '12px' }}>{baseDistance} KM</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669' }}>{baseDistance} KM</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setTripType('round-trip')}
                 style={{
-                  padding: '14px 16px',
+                  padding: '12px',
                   borderRadius: '16px',
                   border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
                   transition: 'all 0.2s ease',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'space-between'
+                  gap: '2px'
                 }}
               >
                 <span>Round Trip (Return)</span>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#059669', background: tripType === 'round-trip' ? '#DCFCE7' : '#F1F5F9', padding: '4px 10px', borderRadius: '12px' }}>{baseDistance * 2} KM (2×)</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM (2×)</span>
               </button>
             </div>
 
@@ -208,12 +210,12 @@ export default function SeatScheduleScreen({
               2. SCHEDULE PICKUP DATE & TIME
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: tripType === 'round-trip' ? '10px' : '16px' }}>
+            <div className="schedule-inputs-row" style={{ marginBottom: tripType === 'round-trip' ? '10px' : '16px' }}>
               <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <select 
                   value={scheduledDate} 
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '700', color: '#0F172A', cursor: 'pointer', padding: '4px 0' }}
+                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
                 >
                   <option value="Today, 10 Aug 2026">Today, 10 Aug 2026</option>
                   <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
@@ -228,7 +230,7 @@ export default function SeatScheduleScreen({
                 <select 
                   value={scheduledTime} 
                   onChange={(e) => setScheduledTime(e.target.value)} 
-                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '700', color: '#0F172A', cursor: 'pointer', padding: '4px 0' }}
+                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
                 >
                   {[
                     "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
@@ -251,7 +253,7 @@ export default function SeatScheduleScreen({
                   <select 
                     value={returnDate || 'Tomorrow, 11 Aug 2026'} 
                     onChange={(e) => setReturnDate && setReturnDate(e.target.value)}
-                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '700', color: '#0F172A', cursor: 'pointer', padding: '4px 0' }}
+                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
                   >
                     <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
                     <option value="Wed, 12 Aug 2026">Wed, 12 Aug 2026</option>
@@ -268,7 +270,7 @@ export default function SeatScheduleScreen({
               3. SELECT FLEET CAR (PRICE PER KM)
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
               {fleet.map((car) => {
                 const isSelected = currentCarId === car.id;
                 return (
@@ -282,29 +284,25 @@ export default function SeatScheduleScreen({
                       background: isSelected ? '#F0FDF4' : '#FFFFFF',
                       border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                       borderRadius: '16px',
-                      padding: '14px 16px',
+                      padding: '12px',
                       cursor: 'pointer',
                       boxShadow: isSelected ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
                       transition: 'all 0.2s ease',
                       display: 'flex',
-                      alignItems: 'center',
+                      flexDirection: 'column',
                       justifyContent: 'space-between'
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontFamily: 'League Spartan', fontSize: '17px', fontWeight: '800', color: '#0F172A' }}>{car.name}</span>
-                        <span style={{ fontSize: '10px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#64748B', padding: '2px 8px', borderRadius: '8px' }}>
-                          ₹{car.ratePerKm}/km
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748B', marginTop: '2px' }}>
-                        {car.type}
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>{car.name}</span>
+                      <span style={{ fontSize: '10px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#64748B', padding: '2px 6px', borderRadius: '8px' }}>
+                        ₹{car.ratePerKm}/km
+                      </span>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid #F1F5F9' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748B' }}>{car.type}</span>
+                      <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
                     </div>
                   </div>
                 );

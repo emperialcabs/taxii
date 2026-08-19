@@ -624,22 +624,19 @@
 .homescreen-bottom-card {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 500px;
+  left: 0;
+  right: 0;
   background: #FFFFFF;
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
   /* Extra bottom padding so content clears the fixed bottom nav + iOS safe area */
   padding: 20px 20px calc(80px + env(safe-area-inset-bottom, 0px)) 20px;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
   z-index: 30;
   transition: all 0.3s ease;
   max-height: 85vh;
   max-height: 85dvh; /* Use dvh for iOS Safari accuracy */
   overflow-y: auto;
-  box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
 
