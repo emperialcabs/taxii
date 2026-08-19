@@ -1678,11 +1678,11 @@ export default function AdminPortal() {
                           <strong style={{ color: '#0F172A' }}>{resolveCustomerName(inq)}</strong>
                           <div className="text-muted text-xs" style={{ marginTop: '2px' }}>📞 {inq.customerPhone}</div>
                         </td>
-                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                        <td style={{ maxWidth: '140px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
                           <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', marginRight: '6px' }}></span>
                           {inq.pickup}
                         </td>
-                        <td style={{ maxWidth: '170px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                        <td style={{ maxWidth: '140px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
                           <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', marginRight: '6px' }}></span>
                           {inq.dropoff}
                         </td>
@@ -1707,8 +1707,8 @@ export default function AdminPortal() {
                             {inq.status}
                           </span>
                         </td>
-                        <td style={{ whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
+                        <td style={{ whiteSpace: 'nowrap', paddingRight: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
                             <button 
                               className="btn-action-view"
                               title="View Detailed Trip Receipt & Coupon Info"
@@ -1717,20 +1717,20 @@ export default function AdminPortal() {
                                 background: '#EFF6FF',
                                 color: '#1D4ED8',
                                 border: '1px solid #BFDBFE',
-                                padding: '5px 9px',
-                                borderRadius: '8px',
+                                padding: '5px 7px',
+                                borderRadius: '7px',
                                 fontSize: '11px',
                                 fontWeight: '800',
                                 cursor: actionLoadingId ? 'not-allowed' : 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '3px',
+                                gap: '2px',
                                 whiteSpace: 'nowrap',
                                 opacity: actionLoadingId ? 0.7 : 1
                               }}
                               onClick={() => setReceiptModal({ open: true, inquiry: inq })}
                             >
-                              <Eye size={12} /> View Receipt
+                              <Eye size={11} /> View Receipt
                             </button>
 
                             {inq.status === 'Pending' && (
@@ -1742,16 +1742,16 @@ export default function AdminPortal() {
                                   whiteSpace: 'nowrap',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '3px',
-                                  padding: '5px 9px',
+                                  gap: '2px',
+                                  padding: '5px 7px',
                                   fontSize: '11px',
-                                  borderRadius: '8px',
+                                  borderRadius: '7px',
                                   opacity: actionLoadingId === 'confirm_' + inq.id ? 0.7 : 1,
                                   cursor: actionLoadingId === 'confirm_' + inq.id ? 'not-allowed' : 'pointer'
                                 }}
                                 onClick={() => setAssignModal({ open: true, inquiry: inq })}
                               >
-                                <UserCheck size={12} /> {actionLoadingId === 'confirm_' + inq.id ? 'Processing...' : 'Assign'}
+                                <UserCheck size={11} /> {actionLoadingId === 'confirm_' + inq.id ? 'Processing...' : 'Assign'}
                               </button>
                             )}
 
@@ -1764,16 +1764,16 @@ export default function AdminPortal() {
                                   whiteSpace: 'nowrap',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '3px',
-                                  padding: '5px 9px',
+                                  gap: '2px',
+                                  padding: '5px 7px',
                                   fontSize: '11px',
-                                  borderRadius: '8px',
+                                  borderRadius: '7px',
                                   opacity: actionLoadingId === 'cancel_' + inq.id ? 0.7 : 1,
                                   cursor: actionLoadingId === 'cancel_' + inq.id ? 'not-allowed' : 'pointer'
                                 }}
                                 onClick={() => handleCancelInquiry(inq.id)}
                               >
-                                <XCircle size={12} /> {actionLoadingId === 'cancel_' + inq.id ? 'Cancelling...' : 'Cancel'}
+                                <XCircle size={11} /> {actionLoadingId === 'cancel_' + inq.id ? 'Cancelling...' : 'Cancel'}
                               </button>
                             )}
 
@@ -1785,16 +1785,16 @@ export default function AdminPortal() {
                                 whiteSpace: 'nowrap',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '3px',
-                                padding: '5px 9px',
+                                gap: '2px',
+                                padding: '5px 7px',
                                 fontSize: '11px',
-                                borderRadius: '8px',
+                                borderRadius: '7px',
                                 opacity: actionLoadingId === 'delete_' + inq.id ? 0.7 : 1,
                                 cursor: actionLoadingId === 'delete_' + inq.id ? 'not-allowed' : 'pointer'
                               }}
                               onClick={() => handleDeleteInquiry(inq.id)}
                             >
-                              <Trash2 size={12} /> {actionLoadingId === 'delete_' + inq.id ? 'Deleting...' : 'Delete'}
+                              <Trash2 size={11} /> {actionLoadingId === 'delete_' + inq.id ? 'Deleting...' : 'Delete'}
                             </button>
                           </div>
                         </td>
