@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import db from '../../services/dbService';
 import { signInWithGoogle, loadCustomerFromFirestore, saveCustomerToFirestore, setupRecaptcha, sendPhoneOTP, sendEmailOTP } from '../../services/firebaseService';
 import { saveCustomerToMySQL, loadAllInquiriesFromMySQL } from '../../services/mysqlService';
-import logoSvg from '../../assets/images/let-you-screen/logo.svg';
+import logoPng from '../../assets/images/let-you-screen/logo.png';
 
 // ─── Utility: derive a clean display name from an email ──────────────────────
 const formatNameFromEmail = (email) => {
@@ -181,11 +181,11 @@ export default function LetsYouInScreen({
           
           <div className="let-you-centered-logo-box">
             <img 
-              src={logoSvg} 
+              src={logoPng} 
               alt="EMPERIAL CABS Logo" 
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = logoSvg;
+                e.target.src = logoPng;
               }}
             />
           </div>
