@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, X, Phone, Car } from 'lucide-react';
+import logoSvg from '../assets/images/logo.svg';
 import './Header.css';
 
 export default function Header({ onOpenBooking }) {
@@ -31,7 +32,7 @@ export default function Header({ onOpenBooking }) {
         {/* Logo */}
         <Link to="/" className="brand-logo">
           <img 
-            src="/assets/images/logo.svg" 
+            src={logoSvg} 
             alt="EMPERIAL CABS" 
             className="brand-logo-img"
           />

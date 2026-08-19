@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Smartphone } from 'lucide-react';
+import logoImg from '../assets/images/logo.svg';
 import './Footer.css';
 
 export default function Footer() {
@@ -13,9 +14,9 @@ export default function Footer() {
             <div className="footer-brand">
               <Link to="/" className="brand-logo footer-logo" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                 <img 
-                  src="/assets/images/logo.svg" 
+                  src={logoImg} 
                   alt="EMPERIAL CABS" 
-                  style={{ height: '48px', width: 'auto', display: 'block', objectFit: 'contain' }}
+                  style={{ height: '56px', width: 'auto', display: 'block', objectFit: 'contain' }}
                 />
               </Link>
               <p className="footer-desc">

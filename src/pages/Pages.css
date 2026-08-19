@@ -73,8 +73,8 @@
   background-image: url('/assets/images/hero_scenic_road.png');
   background-size: cover;
   background-position: center;
-  padding: clamp(4.5rem, 7vw, 7.5rem) clamp(2.5rem, 5vw, 5rem);
-  min-height: clamp(620px, 86vh, 900px);
+  padding: clamp(5rem, 8vw, 8.5rem) clamp(2.5rem, 5vw, 5rem);
+  min-height: clamp(680px, 94vh, 990px);
   color: #ffffff;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -507,8 +507,8 @@
   display: flex;
   flex-direction: column;
   text-align: left;
-  padding: 1.5rem 1.25rem;
-  min-height: 625px;
+  padding: 1.75rem 1.4rem;
+  min-height: 685px;
 }
 
 .fleet-card h3 {
@@ -714,7 +714,7 @@
 .download-card {
   background-color: var(--bg-mint);
   border-radius: var(--radius-lg);
-  padding: 2rem 2.5rem 0 2.5rem;
+  padding: 2.75rem 2.5rem 1rem 2.5rem;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 2rem;

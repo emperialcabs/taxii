@@ -128,11 +128,17 @@ body {
   min-height: 100vh;
   font-family: var(--font-family);
   color: var(--body-text);
-  background-color: var(--bg-white);
+  background-color: #ffffff !important;
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
+}
+
+@media (min-width: 769px) {
+  .app-container, .admin-portal-wrapper, .admin-pin-screen {
+    zoom: 90%;
+  }
 }
 
 #root {
@@ -220,13 +226,14 @@ a {
 }
 
 .section {
-  padding: clamp(1.25rem, 3vw, 2.5rem) 0;
+  padding: clamp(2.25rem, 4.5vw, 3.8rem) 0;
 }
 
 .section-mint {
   background-color: var(--bg-mint);
   border-radius: var(--radius-lg);
-  margin: 0.75rem 0;
+  margin: 1.25rem 0;
+  padding: 1rem 0;
   width: 100%;
 }
 
@@ -255,6 +262,13 @@ a {
   box-shadow: var(--shadow-sm);
   margin-bottom: 1.25rem;
 }
+
+/* Helper Utilities */
+.flex { display: flex; }
+.justify-center { justify-content: center; }
+.align-center { align-items: center; }
+.text-center { text-align: center; }
+
 
 .pill-badge .dot {
   width: 8px;

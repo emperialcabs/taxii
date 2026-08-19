@@ -23,7 +23,8 @@
 }
 
 .footer-brand .footer-logo {
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.75rem 0 !important;
+  display: inline-block !important;
 }
 
 .footer-desc {
@@ -31,6 +32,7 @@
   color: var(--body-text);
   max-width: 320px;
   line-height: 1.6;
+  margin-top: 0.5rem !important;
 }
 
 .footer-title {
