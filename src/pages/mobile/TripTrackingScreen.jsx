@@ -2,34 +2,48 @@ import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import BottomNavBar from '../../components/BottomNavBar';
 import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm } from '../../utils/locationCoords';
+import { loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 import { RotateCcw } from 'lucide-react';
 
 export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, activeTab, setActiveTab, onNavigateTab, onCompleteRide }) {
   const [activeRide, setActiveRide] = useState(null);
   const [liveGpsCoords, setLiveGpsCoords] = useState(null);
 
-  // 1. Sync Active Ride Data from localStorage / Admin Portal Events (Sub-second Sync)
+  // 1. Sync Active Ride Data from Hostinger MySQL / localStorage (Sub-second Multi-Device Sync)
   useEffect(() => {
-    const syncRide = () => {
+    const syncRide = async () => {
       try {
-        const saved = localStorage.getItem('cabsy_inquiries');
-        if (saved) {
-          const list = JSON.parse(saved);
-          const current = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-          if (current) {
-            setActiveRide(current);
-          } else {
-            const completed = list.find(i => i.status === 'Completed');
-            if (completed && onCompleteRide) {
-              onCompleteRide();
-            }
+        let list = [];
+        try {
+          const remoteInqs = await loadAllInquiriesFromMySQL().catch(() => []);
+          if (Array.isArray(remoteInqs) && remoteInqs.length > 0) {
+            list = remoteInqs;
+            localStorage.setItem('cabsy_inquiries', JSON.stringify(remoteInqs));
+          }
+        } catch (e) {}
+
+        if (list.length === 0) {
+          const saved = localStorage.getItem('cabsy_inquiries');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) list = parsed;
+          }
+        }
+
+        const current = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+        if (current) {
+          setActiveRide(current);
+        } else {
+          const completed = list.find(i => i.status === 'Completed');
+          if (completed && onCompleteRide) {
+            onCompleteRide();
           }
         }
       } catch (e) {}
     };
 
     syncRide();
-    const interval = setInterval(syncRide, 500); // 0.5s sub-second polling
+    const interval = setInterval(syncRide, 1000); // 1s polling interval across devices
 
     window.addEventListener('storage', syncRide);
     window.addEventListener('EMPERIAL CABS_trip_started', syncRide);

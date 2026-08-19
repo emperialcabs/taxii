@@ -5,6 +5,7 @@ import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
+import { loadAllInquiriesFromMySQL } from '../../services/mysqlService';
 import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X, Car, ShieldCheck, Star, Sparkles, Award, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
@@ -38,15 +39,33 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
   const prevActiveRideIdRef = useRef(null);
 
   useEffect(() => {
-    const checkActiveRide = () => {
+    const checkActiveRide = async () => {
       try {
-        const saved = localStorage.getItem('cabsy_inquiries');
-        const lastCompletedRaw = localStorage.getItem('EMPERIAL CABS_last_completed_trip');
         const userProfRaw = localStorage.getItem('cabsy_user_profile');
         const userProf = userProfRaw ? JSON.parse(userProfRaw) : null;
-        const uPhone = userProf?.phone ? String(userProf.phone).replace(/\D/g, '') : '';
-        const uEmail = userProf?.email ? String(userProf.email).toLowerCase().trim() : '';
+        const uPhone = (userProf?.phone || localStorage.getItem('cabsy_user_phone') || '').replace(/\D/g, '');
+        const uEmail = (userProf?.email || '').toLowerCase().trim();
 
+        // 1. Fetch remote inquiries from Hostinger MySQL for instant multi-device sync
+        let list = [];
+        try {
+          const remoteInqs = await loadAllInquiriesFromMySQL().catch(() => []);
+          if (Array.isArray(remoteInqs) && remoteInqs.length > 0) {
+            list = remoteInqs;
+            localStorage.setItem('cabsy_inquiries', JSON.stringify(remoteInqs));
+          }
+        } catch (e) {}
+
+        if (list.length === 0) {
+          const saved = localStorage.getItem('cabsy_inquiries');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) list = parsed;
+          }
+        }
+
+        // 2. Check for newly completed trip to present official receipt modal
+        const lastCompletedRaw = localStorage.getItem('EMPERIAL CABS_last_completed_trip');
         if (lastCompletedRaw) {
           try {
             const parsedLast = JSON.parse(lastCompletedRaw);
@@ -56,44 +75,44 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           } catch(e) {}
         }
 
-        if (saved) {
-          const list = JSON.parse(saved);
-          if (Array.isArray(list) && list.length > 0) {
-            // Find current user's active ride OR latest active ride in system
-            const matchedRide = list.find(i => {
-              if (!i) return false;
-              const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
-              const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-              const isMatch = !uPhone && !uEmail ? true :
-                              (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
-                              (uEmail && iEmail && uEmail === iEmail);
-              return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-            });
+        // 3. Find active ride (Confirmed, In Progress, On Ride)
+        const matchedRide = list.find(i => {
+          if (!i) return false;
+          const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+          const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
 
-            if (matchedRide) {
-              setActiveRide(matchedRide);
-              prevActiveRideIdRef.current = matchedRide.id;
-              return;
-            } else {
-              // Check if trip was completed to present official receipt modal
-              const lastCompletedRaw = localStorage.getItem('EMPERIAL CABS_last_completed_trip');
-              if (lastCompletedRaw) {
-                try {
-                  const parsedLast = JSON.parse(lastCompletedRaw);
-                  if (parsedLast && parsedLast.id && !parsedLast.dismissed) {
-                    setCompletedModal(parsedLast);
-                  }
-                } catch(e) {}
-              }
-              prevActiveRideIdRef.current = null;
+          const isMatch = !uPhone && !uEmail ? true :
+                          (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                          (uEmail && iEmail && uEmail === iEmail);
+
+          return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+        }) || (list.length > 0 ? list.find(i => i.status === 'In Progress' || i.status === 'On Ride') : null);
+
+        if (matchedRide) {
+          setActiveRide(matchedRide);
+          prevActiveRideIdRef.current = matchedRide.id;
+          return;
+        } else {
+          // If active ride ended, check if it was marked Completed in list
+          if (prevActiveRideIdRef.current) {
+            const completedTrip = list.find(i => (i.id === prevActiveRideIdRef.current || i.status === 'Completed') && !i.dismissed);
+            if (completedTrip) {
+              setCompletedModal(completedTrip);
+              localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(completedTrip));
             }
+            prevActiveRideIdRef.current = null;
           }
+          setActiveRide(null);
         }
-      } catch (e) {}
-      setActiveRide(null);
+      } catch (e) {
+        console.warn("Check active ride notice:", e);
+      }
     };
 
     checkActiveRide();
+
+    // 1-second sub-second fast polling interval for instant cross-device updates
+    const pollInterval = setInterval(checkActiveRide, 1000);
 
     // Cross-tab real-time BroadcastChannel
     let bc = null;
@@ -127,6 +146,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
     window.addEventListener('cabsy-new-inquiry', checkActiveRide);
 
     return () => {
+      clearInterval(pollInterval);
       if (bc) bc.close();
       window.removeEventListener('storage', checkActiveRide);
       window.removeEventListener('EMPERIAL CABS_trip_started', checkActiveRide);
