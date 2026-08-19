@@ -35,6 +35,7 @@ export default function AccountTabScreen({ activeTab, setActiveTab, onNavigate, 
 
   const [darkMode, setDarkMode] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
