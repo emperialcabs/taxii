@@ -471,41 +471,79 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               </p>
             </div>
 
-            {/* Pickup Spot Selector Card */}
+            {/* Stacked Vertical Location Card (UP -> DOWN Uber/Zomato style) */}
             <div 
               style={{
-                background: '#F8FAFC',
+                background: '#FFFFFF',
                 border: '1.5px solid #E2E8F0',
-                borderRadius: '18px',
-                padding: '14px 16px',
+                borderRadius: '24px',
+                padding: '16px 18px',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.05)',
+                marginBottom: '16px',
                 display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                cursor: 'pointer',
-                marginBottom: '16px'
+                flexDirection: 'column',
+                gap: '10px'
               }}
-              onClick={() => setIsSearchOpen(true)}
             >
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                ●
-              </div>
-              <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <div style={{ fontSize: '11px', color: '#22C55E', fontWeight: '800', letterSpacing: '0.5px' }}>CURRENT PICKUP LOCATION</div>
-                <div style={{ fontFamily: 'Space Grotesk', color: '#0F172A', fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {customerAddress}
+              {/* UP: Pickup Location */}
+              <div 
+                onClick={() => setIsSearchOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  cursor: 'pointer',
+                  padding: '4px 0'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#DCFCE7', border: '1.5px solid #86EFAC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A', fontWeight: '800', flexShrink: 0 }}>
+                  ●
                 </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                    CURRENT PICKUP (UP)
+                  </div>
+                  <div style={{ fontFamily: 'Space Grotesk', color: '#0F172A', fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {customerAddress}
+                  </div>
+                </div>
+                <span style={{ fontSize: '13px', color: '#64748B', fontWeight: '700', background: '#F1F5F9', padding: '4px 10px', borderRadius: '12px' }}>Change ›</span>
               </div>
-              <span style={{ fontSize: '16px', color: '#64748B', fontWeight: 'bold' }}>→</span>
-            </div>
 
-            {/* Primary Action Button */}
-            <button 
-              className="EMPERIAL CABS-btn-primary" 
-              style={{ width: '100%', padding: '16px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
-              onClick={onStartBooking}
-            >
-              Where do you want to go?
-            </button>
+              {/* Vertical Connector Line */}
+              <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '17px', margin: '-4px 0' }}>
+                <div style={{ width: '2px', height: '16px', background: '#CBD5E1', borderRadius: '1px' }}></div>
+              </div>
+
+              {/* DOWN: Destination Location / Where to */}
+              <div 
+                onClick={onStartBooking}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  borderRadius: '16px',
+                  padding: '14px 18px',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                  📍
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.85)', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                    DESTINATION (DOWN)
+                  </div>
+                  <div style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', margin: 0 }}>
+                    Where do you want to go?
+                  </div>
+                </div>
+                <span style={{ fontSize: '20px', fontWeight: '800' }}>→</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
