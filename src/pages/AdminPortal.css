@@ -1,16 +1,21 @@
 /* ADMIN PORTAL MODERN DASHBOARD & PIN SECURITY STYLES */
 .admin-portal-wrapper {
   display: flex;
-  height: 100vh;
-  min-height: 100vh;
-  max-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
+  height: 100vh;
   background-color: #f8fafc;
   font-family: var(--font-main, 'Inter', sans-serif);
   color: #0f172a;
   box-sizing: border-box;
   overflow: hidden;
   align-items: stretch;
+  z-index: 1000;
+  zoom: 1 !important;
 }
 
 /* PIN SECURITY UNLOCK SCREEN */
@@ -272,7 +277,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 2rem 3rem 2rem;
   box-sizing: border-box;
 }
 

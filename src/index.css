@@ -136,8 +136,8 @@ body {
 }
 
 @media (min-width: 769px) {
-  .app-container, .admin-portal-wrapper, .admin-pin-screen {
-    zoom: 90%;
+  .app-container, .admin-pin-screen {
+    zoom: 80%;
   }
 }
 
