@@ -137,7 +137,7 @@ body {
 
 @media (min-width: 769px) {
   .app-container, .admin-pin-screen {
-    zoom: 80%;
+    zoom: 90%;
   }
 }
 
