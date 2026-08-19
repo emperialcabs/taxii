@@ -102,6 +102,11 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
       localStorage.setItem('cabsy_user_profile', JSON.stringify(finalProfile));
       localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
       localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
+      const cleanPhone = (finalProfile.phone || '').replace(/\D/g, '');
+      if (cleanPhone) {
+        localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(finalProfile));
+        localStorage.setItem('cabsy_user_phone', finalProfile.phone);
+      }
       db.saveCustomer(finalProfile);
       await saveCustomerToMySQL(finalProfile).catch(() => {});
       window.dispatchEvent(new Event('storage'));

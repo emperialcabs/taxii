@@ -60,9 +60,21 @@ export default function MobileAppView() {
     const syncActiveRideStage = () => {
       try {
         const savedInquiries = localStorage.getItem('cabsy_inquiries');
+        const savedProfile = localStorage.getItem('cabsy_user_profile');
+        const userProf = savedProfile ? JSON.parse(savedProfile) : null;
+        const uPhone = (userProf?.phone || localStorage.getItem('cabsy_user_phone') || '').replace(/\D/g, '');
+        const uEmail = (userProf?.email || '').toLowerCase().trim();
+
         if (savedInquiries) {
           const list = JSON.parse(savedInquiries);
-          const activeRide = list.find(i => i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
+          const activeRide = list.find(i => {
+            if (!i) return false;
+            const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+            const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                            (uEmail && iEmail && uEmail === iEmail);
+            return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
+          });
           if (activeRide && appStage !== 'APP_HOME') {
             setAppStage('APP_HOME');
           }
@@ -86,9 +98,12 @@ export default function MobileAppView() {
   const isSessionValid = () => {
     try {
       const savedProfile = localStorage.getItem('cabsy_user_profile');
-      if (!savedProfile) return false;
-      const parsed = JSON.parse(savedProfile);
-      return Boolean(parsed && (parsed.name || parsed.phone || parsed.email));
+      const savedPhone = localStorage.getItem('cabsy_user_phone');
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile);
+        return Boolean(parsed && (parsed.name || parsed.phone || parsed.email));
+      }
+      return Boolean(savedPhone);
     } catch (e) {
       return false;
     }
@@ -98,17 +113,14 @@ export default function MobileAppView() {
   const handlePreloaderFinish = () => {
     try {
       const isOnboarded = localStorage.getItem('EMPERIAL CABS_onboarded') === 'true';
-      const isProfileCompleted = localStorage.getItem('EMPERIAL CABS_profile_completed') === 'true';
       const validSession = isSessionValid();
 
-      if (isOnboarded) {
-        if (validSession && isProfileCompleted) {
-          // Returning Logged-In User -> Navigate directly to APP_HOME (Main App)
-          setAppStage('APP_HOME');
-        } else {
-          // Returning Logged-Out User -> Navigate directly to LETS_YOU_IN (Login Screen)
-          setAppStage('LETS_YOU_IN');
-        }
+      if (validSession) {
+        // Returning Logged-In User -> Navigate directly to APP_HOME (Zomato-style Instant Access)
+        setAppStage('APP_HOME');
+      } else if (isOnboarded) {
+        // Returning Logged-Out User -> Navigate to Login Screen
+        setAppStage('LETS_YOU_IN');
       } else {
         // First Launch / New User -> Proceed to Intro Splash & Onboarding Flow
         setAppStage('SPLASH');
@@ -169,34 +181,58 @@ export default function MobileAppView() {
     };
   }, []);
 
-  // Helper to complete onboarding & store in localStorage
-  const completeOnboarding = () => {
+  // Helper to complete onboarding & store persistent user profile
+  const completeOnboarding = (customProfile) => {
     try {
       localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
       localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
-      const existing = localStorage.getItem('cabsy_user_profile');
-      if (!existing) {
-        const defaultProfile = {
-          name: 'Empire Rider',
-          phone: phoneNumber || localStorage.getItem('cabsy_user_phone') || '+91 98765 43210',
-          email: authEmail || localStorage.getItem('cabsy_user_email_otp_target') || '',
-          totalRides: 0,
-          totalSpent: 0
-        };
-        localStorage.setItem('cabsy_user_profile', JSON.stringify(defaultProfile));
+      const activePhone = phoneNumber || localStorage.getItem('cabsy_user_phone') || '+91 98765 43210';
+      const cleanPhone = activePhone.replace(/\D/g, '');
+      localStorage.setItem('cabsy_user_phone', activePhone);
+
+      const activeEmail = authEmail || localStorage.getItem('cabsy_user_email_otp_target') || 'user@empirecab.in';
+
+      const finalProfile = customProfile || {
+        name: selectedGoogleAccount?.displayName || 'Empire Rider',
+        phone: activePhone,
+        email: selectedGoogleAccount?.email || activeEmail,
+        totalRides: 0,
+        totalSpent: 0
+      };
+
+      localStorage.setItem('cabsy_user_profile', JSON.stringify(finalProfile));
+      if (cleanPhone) {
+        localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(finalProfile));
       }
+      db.saveCustomer(finalProfile);
     } catch (e) { }
     setAppStage('APP_HOME');
   };
 
-  // Skip profile setup for returning users (2nd+ time login)
+  // Skip profile setup for returning users (restore profile by phone)
   const proceedAfterAuth = () => {
     try {
-      const isCompleted = localStorage.getItem('EMPERIAL CABS_profile_completed') === 'true';
-      const saved = localStorage.getItem('cabsy_user_profile');
-      if (isCompleted || (saved && JSON.parse(saved).name)) {
-        completeOnboarding();
-        return;
+      const activePhone = phoneNumber || localStorage.getItem('cabsy_user_phone') || '';
+      const cleanPhone = activePhone.replace(/\D/g, '');
+      if (activePhone) {
+        localStorage.setItem('cabsy_user_phone', activePhone);
+      }
+      localStorage.setItem('EMPERIAL CABS_onboarded', 'true');
+      localStorage.setItem('EMPERIAL CABS_profile_completed', 'true');
+
+      const userKey = cleanPhone ? `cabsy_user_profile_${cleanPhone}` : 'cabsy_user_profile';
+      const savedUserProf = localStorage.getItem(userKey) || localStorage.getItem('cabsy_user_profile');
+
+      if (savedUserProf) {
+        const parsed = JSON.parse(savedUserProf);
+        if (parsed && (parsed.name || parsed.phone)) {
+          localStorage.setItem('cabsy_user_profile', JSON.stringify(parsed));
+          if (cleanPhone) {
+            localStorage.setItem(`cabsy_user_profile_${cleanPhone}`, JSON.stringify(parsed));
+          }
+          setAppStage('APP_HOME');
+          return;
+        }
       }
     } catch (e) {}
     setAppStage('CREATE_PROFILE');
@@ -208,7 +244,6 @@ export default function MobileAppView() {
       localStorage.removeItem('EMPERIAL CABS_profile_completed');
       localStorage.removeItem('cabsy_user_phone');
       localStorage.removeItem('cabsy_user_email_otp_target');
-      // EMPERIAL CABS_onboarded remains 'true' so returning users land directly on Login
     } catch (e) { }
     setSelectedGoogleAccount(null);
     setPhoneNumber('');
@@ -220,9 +255,21 @@ export default function MobileAppView() {
   const handleRequestRide = (carObj) => {
     try {
       const savedInquiries = localStorage.getItem('cabsy_inquiries');
+      const savedProfile = localStorage.getItem('cabsy_user_profile');
+      const userProf = savedProfile ? JSON.parse(savedProfile) : null;
+      const uPhone = (userProf?.phone || localStorage.getItem('cabsy_user_phone') || '').replace(/\D/g, '');
+      const uEmail = (userProf?.email || '').toLowerCase().trim();
+
       if (savedInquiries) {
         const list = JSON.parse(savedInquiries);
-        const ongoing = list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+        const ongoing = list.find(i => {
+          if (!i) return false;
+          const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+          const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+          const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                          (uEmail && iEmail && uEmail === iEmail);
+          return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+        });
         if (ongoing) {
           alert(`You currently have an active ride (${ongoing.status}) heading to ${ongoing.dropoff}. Cannot book a second ride while a trip is active!`);
           setAppStage('TRACKING');

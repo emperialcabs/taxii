@@ -67,7 +67,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                               (uEmail && iEmail && uEmail === iEmail);
               return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-            }) || list.find(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+            });
 
             if (matchedRide) {
               setActiveRide(matchedRide);
