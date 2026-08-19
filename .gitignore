@@ -37,6 +37,7 @@ app/android/app/release/
 android/app/build/
 android/.gradle/
 *.apk
+!public/Taxigo.apk
 *.aab
 
 # Logs
