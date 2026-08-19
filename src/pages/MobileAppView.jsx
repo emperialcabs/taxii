@@ -78,8 +78,22 @@ export default function MobileAppView() {
                             (uEmail && iEmail && uEmail === iEmail);
             return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
           });
-          if (activeRide && appStage !== 'APP_HOME' && appStage !== 'TRACKING') {
-            setAppStage('APP_HOME');
+
+          if (activeRide) {
+            setAppStage('TRACKING');
+          } else {
+            const completedTrip = list.find(i => {
+              if (!i) return false;
+              const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+              const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+              const isMatch = !uPhone && !uEmail ? true :
+                              (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                              (uEmail && iEmail && uEmail === iEmail);
+              return isMatch && i.status === 'Completed' && !i.dismissed;
+            });
+            if (completedTrip) {
+              setAppStage('RECEIPT');
+            }
           }
         }
       } catch (e) {}
@@ -93,15 +107,17 @@ export default function MobileAppView() {
         bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.onmessage = (msg) => {
           if (msg.data?.type === 'TRIP_STARTED') {
-            syncActiveRideStage();
+            setAppStage('TRACKING');
           } else if (msg.data?.type === 'TRIP_COMPLETED') {
             setAppStage('RECEIPT');
+          } else {
+            syncActiveRideStage();
           }
         };
       }
     } catch (e) {}
 
-    const handleTripStarted = () => syncActiveRideStage();
+    const handleTripStarted = () => setAppStage('TRACKING');
     const handleTripCompleted = () => setAppStage('RECEIPT');
 
     window.addEventListener('storage', syncActiveRideStage);

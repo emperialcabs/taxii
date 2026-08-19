@@ -4,8 +4,19 @@
  * and Automated Ecosystem Pre-Trip Scheduler.
  */
 
+import { LocalNotifications } from '@capacitor/local-notifications';
+
 // Request system tray push notification permission
 export const requestNotificationPermission = async () => {
+  try {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+      const res = await LocalNotifications.requestPermissions();
+      if (res && res.display === 'granted') return true;
+    }
+  } catch (e) {
+    console.warn("Capacitor request permission error:", e);
+  }
+
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'default') {
       try {
@@ -41,7 +52,7 @@ const playChimeSound = () => {
 };
 
 // Trigger Phone / Desktop System Tray Push Notification (Mobile Chrome / APK Compatible)
-export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-notif') => {
+export const sendSystemPushNotification = async (title, body, tag = 'EMPERIAL CABS-notif') => {
   playChimeSound();
 
   // Trigger device vibration if supported (pattern: 200ms vibrate, 100ms pause, 200ms vibrate)
@@ -50,6 +61,29 @@ export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-not
       navigator.vibrate([200, 100, 200]);
     }
   } catch (e) {}
+
+  // 1. Mobile Phone Native System Notification Panel (Android APK via Capacitor LocalNotifications)
+  try {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: title,
+            body: body,
+            id: Math.floor(Math.random() * 1000000) + 1,
+            schedule: { at: new Date(Date.now() + 100) },
+            sound: undefined,
+            attachments: undefined,
+            actionTypeId: '',
+            extra: null
+          }
+        ]
+      });
+      return;
+    }
+  } catch (e) {
+    console.warn("Capacitor local notification schedule notice:", e);
+  }
 
   if (typeof window === 'undefined' || !('Notification' in window)) return;
 
@@ -63,7 +97,7 @@ export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-not
   };
 
   const triggerShow = () => {
-    // 1. Mobile Phone & PWA Native System Tray via ServiceWorker (Android/Chrome/APK)
+    // 2. Mobile Phone & PWA Native System Tray via ServiceWorker (Android/Chrome/APK)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification(title, notifOptions);
@@ -73,7 +107,7 @@ export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-not
         } catch (e) {}
       });
     } else {
-      // 2. Desktop Fallback
+      // 3. Desktop Fallback
       try {
         new Notification(title, notifOptions);
       } catch (e) {}
