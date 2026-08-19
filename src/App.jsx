@@ -44,8 +44,13 @@ function MainLayout({ handleOpenBooking, isBookingOpen, handleCloseBooking }) {
   const searchParams = new URLSearchParams(location.search);
   const isMobileQuery = searchParams.has('app') || searchParams.has('mobile') || searchParams.has('android') || searchParams.get('mode') === 'app' || searchParams.get('mode') === 'mobile' || searchParams.get('mode') === 'android';
 
-  // 1. Native Mobile App Mode (Only active inside Capacitor APK/IPA binary or explicit /app, /mobile paths or ?mode=app)
-  if (!isWebSite && (isCapacitorNative || (isMobileDomain && !isWebSite) || isMobilePath || isMobileQuery)) {
+  // Device User-Agent Detection (Android Phone & Mobile Browsers)
+  const userAgent = typeof navigator !== 'undefined' ? (navigator.userAgent || '').toLowerCase() : '';
+  const isAndroidDevice = userAgent.includes('android');
+  const isMobileDevice = /android|iphone|ipad|ipod|blackberry|windows phone/i.test(userAgent);
+
+  // 1. Mobile App Mode (Triggered by Native APK, VITE_APP_MODE=android, Android/Mobile Phone User-Agent, mobile domain/path/query)
+  if (!isWebSite && (isCapacitorNative || appMode === 'android' || appMode === 'app' || appMode === 'mobile' || isAndroidDevice || isMobileDevice || isMobileDomain || isMobilePath || isMobileQuery)) {
     return <MobileAppView platform={appMode || 'android'} />;
   }
 
