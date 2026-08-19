@@ -630,22 +630,32 @@
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
   /* Extra bottom padding so content clears the fixed bottom nav + iOS safe area */
-  padding: 20px 20px calc(80px + env(safe-area-inset-bottom, 0px)) 20px;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
+  padding: 10px 20px calc(80px + env(safe-area-inset-bottom, 0px)) 20px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
   z-index: 30;
-  transition: all 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.35s ease;
   max-height: 85vh;
   max-height: 85dvh; /* Use dvh for iOS Safari accuracy */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
+.homescreen-bottom-card.collapsed {
+  transform: translateY(calc(100% - 150px));
+}
+
 .drag-handle-bar {
-  width: 40px;
+  width: 48px;
   height: 5px;
   border-radius: 3px;
-  background: #CBD5E1;
-  margin: 0 auto 16px auto;
+  background: #64748B;
+  margin: 0 auto;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.drag-handle-toggle-area:active .drag-handle-bar {
+  transform: scaleX(0.9);
+  background: #334155;
 }
 
 .home-greeting-txt { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #64748B; margin: 0; }

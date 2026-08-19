@@ -103,6 +103,7 @@ export default function SeatScheduleScreen({
     setWalletBalance(w.balance || 0);
   }, [userPhone]);
 
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
   const baseFare = activeCarObj ? activeCarObj.totalFareNum : 770;
   const discountAmount = (useWalletDiscount && walletBalance > 0) ? Math.min(walletBalance, baseFare) : 0;
   const netFare = Math.max(0, baseFare - discountAmount);
@@ -120,7 +121,26 @@ export default function SeatScheduleScreen({
           />
 
           {/* Bottom Card for Trip Type, Schedule & Vehicle Selection */}
-          <div className="homescreen-bottom-card" style={{ maxHeight: '82vh', overflowY: 'auto' }}>
+          <div className={`homescreen-bottom-card ${isSheetCollapsed ? 'collapsed' : ''}`} style={{ maxHeight: '82vh', overflowY: 'auto' }}>
+            {/* Top Center Line Handle Bar (Click Trigger for Up/Down - Morphing Shape) */}
+            <div 
+              className="drag-handle-toggle-area"
+              onClick={() => setIsSheetCollapsed(prev => !prev)}
+              style={{ cursor: 'pointer', padding: '2px 0 6px 0', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
+              title="Click top center line to collapse/expand"
+            >
+              <svg width="40" height="10" viewBox="0 0 40 10" style={{ display: 'block' }}>
+                <path 
+                  d={isSheetCollapsed ? "M 8 8 L 20 2 L 32 8" : "M 8 2 L 20 8 L 32 2"} 
+                  stroke="#64748B" 
+                  strokeWidth="3.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  fill="none" 
+                  style={{ transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                />
+              </svg>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <button 
                 type="button"

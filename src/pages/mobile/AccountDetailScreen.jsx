@@ -54,6 +54,29 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
   const [profile, setProfile] = useState(getInitialProfile);
 
   useEffect(() => {
+    async function syncFromDb() {
+      try {
+        const savedPhone = localStorage.getItem('cabsy_user_phone') || profile.phone || '';
+        const cleanPhone = savedPhone.replace(/\D/g, '');
+        if (cleanPhone) {
+          const dbCust = await db.getCustomerByPhone(cleanPhone);
+          if (dbCust && dbCust.name) {
+            setProfile(prev => ({
+              ...prev,
+              ...dbCust,
+              name: dbCust.name || prev.name || '',
+              email: dbCust.email || prev.email || '',
+              phone: dbCust.phone || prev.phone || '',
+              photoURL: dbCust.photoURL || prev.photoURL || null
+            }));
+          }
+        }
+      } catch (e) {}
+    }
+    syncFromDb();
+  }, []);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
       const base = saved ? JSON.parse(saved) : {};
@@ -126,7 +149,7 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
       <div className="white-header-nav" style={{ 
         display: 'flex', 
         alignItems: 'center', 
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         padding: '16px 20px', 
         background: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
@@ -138,6 +161,8 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
           className="header-back-arrow" 
           onClick={onBack}
           style={{ 
+            position: 'absolute',
+            left: '16px',
             background: '#F1F5F9', 
             border: 'none', 
             width: '36px', 
@@ -153,10 +178,9 @@ export default function AccountDetailScreen({ onBack, onSave, isCreateMode = fal
         >
           ←
         </button>
-        <h2 className="white-header-title" style={{ fontSize: '18px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan', margin: 0 }}>
-          {isCreateMode ? 'Complete Customer Profile' : 'Edit Profile Details'}
+        <h2 className="white-header-title" style={{ fontSize: '18px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan', margin: 0, textAlign: 'center' }}>
+          {isCreateMode ? 'Complete Customer Profile' : 'Profile Details'}
         </h2>
-        <div style={{ width: '36px' }}></div>
       </div>
 
       <div className="mobile-screen-body" style={{ padding: '24px 20px 120px 20px', flex: 1, maxWidth: '500px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>

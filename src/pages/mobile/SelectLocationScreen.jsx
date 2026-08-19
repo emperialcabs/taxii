@@ -183,16 +183,9 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
 
           {/* Dropoff Input */}
           <div style={{ position: 'relative', borderTop: '1px dashed #E2E8F0', paddingTop: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MapPin size={16} color="#EF4444" />
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
-              </div>
-              {currentDistance && (
-                <span style={{ background: '#F0FDF4', border: '1.5px solid #6EE7B7', color: '#059669', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', boxShadow: '0 2px 6px rgba(5, 150, 105, 0.12)' }}>
-                  Distance: {currentDistance}
-                </span>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <MapPin size={16} color="#EF4444" />
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', letterSpacing: '0.8px' }}>DROP-OFF DESTINATION</span>
             </div>
             <input 
               style={{ 
@@ -240,13 +233,10 @@ export default function SelectLocationScreen({ pickupLoc, setPickupLoc, dropoffL
 
         {/* DIRECT ROUTES SECTION */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <h3 style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#0F172A', margin: 0 }}>
               Available Direct Routes
             </h3>
-            <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '700' }}>
-              Tap route to select
-            </span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

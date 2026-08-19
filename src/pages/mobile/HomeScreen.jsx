@@ -5,7 +5,7 @@ import BottomNavBar from '../../components/BottomNavBar';
 import { getBestLiveLocation, watchLiveLocation, reverseGeocodeCoords } from '../../services/liveLocationService';
 import { db } from '../../services/dbService';
 import { getCustomerNotifications } from '../../services/notificationEngine';
-import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X, Car, ShieldCheck, Star, Sparkles, Award } from 'lucide-react';
+import { RotateCcw, User, Bell, CheckCircle2, XCircle, Clock3, Gift, MapPin, ArrowRight, X, Car, ShieldCheck, Star, Sparkles, Award, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, onOpenTracking }) {
   // Load saved profile from localStorage
@@ -303,6 +303,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
 
   // Dynamically load places configured in Admin Portal (cabsy_places)
   const getAdminPlaces = () => {
@@ -430,8 +431,26 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           </div>
 
           {/* Bottom Expandable Trip Sheet */}
-          <div className="homescreen-bottom-card">
-            <div className="drag-handle-bar" />
+          <div className={`homescreen-bottom-card ${isSheetCollapsed ? 'collapsed' : ''}`}>
+            {/* Top Center Line Handle Bar (Click Trigger for Up/Down - Morphing Shape) */}
+            <div 
+              className="drag-handle-toggle-area"
+              onClick={() => setIsSheetCollapsed(prev => !prev)}
+              style={{ cursor: 'pointer', padding: '2px 0 2px 0', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
+              title="Click top center line to collapse/expand"
+            >
+              <svg width="40" height="10" viewBox="0 0 40 10" style={{ display: 'block' }}>
+                <path 
+                  d={isSheetCollapsed ? "M 8 8 L 20 2 L 32 8" : "M 8 2 L 20 8 L 32 2"} 
+                  stroke="#64748B" 
+                  strokeWidth="3.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  fill="none" 
+                  style={{ transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                />
+              </svg>
+            </div>
 
             {/* ACTIVE RIDE LIVE CARD ON HOMESCREEN (Light Theme, No Buttons) */}
             {activeRide && (
@@ -464,6 +483,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
               </div>
             )}
 
+            {/* Greeting Header */}
             <div style={{ marginBottom: '14px' }}>
               <p className="home-greeting-txt" style={{ margin: 0 }}>{greeting}</p>
               <p style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: '2px 0 0 0' }}>
