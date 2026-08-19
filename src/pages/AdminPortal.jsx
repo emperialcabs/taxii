@@ -209,6 +209,15 @@ export default function AdminPortal() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
+  // Full-Page Rich Push Notification Composer Modal State
+  const [sendNotifModal, setSendNotifModal] = useState({
+    open: false,
+    customer: null,
+    title: '',
+    body: '',
+    type: 'reward'
+  });
+
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
@@ -2347,26 +2356,19 @@ export default function AdminPortal() {
                           <div className="flex gap-2 align-center" style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                             <button 
                               className="btn btn-sm flex align-center gap-1"
-                              style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap' }}
+                              style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '13px', whiteSpace: 'nowrap', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.25)' }}
                               onClick={() => {
-                                const title = prompt(`Send Push Notification to ${cust.name} (${cust.email}):\n\nEnter Notification Title:`, `🎉 Special Offer for ${cust.name}!`);
-                                if (!title) return;
-                                const body = prompt('Enter Notification Message Body:', `Hello ${cust.name}, enjoy 15% discount on your next ride with EMPERIAL CABS!`);
-                                if (!body) return;
-
-                                notifyCustomer({
-                                  type: 'reward',
-                                  title,
-                                  body,
-                                  customerEmail: cust.email,
-                                  customerPhone: cust.phone
+                                setSendNotifModal({
+                                  open: true,
+                                  customer: cust,
+                                  title: `🎉 Special Offer for ${cust.name}!`,
+                                  body: `Hello ${cust.name}, enjoy 15% discount on your next ride with EMPERIAL CABS!`,
+                                  type: 'reward'
                                 });
-
-                                alert(`✅ Push Notification Sent Successfully!\n\nTarget: ${cust.name} (${cust.email})\nTitle: ${title}\nMessage: ${body}`);
                               }}
-                              title="Send Push Notification to Customer"
+                              title="Send Full-Page Push Notification to Customer"
                             >
-                              <Bell size={13} /> Send Notif
+                              <Bell size={14} /> Send Notif
                             </button>
 
                             <button 
@@ -3792,6 +3794,155 @@ export default function AdminPortal() {
                 onClick={() => setViewMessageModal({ open: false, message: null })}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* FULL PAGE / LARGE PUSH NOTIFICATION COMPOSER MODAL */}
+      {sendNotifModal.open && sendNotifModal.customer && (
+        <div className="admin-modal-overlay" onClick={() => setSendNotifModal({ open: false, customer: null, title: '', body: '', type: 'reward' })}>
+          <div className="admin-modal-box card" style={{ maxWidth: '640px', width: '92%', borderRadius: '24px', padding: '28px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between align-center mb-3" style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '14px' }}>
+              <div>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#0F172A', fontSize: '20px', fontFamily: 'League Spartan, sans-serif', fontWeight: '800' }}>
+                  <Bell size={22} className="text-green" /> Send Live Push Notification
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748B' }}>
+                  Target Recipient: <strong style={{ color: '#0F172A' }}>{sendNotifModal.customer.name}</strong> ({sendNotifModal.customer.email})
+                </p>
+              </div>
+              <button 
+                onClick={() => setSendNotifModal({ open: false, customer: null, title: '', body: '', type: 'reward' })}
+                style={{ background: '#F1F5F9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', fontSize: '16px', cursor: 'pointer', color: '#0F172A', fontWeight: 'bold' }}
+              >✕</button>
+            </div>
+
+            {/* Target Recipient Card */}
+            <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', padding: '14px 18px', borderRadius: '16px', marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>{sendNotifModal.customer.name}</div>
+                <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>{sendNotifModal.customer.phone} &nbsp;•&nbsp; {sendNotifModal.customer.email}</div>
+              </div>
+              <span style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>
+                {sendNotifModal.customer.totalRides || 0} Rides Completed
+              </span>
+            </div>
+
+            {/* Quick Templates Buttons */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'block' }}>Quick Notification Presets</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#166534', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => setSendNotifModal(prev => ({
+                    ...prev,
+                    title: `🎁 Special 15% Discount for ${prev.customer.name}!`,
+                    body: `Use promo code EMPIRERIDE on your next cab booking with EMPERIAL CABS to get 15% instant discount!`,
+                    type: 'reward'
+                  }))}
+                >
+                  🎁 15% Discount Promo
+                </button>
+
+                <button
+                  type="button"
+                  style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => setSendNotifModal(prev => ({
+                    ...prev,
+                    title: `🚕 Ride Dispatch Alert`,
+                    body: `Your preferred vehicle is ready for dispatch in your area. Book now for instant pickup!`,
+                    type: 'inquiry'
+                  }))}
+                >
+                  🚕 Ride Dispatch Alert
+                </button>
+
+                <button
+                  type="button"
+                  style={{ background: '#FAF5FF', border: '1px solid #E9D5FF', color: '#6B21A8', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => setSendNotifModal(prev => ({
+                    ...prev,
+                    title: `⭐ VIP Empire Status Activated`,
+                    body: `Congratulations ${prev.customer.name}! You are now a priority VIP rider with EMPERIAL CABS. Enjoy zero cancellation fees!`,
+                    type: 'system'
+                  }))}
+                >
+                  ⭐ VIP Status
+                </button>
+              </div>
+            </div>
+
+            {/* Inputs */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '800', color: '#334155', marginBottom: '6px', display: 'block' }}>Notification Title:</label>
+              <input 
+                type="text"
+                value={sendNotifModal.title}
+                onChange={(e) => setSendNotifModal(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter notification title..."
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '15px', fontWeight: '700', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '800', color: '#334155', marginBottom: '6px', display: 'block' }}>Notification Body Message:</label>
+              <textarea 
+                rows={3}
+                value={sendNotifModal.body}
+                onChange={(e) => setSendNotifModal(prev => ({ ...prev, body: e.target.value }))}
+                placeholder="Enter detailed notification body message..."
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Live Phone Banner Preview */}
+            <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '14px 16px', borderRadius: '16px', marginBottom: '24px' }}>
+              <small style={{ color: '#94A3B8', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>
+                📱 Phone Lock Screen Notification Preview
+              </small>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px', color: '#FFFFFF', flexShrink: 0 }}>🚖</div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#FFFFFF' }}>{sendNotifModal.title || 'Notification Title'}</div>
+                  <div style={{ fontSize: '12px', color: '#CBD5E1', marginTop: '2px', lineHeight: '1.4' }}>{sendNotifModal.body || 'Notification body text preview will appear here...'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-actions-flex" style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                style={{ flex: 1, padding: '14px' }}
+                onClick={() => setSendNotifModal({ open: false, customer: null, title: '', body: '', type: 'reward' })}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                style={{ flex: 2, padding: '14px', backgroundColor: '#10B981', borderColor: '#10B981', color: '#FFFFFF', fontWeight: '800', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 20px rgba(16,185,129,0.35)' }}
+                onClick={() => {
+                  if (!sendNotifModal.title || !sendNotifModal.body) {
+                    alert('Please enter both title and body for the notification.');
+                    return;
+                  }
+
+                  notifyCustomer({
+                    type: sendNotifModal.type || 'reward',
+                    title: sendNotifModal.title,
+                    body: sendNotifModal.body,
+                    customerEmail: sendNotifModal.customer.email,
+                    customerPhone: sendNotifModal.customer.phone
+                  });
+
+                  alert(`✅ Push Notification Sent!\n\nTarget: ${sendNotifModal.customer.name} (${sendNotifModal.customer.email})\nTitle: ${sendNotifModal.title}`);
+                  setSendNotifModal({ open: false, customer: null, title: '', body: '', type: 'reward' });
+                }}
+              >
+                🚀 Dispatch Push Notification Now
               </button>
             </div>
           </div>
