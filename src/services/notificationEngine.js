@@ -40,7 +40,7 @@ const playChimeSound = () => {
   }
 };
 
-// Trigger Phone / Desktop System Tray Push Notification
+// Trigger Phone / Desktop System Tray Push Notification (Mobile Chrome / APK Compatible)
 export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-notif') => {
   playChimeSound();
 
@@ -51,34 +51,43 @@ export const sendSystemPushNotification = (title, body, tag = 'EMPERIAL CABS-not
     }
   } catch (e) {}
 
-  if (typeof window !== 'undefined' && 'Notification' in window) {
-    if (Notification.permission === 'granted') {
+  if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+  const notifOptions = {
+    body: body,
+    icon: '/EMPERAL_CABS_Website_Logo_Sharp.svg',
+    badge: '/EMPERAL_CABS_Website_Logo_Sharp.svg',
+    tag: tag,
+    renotify: true,
+    vibrate: [200, 100, 200]
+  };
+
+  const triggerShow = () => {
+    // 1. Mobile Phone & PWA Native System Tray via ServiceWorker (Android/Chrome/APK)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification(title, notifOptions);
+      }).catch(() => {
+        try {
+          new Notification(title, notifOptions);
+        } catch (e) {}
+      });
+    } else {
+      // 2. Desktop Fallback
       try {
-        new Notification(title, {
-          body: body,
-          icon: '/assets/images/splash-screen/logo.png',
-          badge: '/assets/images/splash-screen/logo.png',
-          tag: tag,
-          renotify: true
-        });
-      } catch (e) {
-        console.warn('System push notification error:', e);
-      }
-    } else if (Notification.permission === 'default') {
-      try {
-        Notification.requestPermission().then(perm => {
-          if (perm === 'granted') {
-            new Notification(title, {
-              body: body,
-              icon: '/assets/images/splash-screen/logo.png',
-              badge: '/assets/images/splash-screen/logo.png',
-              tag: tag,
-              renotify: true
-            });
-          }
-        }).catch(() => {});
+        new Notification(title, notifOptions);
       } catch (e) {}
     }
+  };
+
+  if (Notification.permission === 'granted') {
+    triggerShow();
+  } else if (Notification.permission === 'default') {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        triggerShow();
+      }
+    }).catch(() => {});
   }
 };
 
