@@ -343,23 +343,25 @@
 }
 
 .let-you-centered-logo-box {
-  width: 100px;
-  height: 100px;
-  background: #FFFFFF;
-  border-radius: 28px;
+  width: 96px;
+  height: 96px;
+  background: #FCB900;
+  border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
   margin-top: 10px;
+  overflow: hidden;
   animation: floatImageSmooth 4s ease-in-out infinite, pulseGlowImage 4s ease-in-out infinite;
   will-change: transform, filter;
 }
 
 .let-you-centered-logo-box img {
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px;
 }
 
 .verify-hero-img {
