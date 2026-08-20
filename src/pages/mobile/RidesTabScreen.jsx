@@ -191,13 +191,35 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
   const getStatusBadge = (statusStr) => {
     const st = (statusStr || 'Pending').toLowerCase();
 
-    if (st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed') || st.includes('progress') || st.includes('ride')) {
+    if (st.includes('completed') || st.includes('finish')) {
       return {
-        label: st.includes('completed') ? 'Completed' : (st.includes('progress') || st.includes('ride')) ? 'In Progress' : 'Confirmed',
+        label: 'Completed',
         Icon: CheckCircle2,
         bg: '#DCFCE7',
         border: '#86EFAC',
         color: '#15803D',
+        canCancel: false,
+        canEdit: false
+      };
+    }
+    if (st.includes('progress') || st.includes('ride') || st.includes('started')) {
+      return {
+        label: 'In Progress',
+        Icon: CheckCircle2,
+        bg: '#E0F2FE',
+        border: '#BAE6FD',
+        color: '#0369A1',
+        canCancel: false,
+        canEdit: false
+      };
+    }
+    if (st.includes('approve') || st.includes('confirm') || st.includes('success')) {
+      return {
+        label: 'Confirmed',
+        Icon: CheckCircle2,
+        bg: '#ECFDF5',
+        border: '#A7F3D0',
+        color: '#047857',
         canCancel: false,
         canEdit: false
       };
