@@ -17,9 +17,18 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file('emperialcabs-release-key.jks')
+            storePassword 'EmperialCabs2026'
+            keyAlias 'emperialcabs'
+            keyPassword 'EmperialCabs2026'
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
