@@ -588,8 +588,8 @@ export default function AdminPortal() {
     window.addEventListener('EMPERIAL CABS_db_sync', syncAdminNotifs);
     window.addEventListener('storage', syncAdminNotifs);
     
-    // Poll Hostinger MySQL silently in background every 5s (prevents jumping & DB connection exhaustion)
-    const interval = setInterval(() => fetchAllData(false), 5000);
+    // Poll Hostinger MySQL silently in background every 12s (prevents DB connection exhaustion)
+    const interval = setInterval(() => fetchAllData(false), 12000);
 
     return () => {
       window.removeEventListener('EMPERIAL CABS_admin_notif', syncAdminNotifs);
@@ -619,6 +619,8 @@ export default function AdminPortal() {
 
   // Form inputs
   const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [selectedAssignVehicle, setSelectedAssignVehicle] = useState('');
+  const [selectedAssignPlate, setSelectedAssignPlate] = useState('');
   const [newDriverForm, setNewDriverForm] = useState({ name: '', phone: '', vehicle: 'Empire Regular', plate: '' });
   const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', email: '' });
   const [newInquiryForm, setNewInquiryForm] = useState({ customerName: '', customerPhone: '', pickup: '', dropoff: '', vehicle: 'Empire Regular', fare: 35.00 });
@@ -922,13 +924,21 @@ export default function AdminPortal() {
     setActionLoadingId(actionKey);
 
     const driverObj = drivers.find(d => d.id === selectedDriverId) || drivers[0] || { name: 'Assigned Driver', id: 'DRV-DEF', plate: 'CAB-001' };
+    const chosenVehicle = selectedAssignVehicle || inq.vehicle || 'SWIFT';
+    const chosenPlate = selectedAssignPlate || driverObj.plate || 'GJ-04-AB-1234';
 
     const updatedInquiries = inquiries.map(item => {
       if (item.id === inq.id) {
         return {
           ...item,
           status: 'Confirmed',
-          driver: driverObj.name
+          driver: driverObj.name,
+          vehicle: chosenVehicle,
+          carName: chosenVehicle,
+          selectedCar: chosenVehicle,
+          plate: chosenPlate,
+          vehiclePlate: chosenPlate,
+          carPlate: chosenPlate
         };
       }
       return item;
@@ -942,7 +952,8 @@ export default function AdminPortal() {
       updateInquiryStatusInMySQL(
         inq.id,
         'Confirmed',
-        driverObj.name
+        driverObj.name,
+        chosenVehicle
       ).catch(() => {});
     }
 
@@ -3058,14 +3069,53 @@ export default function AdminPortal() {
 
             <div className="input-group mt-3">
               <label>Select Driver from Fleet Roster</label>
-              <select value={selectedDriverId} onChange={e => setSelectedDriverId(e.target.value)}>
+              <select value={selectedDriverId} onChange={e => {
+                setSelectedDriverId(e.target.value);
+                const d = drivers.find(drv => drv.id === e.target.value);
+                if (d && d.plate && !selectedAssignPlate) {
+                  setSelectedAssignPlate(d.plate);
+                }
+              }}>
                 <option value="">-- Choose Driver --</option>
                 {drivers.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.vehicle}) - [{d.status}]
+                    {d.name} ({d.plate || d.vehicle || 'Driver'}) - [{d.status}]
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="input-group mt-3">
+              <label>Assign Fleet Vehicle (Managed by Admin)</label>
+              <select 
+                value={selectedAssignVehicle} 
+                onChange={e => {
+                  const vName = e.target.value;
+                  setSelectedAssignVehicle(vName);
+                  const matchedVeh = vehicles.find(v => v.name === vName);
+                  if (matchedVeh && matchedVeh.plate) {
+                    setSelectedAssignPlate(matchedVeh.plate);
+                  }
+                }}
+              >
+                <option value="">-- Choose Fleet Car --</option>
+                {vehicles.map(v => (
+                  <option key={v.id || v.name} value={v.name}>
+                    🚗 {v.name} {v.plate ? `[${v.plate}]` : ''} - ₹{v.rate || v.ratePerKm || 5}/km
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="input-group mt-3">
+              <label>Vehicle Number Plate (Assigned to Trip)</label>
+              <input 
+                type="text" 
+                placeholder="e.g. GJ-04-AB-1234"
+                value={selectedAssignPlate}
+                onChange={e => setSelectedAssignPlate(e.target.value.toUpperCase())}
+                style={{ fontWeight: '800', fontFamily: 'Space Grotesk', textTransform: 'uppercase', letterSpacing: '1px' }}
+              />
             </div>
 
             <div className="modal-actions-flex mt-4">
@@ -3557,6 +3607,20 @@ export default function AdminPortal() {
                     vehicle: { ...editVehicleModal.vehicle, name: e.target.value } 
                   })}
                   required 
+                />
+              </div>
+
+              <div className="input-group mt-2">
+                <label>Vehicle Number Plate (e.g. GJ-04-AB-1234)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. GJ-04-AB-1234"
+                  value={editVehicleModal.vehicle.plate || ''} 
+                  onChange={e => setEditVehicleModal({ 
+                    ...editVehicleModal, 
+                    vehicle: { ...editVehicleModal.vehicle, plate: e.target.value.toUpperCase() } 
+                  })}
+                  style={{ textTransform: 'uppercase', fontFamily: 'Space Grotesk', fontWeight: '800' }}
                 />
               </div>
 

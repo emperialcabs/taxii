@@ -186,6 +186,26 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
       }}>
         <div style={{ width: '40px', height: '4px', background: '#334155', borderRadius: '4px', margin: '0 auto 10px auto' }}></div>
 
+        {/* Assigned Driver & Car Plate Banner */}
+        {activeRide && (
+          <div style={{ background: '#1E293B', padding: '10px 14px', borderRadius: '14px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #334155' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#34D399', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
+                🚕
+              </div>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '800', color: '#FFFFFF' }}>{activeRide.driver || 'Chauffeur Assigned'}</div>
+                <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: '600' }}>{activeRide.vehicle || activeRide.carName || activeRide.selectedCar || 'SWIFT'}</div>
+              </div>
+            </div>
+            {(activeRide.plate || activeRide.vehiclePlate || activeRide.carPlate) && (
+              <div style={{ background: '#F59E0B', color: '#0F172A', padding: '4px 10px', borderRadius: '8px', fontWeight: '900', fontSize: '12px', fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '1px', border: '1.5px solid #FFFFFF' }}>
+                {activeRide.plate || activeRide.vehiclePlate || activeRide.carPlate}
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '26px', fontWeight: '900', color: '#22C55E', fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1 }}>

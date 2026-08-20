@@ -720,19 +720,23 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                   </div>
                 </div>
 
-                {/* Driver Details with MNC Vector Icon */}
+                {/* Driver & Assigned Car Details */}
                 {completedModal.driver && (
-                  <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', flexShrink: 0 }}>
-                      <Car size={20} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>Driver: {completedModal.driver}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                        <ShieldCheck size={13} color="#10B981" />
-                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Empire Certified Partner</span>
+                  <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34D399', flexShrink: 0 }}>
+                        <Car size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk, sans-serif' }}>Driver: {completedModal.driver}</div>
+                        <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '700' }}>{completedModal.vehicle || completedModal.selectedCar || 'SWIFT'}</div>
                       </div>
                     </div>
+                    {(completedModal.plate || completedModal.vehiclePlate || completedModal.carPlate) && (
+                      <div style={{ background: '#F59E0B', color: '#0F172A', padding: '4px 10px', borderRadius: '8px', fontWeight: '900', fontSize: '12px', fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '1px', border: '1.5px solid #FFFFFF', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                        {completedModal.plate || completedModal.vehiclePlate || completedModal.carPlate}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

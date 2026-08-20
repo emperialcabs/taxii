@@ -8,11 +8,13 @@ const poolConfig = {
   database: process.env.MYSQL_DATABASE || 'u889282535_taxi',
   port: Number(process.env.MYSQL_PORT) || 3306,
   waitForConnections: true,
-  connectionLimit: 4,
-  queueLimit: 0,
-  connectTimeout: 10000,
+  connectionLimit: 2, // Strictly capped to 2 to prevent hitting Hostinger max_user_connections
+  maxIdle: 1,
+  idleTimeout: 5000, // Immediately free idle connections back to Hostinger
+  queueLimit: 10,
+  connectTimeout: 8000,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 10000
+  keepAliveInitialDelay: 5000
 };
 
 if (!global._mysqlPool) {
@@ -21,16 +23,38 @@ if (!global._mysqlPool) {
 let pool = global._mysqlPool;
 
 async function executeQuery(sql, params = []) {
-  try {
-    return await pool.query(sql, params);
-  } catch (err) {
-    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
-      console.warn('MySQL connection lost. Re-creating pool...', err.code);
-      global._mysqlPool = mysql.createPool(poolConfig);
-      pool = global._mysqlPool;
+  let retries = 2;
+  while (retries >= 0) {
+    try {
       return await pool.query(sql, params);
+    } catch (err) {
+      const errMsg = (err.message || '').toLowerCase();
+      const errCode = err.code || '';
+      
+      const isConnectionLimit = errCode === 'ER_USER_LIMIT_REACHED' || 
+                                errMsg.includes('max_user_connections') || 
+                                errMsg.includes('too many connections') ||
+                                errCode === 'POOL_ENQUEUED';
+                                
+      const isConnLost = errCode === 'PROTOCOL_CONNECTION_LOST' || 
+                         errCode === 'ETIMEDOUT' || 
+                         errCode === 'ECONNRESET';
+
+      if ((isConnectionLimit || isConnLost) && retries > 0) {
+        retries--;
+        // Wait 350ms to allow Hostinger serverless connections to close naturally
+        await new Promise(r => setTimeout(r, 350));
+        try {
+          if (global._mysqlPool) {
+            await global._mysqlPool.end().catch(() => {});
+          }
+        } catch (e) {}
+        global._mysqlPool = mysql.createPool(poolConfig);
+        pool = global._mysqlPool;
+      } else {
+        throw err;
+      }
     }
-    throw err;
   }
 }
 
@@ -222,13 +246,14 @@ export async function handleMySQLRequest(action, data = {}) {
       }
 
       case 'updateInquiryStatus': {
-        const { id, status, driver, fare, rewardIssued, rewardAmount } = data;
+        const { id, status, driver, vehicle, fare, rewardIssued, rewardAmount } = data;
         if (!id) return { success: false, error: 'Missing inquiry ID' };
         
         const updates = ['status = ?'];
         const params = [status];
 
         if (driver) { updates.push('driver = ?'); params.push(driver); }
+        if (vehicle) { updates.push('vehicle = ?'); params.push(vehicle); }
         if (fare !== undefined && fare !== null) { updates.push('fare = ?'); params.push(Number(fare)); }
         if (rewardIssued !== undefined && rewardIssued !== null) { updates.push('rewardIssued = ?'); params.push(rewardIssued ? 1 : 0); }
         if (rewardAmount !== undefined && rewardAmount !== null) { updates.push('rewardAmount = ?'); params.push(Number(rewardAmount)); }
@@ -392,8 +417,8 @@ export default async function handler(req, res) {
     const data = body.data || body;
 
     const result = await handleMySQLRequest(action, data);
-    return res.status(result.success ? 200 : 400).json(result);
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message || String(error) });
+    return res.status(200).json({ success: false, fallback: true, error: error.message || String(error) });
   }
 }

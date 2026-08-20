@@ -110,12 +110,13 @@ export const loadAllCustomersFromMySQL = async () => {
 /**
  * Update inquiry status in Hostinger MySQL database
  */
-export const updateInquiryStatusInMySQL = async (inquiryId, status, driverName, fare, rewardIssued, rewardAmount) => {
+export const updateInquiryStatusInMySQL = async (inquiryId, status, driverName, vehicleName, fare, rewardIssued, rewardAmount) => {
   if (!inquiryId) return false;
   const res = await sendRequest('updateInquiryStatus', {
     id: inquiryId,
     status,
     driver: driverName,
+    vehicle: vehicleName,
     fare,
     rewardIssued,
     rewardAmount

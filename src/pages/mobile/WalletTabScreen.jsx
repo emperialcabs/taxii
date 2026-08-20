@@ -36,7 +36,7 @@ export default function WalletTabScreen({ activeTab, setActiveTab, onBack }) {
     window.addEventListener('storage', fetchWallet);
     window.addEventListener('EMPERIAL CABS_wallet_updated', fetchWallet);
     window.addEventListener('EMPERIAL CABS_db_sync', fetchWallet);
-    const interval = setInterval(fetchWallet, 1500);
+    const interval = setInterval(fetchWallet, 12000);
     return () => {
       window.removeEventListener('storage', fetchWallet);
       window.removeEventListener('EMPERIAL CABS_wallet_updated', fetchWallet);

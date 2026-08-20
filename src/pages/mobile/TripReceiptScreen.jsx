@@ -113,16 +113,23 @@ export default function TripReceiptScreen({ tripData, onDone }) {
             </div>
           </div>
 
-          {/* Chauffeur Info */}
+          {/* Chauffeur & Vehicle Info */}
           {receipt.driver && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F1F5F9', padding: '12px 14px', borderRadius: '14px', marginBottom: '18px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#0F172A', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Car size={18} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: '#F1F5F9', padding: '12px 14px', borderRadius: '14px', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#0F172A', color: '#34D399', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Car size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>Chauffeur: {receipt.driver}</div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>{receipt.vehicle || receipt.selectedCar || 'Executive Cab'}</div>
+                </div>
               </div>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', fontFamily: 'Space Grotesk' }}>Chauffeur: {receipt.driver}</div>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>EMPERIAL CABS Verified Driver</div>
-              </div>
+              {(receipt.plate || receipt.vehiclePlate || receipt.carPlate) && (
+                <div style={{ background: '#F59E0B', color: '#0F172A', padding: '4px 10px', borderRadius: '8px', fontWeight: '900', fontSize: '12px', fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '1px', border: '1.5px solid #FFFFFF' }}>
+                  {receipt.plate || receipt.vehiclePlate || receipt.carPlate}
+                </div>
+              )}
             </div>
           )}
 

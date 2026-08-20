@@ -96,7 +96,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
     window.addEventListener('EMPERIAL CABS_db_sync', handleStorageChange);
     window.addEventListener('EMPERIAL CABS_trip_completed', handleStorageChange);
 
-    const interval = setInterval(loadInquiries, 1500);
+    const interval = setInterval(loadInquiries, 10000);
 
     return () => {
       if (bc) bc.close();
@@ -539,8 +539,17 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '14px', borderRadius: '16px', marginBottom: '20px' }}>
                   <div>
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>VEHICLE</span>
-                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.vehicle || selectedInquiry.carName || selectedInquiry.selectedCar || 'SWIFT'}</span>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>
+                      VEHICLE {selectedInquiry.driver ? `• ${selectedInquiry.driver}` : ''}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                      <span style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan' }}>{selectedInquiry.vehicle || selectedInquiry.carName || selectedInquiry.selectedCar || 'SWIFT'}</span>
+                      {(selectedInquiry.plate || selectedInquiry.vehiclePlate || selectedInquiry.carPlate) && (
+                        <span style={{ background: '#F59E0B', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', fontSize: '11px', fontFamily: 'Space Grotesk', letterSpacing: '1px', border: '1px solid #FFFFFF' }}>
+                          {selectedInquiry.plate || selectedInquiry.vehiclePlate || selectedInquiry.carPlate}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>TOTAL FARE</span>
