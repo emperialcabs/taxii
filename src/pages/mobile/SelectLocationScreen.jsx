@@ -10,17 +10,32 @@ const DEFAULT_PLACES = [
   "SG Highway IT Park",
   "Alkapuri Commercial Hub",
   "Ghogha Circle & Beach",
-  "Mumbai Central Airport (BOM)"
+  "Mumbai Central Airport (BOM)",
+  "Surat Textile Hub",
+  "Rajkot Trikon Baug",
+  "Sihor GIDC",
+  "Talaja Main Market",
+  "Palitana Bus Stand",
+  "Mahuva Beach Road"
 ];
 
-const POPULAR_CITIES = [
-  "Bhavnagar",
-  "Ahmedabad",
-  "Vadodara",
-  "Surat",
-  "Rajkot",
-  "Mumbai",
-  "Gandhinagar"
+const ALL_CITIES_AND_VILLAGES = [
+  // Major Cities & Regional Hubs
+  "Ahmedabad", "Bhavnagar", "Vadodara", "Surat", "Rajkot", "Gandhinagar", "Jamnagar", "Junagadh",
+  "Anand", "Bharuch", "Navsari", "Vapi", "Valsad", "Mehsana", "Palanpur", "Patan", "Porbandar",
+  "Amreli", "Botad", "Morbi", "Surendranagar", "Bhuj", "Gandhidham", "Dahod", "Godhra", "Nadiad",
+  "Mainpuri", "Saand", "Mumbai", "Pune", "Thane", "Nashik", "Udaipur", "Jaipur", "Abu Road", 
+  "Indore", "Bhopal", "Delhi", "Gurgaon", "Noida",
+  // Bhavnagar & Saurashtra Towns / Villages / Talukas
+  "Mahuva", "Sihor", "Talaja", "Palitana", "Gariadhar", "Vallabhipur", "Umrala", "Jesar", "Ghogha",
+  "Sanand", "Dholera", "Lothal", "Vartej", "Songadh", "Tana", "Bhandariya", "Trapaj", "Koliyak", "Alang",
+  "Wadhwan", "Limbdi", "Chotila", "Halvad", "Dhangadhra", "Jasdan", "Gondal", "Jetpur", "Dhoraji",
+  "Upleta", "Anjar", "Mandvi", "Mundra", "Nakhatrana", "Halol", "Veraval", "Somnath", "Dwarka",
+  "Kodinar", "Una", "Keshod", "Manavadar", "Visavadar", "Bhanvad", "Khambhalia", "Okha", "Salaya",
+  "Jodiya", "Dhrol", "Kalavad", "Lalpur", "Vinchhiya", "Babra", "Lathi", "Lilia", "Kunkavav",
+  "Dhari", "Khambha", "Rajula", "Jafrabad", "Ranavav", "Kutiyana", "Bhayavadar", "Paddhari",
+  "Kotda Sangani", "Lodhika", "Sayla", "Muli", "Lakhtar", "Thangadh", "Patdi", "Dasada", "Raphar", "Bhachau",
+  "Petlad", "Khambhat", "Borsad", "Dabhoi", "Karjan", "Vyara", "Bardoli", "Ankleshwar"
 ];
 
 const DEFAULT_ROUTES = [
@@ -62,7 +77,7 @@ export default function SelectLocationScreen({
   const [cDropoffAddress, setCDropoffAddress] = useState(dropoffLoc || 'Ahmedabad Airport (AMD)');
   const [cDays, setCDays] = useState(noOfDays || 1);
 
-  // Sync back config
+  // Load Admin back config
   const loadAdminConfig = () => {
     try {
       const savedPlaces = localStorage.getItem('cabsy_places');
@@ -82,23 +97,6 @@ export default function SelectLocationScreen({
           return;
         }
       }
-
-      if (savedPlaces) {
-        const parsedP = JSON.parse(savedPlaces);
-        if (Array.isArray(parsedP) && parsedP.length > 0) {
-          const generatedRoutes = parsedP.map((placeStr, idx) => {
-            const pName = typeof placeStr === 'string' ? placeStr : (placeStr.name || placeStr.title || placeStr.location);
-            return {
-              id: `ADMIN-R-${idx}`,
-              name: `Bhavnagar ➔ ${pName}`,
-              pickup: 'Bhavnagar, Gujarat',
-              dropoff: pName,
-              distanceKm: 15 + (idx * 12)
-            };
-          });
-          setRoutes(generatedRoutes);
-        }
-      }
     } catch (e) {
       console.warn("Failed to load admin routes:", e);
     }
@@ -108,6 +106,24 @@ export default function SelectLocationScreen({
     loadAdminConfig();
   }, []);
 
+  // Dynamic filter for cities & villages
+  const getFilteredCities = (query) => {
+    if (!query || query.trim() === '') return ALL_CITIES_AND_VILLAGES.slice(0, 15);
+    const q = query.toLowerCase().trim();
+    const filtered = ALL_CITIES_AND_VILLAGES.filter(c => c.toLowerCase().includes(q));
+    return filtered.length > 0 ? filtered : [];
+  };
+
+  // Dynamic filter for standard places
+  const getFilteredPlaces = (query) => {
+    if (!query || query.trim() === '') return places;
+    const q = query.toLowerCase().trim();
+    const filtered = places.filter(p => p.toLowerCase().includes(q));
+    if (filtered.length > 0) return filtered;
+    // Fallback search in ALL_CITIES_AND_VILLAGES
+    return ALL_CITIES_AND_VILLAGES.filter(c => c.toLowerCase().includes(q));
+  };
+
   const handleSelectRoute = (route) => {
     setPickupLoc(route.pickup);
     setDropoffLoc(route.dropoff);
@@ -116,7 +132,8 @@ export default function SelectLocationScreen({
   };
 
   const isStandardReady = pickupLoc && pickupLoc.trim() !== '' && dropoffLoc && dropoffLoc.trim() !== '';
-  const isCustomReady = cPickupCity.trim() !== '' && cDropoffCity.trim() !== '' && cPickupAddress.trim() !== '' && cDropoffAddress.trim() !== '';
+  // ALLOW ANY CUSTOM ENTRY typed by user for pickupCity and dropoffCity
+  const isCustomReady = cPickupCity && cPickupCity.trim() !== '' && cDropoffCity && cDropoffCity.trim() !== '';
 
   const handleProceedStandard = () => {
     setIsCustom(false);
@@ -125,10 +142,15 @@ export default function SelectLocationScreen({
 
   const handleProceedCustom = () => {
     setIsCustom(true);
-    setPickupCity(cPickupCity);
-    setDropoffCity(cDropoffCity);
-    setPickupLoc(cPickupAddress);
-    setDropoffLoc(cDropoffAddress);
+    const finalPickupCity = cPickupCity.trim();
+    const finalDropoffCity = cDropoffCity.trim();
+    const finalPickupAddr = cPickupAddress.trim() !== '' ? cPickupAddress.trim() : `${finalPickupCity}, Gujarat`;
+    const finalDropoffAddr = cDropoffAddress.trim() !== '' ? cDropoffAddress.trim() : `${finalDropoffCity}, Main Spot`;
+
+    setPickupCity(finalPickupCity);
+    setDropoffCity(finalDropoffCity);
+    setPickupLoc(finalPickupAddr);
+    setDropoffLoc(finalDropoffAddr);
     setNoOfDays(cDays);
     if (setTripType) setTripType('custom-trip');
     onSelectLocation();
@@ -252,7 +274,7 @@ export default function SelectLocationScreen({
                   value={pickupLoc} 
                   onChange={(e) => setPickupLoc(e.target.value)} 
                   onFocus={() => setActiveDropdown('pickup')}
-                  placeholder="Search pickup spot or city..."
+                  placeholder="Search pickup spot, city or village..."
                 />
 
                 {activeDropdown === 'pickup' && (
@@ -273,10 +295,22 @@ export default function SelectLocationScreen({
                       <Navigation size={18} color="#10B981" />
                       <span><strong>Use My Current Live GPS Spot</strong></span>
                     </div>
+
+                    {/* Custom typed location fallback */}
+                    {pickupLoc.trim() !== '' && !getFilteredPlaces(pickupLoc).some(p => p.toLowerCase() === pickupLoc.toLowerCase().trim()) && (
+                      <div 
+                        onClick={() => setActiveDropdown(null)}
+                        style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#059669', background: '#F0FDF4', borderBottom: '1px solid #E2E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
+                        <Sparkles size={16} color="#10B981" />
+                        <span>Use Custom Spot: "<strong>{pickupLoc}</strong>"</span>
+                      </div>
+                    )}
+
                     <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                      POPULAR SPOTS & CITIES
+                      POPULAR CITIES & VILLAGES
                     </div>
-                    {places.map((place, i) => (
+                    {getFilteredPlaces(pickupLoc).map((place, i) => (
                       <div 
                         key={i}
                         style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
@@ -316,15 +350,26 @@ export default function SelectLocationScreen({
                   value={dropoffLoc} 
                   onChange={(e) => setDropoffLoc(e.target.value)} 
                   onFocus={() => setActiveDropdown('dropoff')}
-                  placeholder="Search destination spot..."
+                  placeholder="Search destination spot, city or village..."
                 />
 
                 {activeDropdown === 'dropoff' && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto', marginTop: '6px' }}>
+                    {/* Custom typed location fallback */}
+                    {dropoffLoc.trim() !== '' && !getFilteredPlaces(dropoffLoc).some(p => p.toLowerCase() === dropoffLoc.toLowerCase().trim()) && (
+                      <div 
+                        onClick={() => setActiveDropdown(null)}
+                        style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#059669', background: '#F0FDF4', borderBottom: '1px solid #E2E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
+                        <Sparkles size={16} color="#10B981" />
+                        <span>Use Custom Spot: "<strong>{dropoffLoc}</strong>"</span>
+                      </div>
+                    )}
+
                     <div style={{ padding: '10px 14px', fontSize: '11px', fontWeight: '800', color: '#64748B', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                      POPULAR SPOTS & CITIES
+                      POPULAR CITIES & VILLAGES
                     </div>
-                    {places.map((place, i) => (
+                    {getFilteredPlaces(dropoffLoc).map((place, i) => (
                       <div 
                         key={i}
                         style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
@@ -395,10 +440,10 @@ export default function SelectLocationScreen({
           </div>
         )}
 
-        {/* MODE 2: CUSTOM OUTSTATION & MULTI-CITY TRIP (CLEAN LIGHT CORPORATE UI) */}
+        {/* MODE 2: CUSTOM OUTSTATION & MULTI-CITY TRIP (CLEAN LIGHT CORPORATE UI WITH DYNAMIC SEARCH) */}
         {mode === 'custom' && (
           <div>
-            {/* HERO CARD - CLEAN WHITE WITH EMERALD ACCENT */}
+            {/* HERO CARD */}
             <div style={{
               background: '#FFFFFF',
               borderRadius: '24px',
@@ -418,7 +463,7 @@ export default function SelectLocationScreen({
                 Custom Outstation & Multi-Day Rental
               </h3>
               <p style={{ margin: 0, fontSize: '13px', color: '#64748B', lineHeight: 1.4 }}>
-                Specify your exact pickup & dropoff cities, door-to-door locations, and number of days.
+                Specify your exact pickup & dropoff cities, villages, door-to-door locations, and number of days.
               </p>
             </div>
 
@@ -436,11 +481,11 @@ export default function SelectLocationScreen({
                 {/* Pickup City */}
                 <div style={{ position: 'relative' }}>
                   <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                    PICKUP CITY
+                    PICKUP CITY / VILLAGE
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Bhavnagar"
+                    placeholder="Type city or village (e.g. saand)..."
                     value={cPickupCity}
                     onChange={(e) => setCPickupCity(e.target.value)}
                     onFocus={() => setActiveDropdown('pickupCity')}
@@ -459,17 +504,32 @@ export default function SelectLocationScreen({
                     }}
                   />
                   {activeDropdown === 'pickupCity' && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: '160px', overflowY: 'auto', marginTop: '4px' }}>
-                      {POPULAR_CITIES.map((city, idx) => (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '14px', boxShadow: '0 12px 32px rgba(0,0,0,0.15)', maxHeight: '200px', overflowY: 'auto', marginTop: '4px' }}>
+                      {/* Option to use exact typed text if custom */}
+                      {cPickupCity.trim() !== '' && (
+                        <div
+                          onClick={() => setActiveDropdown(null)}
+                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#059669', background: '#ECFDF5', borderBottom: '1px solid #A7F3D0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                          <Sparkles size={14} color="#10B981" />
+                          <span>Use Location: "<strong>{cPickupCity}</strong>"</span>
+                        </div>
+                      )}
+
+                      {getFilteredCities(cPickupCity).map((city, idx) => (
                         <div
                           key={idx}
                           onClick={() => {
                             setCPickupCity(city);
+                            if (!cPickupAddress || cPickupAddress === 'Bhavnagar, Gujarat') {
+                              setCPickupAddress(`${city}, Gujarat`);
+                            }
                             setActiveDropdown(null);
                           }}
-                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
-                          📍 {city}
+                          <MapPin size={14} color="#10B981" />
+                          <span>{city}</span>
                         </div>
                       ))}
                     </div>
@@ -479,11 +539,11 @@ export default function SelectLocationScreen({
                 {/* Dropoff City */}
                 <div style={{ position: 'relative' }}>
                   <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                    DROPOFF CITY
+                    DROPOFF CITY / VILLAGE
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Ahmedabad"
+                    placeholder="Type city or village (e.g. manipuri)..."
                     value={cDropoffCity}
                     onChange={(e) => setCDropoffCity(e.target.value)}
                     onFocus={() => setActiveDropdown('dropoffCity')}
@@ -502,17 +562,32 @@ export default function SelectLocationScreen({
                     }}
                   />
                   {activeDropdown === 'dropoffCity' && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: '160px', overflowY: 'auto', marginTop: '4px' }}>
-                      {POPULAR_CITIES.map((city, idx) => (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '14px', boxShadow: '0 12px 32px rgba(0,0,0,0.15)', maxHeight: '200px', overflowY: 'auto', marginTop: '4px' }}>
+                      {/* Option to use exact typed text if custom */}
+                      {cDropoffCity.trim() !== '' && (
+                        <div
+                          onClick={() => setActiveDropdown(null)}
+                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#059669', background: '#ECFDF5', borderBottom: '1px solid #A7F3D0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                          <Sparkles size={14} color="#10B981" />
+                          <span>Use Destination: "<strong>{cDropoffCity}</strong>"</span>
+                        </div>
+                      )}
+
+                      {getFilteredCities(cDropoffCity).map((city, idx) => (
                         <div
                           key={idx}
                           onClick={() => {
                             setCDropoffCity(city);
+                            if (!cDropoffAddress || cDropoffAddress === 'Ahmedabad Airport (AMD)') {
+                              setCDropoffAddress(`${city}, Main Location`);
+                            }
                             setActiveDropdown(null);
                           }}
-                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
+                          style={{ padding: '10px 14px', fontSize: '13px', fontWeight: '700', color: '#0F172A', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
-                          🏁 {city}
+                          <MapPin size={14} color="#EF4444" />
+                          <span>{city}</span>
                         </div>
                       ))}
                     </div>
@@ -553,7 +628,7 @@ export default function SelectLocationScreen({
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Terminal 2, Ahmedabad Airport (AMD)"
+                  placeholder="e.g. Terminal 2, Airport or Main Chowk"
                   value={cDropoffAddress}
                   onChange={(e) => setCDropoffAddress(e.target.value)}
                   style={{
@@ -572,7 +647,7 @@ export default function SelectLocationScreen({
                 />
               </div>
 
-              {/* NUMBER OF DAYS STEPPER CONTROL (LIGHT CLEAN STYLE) */}
+              {/* NUMBER OF DAYS STEPPER CONTROL */}
               <div style={{
                 background: '#F8FAFC',
                 border: '1.5px solid #E2E8F0',
