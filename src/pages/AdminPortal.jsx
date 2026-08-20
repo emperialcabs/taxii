@@ -289,7 +289,8 @@ export default function AdminPortal() {
       const numA = parseInt(String(a.id).replace(/\D/g, '')) || 0;
       const numB = parseInt(String(b.id).replace(/\D/g, '')) || 0;
       if (numA !== numB) return numB - numA;
-      return inquiries.indexOf(b) - inquiries.indexOf(a);
+      // 4. Stable deterministic tie-breaker (never jump or swap order)
+      return String(b.id || '').localeCompare(String(a.id || ''));
     });
   }, [inquiries]);
 
@@ -520,9 +521,9 @@ export default function AdminPortal() {
     requestNotificationPermission();
     initEcosystemScheduler();
 
-    const fetchAllData = async () => {
+    const fetchAllData = async (isInitial = false) => {
       try {
-        setFirestoreLoading(true);
+        if (isInitial) setFirestoreLoading(true);
 
         // 1. Fetch Inquiries from Hostinger MySQL
         const mysqlInquiries = await loadAllInquiriesFromMySQL();
@@ -536,7 +537,14 @@ export default function AdminPortal() {
           }
         });
         const mergedInquiries = Array.from(inqMap.values());
-        setInquiries(mergedInquiries);
+        
+        // Only update state if inquiries data has actually changed (prevents flicker & jump)
+        setInquiries(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(mergedInquiries)) {
+            return prev;
+          }
+          return mergedInquiries;
+        });
 
         // 2. Fetch Customers from Hostinger MySQL
         const mysqlCustomers = await loadAllCustomersFromMySQL();
@@ -549,15 +557,22 @@ export default function AdminPortal() {
             custMap.set(key, { ...custMap.get(key), ...c });
           }
         });
-        setCustomers(Array.from(custMap.values()));
+        const mergedCustomers = Array.from(custMap.values());
+
+        setCustomers(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(mergedCustomers)) {
+            return prev;
+          }
+          return mergedCustomers;
+        });
       } catch (e) {
         console.warn('MySQL Fetch Exception in AdminPortal:', e);
       } finally {
-        setFirestoreLoading(false);
+        if (isInitial) setFirestoreLoading(false);
       }
     };
 
-    fetchAllData();
+    fetchAllData(true);
 
     // Sync admin notifications
     const syncAdminNotifs = () => {
@@ -565,15 +580,15 @@ export default function AdminPortal() {
       if (fresh && fresh.length > 0) {
         setNotifications(fresh);
       }
-      fetchAllData();
+      fetchAllData(false);
     };
 
     window.addEventListener('EMPERIAL CABS_admin_notif', syncAdminNotifs);
     window.addEventListener('EMPERIAL CABS_db_sync', syncAdminNotifs);
     window.addEventListener('storage', syncAdminNotifs);
     
-    // Poll Hostinger MySQL every 1.5s for instant minor-second live cross-device trip updates
-    const interval = setInterval(fetchAllData, 1500);
+    // Poll Hostinger MySQL silently in background every 5s (prevents jumping & DB connection exhaustion)
+    const interval = setInterval(() => fetchAllData(false), 5000);
 
     return () => {
       window.removeEventListener('EMPERIAL CABS_admin_notif', syncAdminNotifs);
