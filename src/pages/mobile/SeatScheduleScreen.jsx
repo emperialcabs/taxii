@@ -181,7 +181,7 @@ export default function SeatScheduleScreen({
               </button>
               
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
-                <span>●</span> {isCustomMode ? `${estTotalKm} KM (Avg ${avgKmPerDay} KM/Day)` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
+                <span>●</span> {isCustomMode ? `Custom Outstation (${noOfDays || 1} Day${(noOfDays || 1) > 1 ? 's' : ''})` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
               </div>
             </div>
 
@@ -195,21 +195,11 @@ export default function SeatScheduleScreen({
                 marginBottom: '16px',
                 boxShadow: '0 2px 10px rgba(16,185,129,0.08)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Sparkles size={18} color="#10B981" />
-                    <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
-                      Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <span style={{ background: '#10B981', color: '#FFFFFF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
-                      Total: {estTotalKm} KM
-                    </span>
-                    <span style={{ background: '#D1FAE5', color: '#047857', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
-                      Avg: {avgKmPerDay} KM/Day
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Sparkles size={18} color="#10B981" />
+                  <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
+                    Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
+                  </span>
                 </div>
                 <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk', marginBottom: '2px' }}>
                   <strong>Pickup:</strong> {pickupLoc}
@@ -372,14 +362,16 @@ export default function SeatScheduleScreen({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>{car.name}</span>
-                      <span style={{ fontSize: '10px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#64748B', padding: '2px 6px', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#059669', padding: '4px 10px', borderRadius: '10px' }}>
                         ₹{car.ratePerKm}/km
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid #F1F5F9' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748B' }}>{car.type}</span>
-                      <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
+                      {!isCustomMode && (
+                        <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
+                      )}
                     </div>
                   </div>
                 );
@@ -450,7 +442,7 @@ export default function SeatScheduleScreen({
                 onNext && onNext(payload);
               }}
             >
-              Confirm Booking Request ({discountAmount > 0 ? `₹${netFare}` : activeCarObj.price}) →
+              {isCustomMode ? 'Confirm Booking Request →' : `Confirm Booking Request (${discountAmount > 0 ? `₹${netFare}` : activeCarObj.price}) →`}
             </button>
           </div>
         </div>

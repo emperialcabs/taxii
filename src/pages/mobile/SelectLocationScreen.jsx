@@ -722,7 +722,7 @@ export default function SelectLocationScreen({
               </div>
             </div>
 
-            {/* DYNAMIC ACCURATE ROUTE & KM SUMMARY BADGE */}
+            {/* DYNAMIC ROUTE SUMMARY BADGE */}
             {isCustomReady && (
               <div style={{
                 background: '#ECFDF5',
@@ -732,24 +732,14 @@ export default function SelectLocationScreen({
                 marginBottom: '20px',
                 boxShadow: '0 4px 14px rgba(16,185,129,0.1)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CheckCircle size={20} color="#10B981" />
-                    <span style={{ fontSize: '15px', fontWeight: '800', color: '#047857', fontFamily: 'League Spartan, sans-serif' }}>
-                      {cPickupCity} ➔ {cDropoffCity} ({cDays} Day{cDays > 1 ? 's' : ''})
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <span style={{ background: '#10B981', color: '#FFFFFF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
-                      Total: {estTotalKm} KM
-                    </span>
-                    <span style={{ background: '#D1FAE5', color: '#047857', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
-                      Avg: {avgKmPerDay} KM/Day
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <CheckCircle size={20} color="#10B981" />
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: '#047857', fontFamily: 'League Spartan, sans-serif' }}>
+                    {cPickupCity} ➔ {cDropoffCity} ({cDays} Day{cDays > 1 ? 's' : ''})
+                  </span>
                 </div>
                 <div style={{ fontSize: '12px', color: '#065F46', fontWeight: '600', lineHeight: 1.4 }}>
-                  Calculated road distance. Includes <strong>{estTotalKm} Total KM</strong> limit with an average of <strong>{avgKmPerDay} KM/Day</strong> for your {cDays}-day itinerary.
+                  Custom itinerary specified. Proceed to select your fleet vehicle.
                 </div>
               </div>
             )}
@@ -821,7 +811,7 @@ export default function SelectLocationScreen({
             disabled={!isCustomReady}
             onClick={handleProceedCustom}
           >
-            {isCustomReady ? `Continue to Select Fleet Car (${estTotalKm} KM) →` : 'Fill Pickup & Dropoff Details'}
+            {isCustomReady ? 'Continue to Select Fleet Car →' : 'Fill Pickup & Dropoff Details'}
           </button>
         )}
       </div>
