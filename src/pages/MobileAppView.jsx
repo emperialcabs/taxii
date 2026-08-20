@@ -86,20 +86,8 @@ export default function MobileAppView() {
             return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
           });
 
-          if (activeRide) {
+          if (activeRide && (activeRide.status === 'In Progress' || activeRide.status === 'On Ride')) {
             setAppStage('TRACKING');
-          } else {
-            const completedTrip = list.find(i => {
-              if (!i) return false;
-              const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
-              const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-              const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
-                              (uEmail && iEmail && uEmail === iEmail);
-              return isMatch && i.status === 'Completed' && !i.dismissed;
-            });
-            if (completedTrip) {
-              setAppStage('RECEIPT');
-            }
           }
         }
       } catch (e) {}

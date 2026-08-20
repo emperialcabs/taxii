@@ -222,13 +222,19 @@ export async function handleMySQLRequest(action, data = {}) {
       }
 
       case 'updateInquiryStatus': {
-        const { id, status, driver } = data;
+        const { id, status, driver, fare, rewardIssued, rewardAmount } = data;
         if (!id) return { success: false, error: 'Missing inquiry ID' };
-        if (driver) {
-          await executeQuery('UPDATE inquiries SET status = ?, driver = ? WHERE id = ?', [status, driver, id]);
-        } else {
-          await executeQuery('UPDATE inquiries SET status = ? WHERE id = ?', [status, id]);
-        }
+        
+        const updates = ['status = ?'];
+        const params = [status];
+
+        if (driver) { updates.push('driver = ?'); params.push(driver); }
+        if (fare !== undefined && fare !== null) { updates.push('fare = ?'); params.push(Number(fare)); }
+        if (rewardIssued !== undefined && rewardIssued !== null) { updates.push('rewardIssued = ?'); params.push(rewardIssued ? 1 : 0); }
+        if (rewardAmount !== undefined && rewardAmount !== null) { updates.push('rewardAmount = ?'); params.push(Number(rewardAmount)); }
+
+        params.push(id);
+        await executeQuery(`UPDATE inquiries SET ${updates.join(', ')} WHERE id = ?`, params);
         return { success: true };
       }
 

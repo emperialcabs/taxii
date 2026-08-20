@@ -389,6 +389,7 @@ export default function AdminPortal() {
 
   // Modal Control States
   const [assignModal, setAssignModal] = useState({ open: false, inquiry: null });
+  const [completeModal, setCompleteModal] = useState({ open: false, inquiry: null, finalPrice: '', rewardAmount: '0' });
   const [addDriverModal, setAddDriverModal] = useState(false);
   const [addCustomerModal, setAddCustomerModal] = useState(false);
   const [addInquiryModal, setAddInquiryModal] = useState(false);
@@ -1027,80 +1028,90 @@ export default function AdminPortal() {
     }, 300);
   };
 
+  const triggerCompleteTrip = (inq) => {
+    if (!inq) return;
+    const initialPrice = inq.fare || inq.totalFareNum || inq.originalFare || '0';
+    setCompleteModal({
+      open: true,
+      inquiry: inq,
+      finalPrice: String(initialPrice),
+      rewardAmount: String(inq.rewardAmount || '0')
+    });
+  };
+
   const handleCompleteTrip = (inquiryId) => {
     if (!inquiryId) return;
     const targetInq = inquiries.find(i => i.id === inquiryId);
-    if (!targetInq) return;
+    if (targetInq) triggerCompleteTrip(targetInq);
+  };
 
-    // Ask admin for reward amount upon completing ride
-    const rewardInput = window.prompt(
-      `Completing Trip ${inquiryId} for ${targetInq.customerName || 'Customer'}.\n\nEnter customer wallet reward amount in ₹ (Enter 0 for no reward):`,
-      "0"
-    );
+  const handleFinalizeTripCompletion = (e) => {
+    if (e) e.preventDefault();
+    if (!completeModal.inquiry) return;
+    const inq = completeModal.inquiry;
+    const finalFare = Math.max(0, Number(completeModal.finalPrice) || 0);
+    const rewardVal = Math.max(0, Number(completeModal.rewardAmount) || 0);
+    const hasReward = rewardVal > 0;
 
-    // If admin clicks Cancel, abort completion
-    if (rewardInput === null) return;
-
-    const actionKey = 'complete_' + inquiryId;
+    const actionKey = 'complete_' + inq.id;
     if (actionLoadingId === actionKey) return;
     setActionLoadingId(actionKey);
 
-    const rewardVal = Math.max(0, Number(rewardInput) || 0);
-    const hasReward = rewardVal > 0;
-
-    if (hasReward) {
-      db.addRewardToCustomer(targetInq.customerPhone, rewardVal, inquiryId, targetInq.pickup, targetInq.dropoff);
-      updateInquiryRewardInMySQL(inquiryId, true, rewardVal).catch(() => {});
+    if (hasReward && inq.customerPhone) {
+      db.addRewardToCustomer(inq.customerPhone, rewardVal, inq.id, inq.pickup, inq.dropoff);
+      updateInquiryRewardInMySQL(inq.id, true, rewardVal).catch(() => {});
     }
 
     const fullCompleted = { 
-      ...targetInq, 
+      ...inq, 
       status: 'Completed',
+      fare: finalFare,
+      totalFareNum: finalFare,
+      price: `₹${finalFare.toLocaleString('en-IN')}`,
       rewardIssued: hasReward ? 1 : 0,
       rewardAmount: hasReward ? rewardVal : 0
     };
 
     setInquiries(prev => {
-      const updated = prev.map(inq => inq.id === inquiryId ? fullCompleted : inq);
+      const updated = prev.map(item => item.id === inq.id ? fullCompleted : item);
       localStorage.setItem('cabsy_inquiries', JSON.stringify(updated));
       return updated;
     });
 
     localStorage.setItem('EMPERIAL CABS_last_completed_trip', JSON.stringify(fullCompleted));
     localStorage.removeItem('EMPERIAL CABS_active_trip');
-    updateInquiryStatusInMySQL(inquiryId, 'Completed', targetInq.driver || 'Assigned Driver').catch(() => {});
+
+    saveInquiryToMySQL(fullCompleted).catch(() => {});
+    updateInquiryStatusInMySQL(inq.id, 'Completed', inq.driver || 'Assigned Driver', finalFare, hasReward ? 1 : 0, rewardVal).catch(() => {});
     try {
       db.saveInquiry(fullCompleted);
-    } catch (e) {}
+    } catch (err) {}
 
-    // Direct push notification to customer on trip completion
+    autoSyncCustomer(inq.customerName, inq.customerPhone, finalFare);
+
     notifyCustomer({
       type: 'trip_completed',
       title: '🏁 Trip Completed Successfully!',
       body: hasReward 
-        ? `Thank you for riding with EMPERIAL CABS! You earned ₹${rewardVal} wallet reward credit! Tap to view your receipt.`
-        : `Thank you for riding with EMPERIAL CABS! We hope you enjoyed your ride to ${targetInq.dropoff}. Tap to view your receipt.`,
-      customerPhone: targetInq.customerPhone,
-      customerEmail: targetInq.customerEmail
+        ? `Your trip (${inq.pickupCity || inq.pickup} → ${inq.dropoffCity || inq.dropoff}) is completed! Total Fare: ₹${finalFare}. You earned ₹${rewardVal} wallet reward credit!`
+        : `Your trip (${inq.pickupCity || inq.pickup} → ${inq.dropoffCity || inq.dropoff}) is completed! Total Fare: ₹${finalFare}. Thank you for riding with EMPERIAL CABS!`,
+      customerPhone: inq.customerPhone,
+      customerEmail: inq.customerEmail
     });
 
-    // Post real-time cross-tab BroadcastChannel message
     try {
       if ('BroadcastChannel' in window) {
         const bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.postMessage({ type: 'TRIP_COMPLETED', data: fullCompleted, timestamp: Date.now() });
         bc.close();
       }
-    } catch (e) {}
+    } catch (err) {}
 
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_trip_completed', { detail: fullCompleted }));
     window.dispatchEvent(new CustomEvent('EMPERIAL CABS_db_sync', { detail: fullCompleted }));
 
-    if (hasReward) {
-      alert(`Trip ${inquiryId} completed! Credited ₹${rewardVal} wallet reward to ${targetInq.customerName || 'customer'}.`);
-    }
-
+    setCompleteModal({ open: false, inquiry: null, finalPrice: '', rewardAmount: '0' });
     setTimeout(() => {
       setActionLoadingId(null);
     }, 300);
@@ -2198,20 +2209,7 @@ export default function AdminPortal() {
                                 <button
                                   className="btn-action-complete"
                                   disabled={!!actionLoadingId}
-                                  onClick={() => {
-                                    setActionLoadingId('complete_' + inq.id);
-                                    updateInquiryStatusInMySQL(inq.id, 'Completed').catch(() => {});
-                                    setInquiries(prev => prev.map(item => item.id === inq.id ? { ...item, status: 'Completed' } : item));
-                                    notifyCustomer({
-                                      type: 'trip_completed',
-                                      title: '🏁 Custom Trip Completed!',
-                                      body: `Your custom trip from ${inq.pickupCity || inq.pickup} to ${inq.dropoffCity || inq.dropoff} has been completed. Thank you for riding with EMPERIAL CABS!`,
-                                      customerPhone: inq.customerPhone,
-                                      customerEmail: inq.customerEmail
-                                    });
-                                    window.dispatchEvent(new Event('storage'));
-                                    setTimeout(() => setActionLoadingId(null), 300);
-                                  }}
+                                  onClick={() => triggerCompleteTrip(inq)}
                                   style={{ padding: '6px 12px', borderRadius: '12px', background: '#059669', color: '#FFF', fontWeight: '800', fontSize: '0.8rem', border: 'none', cursor: 'pointer' }}
                                 >
                                   Complete Trip
@@ -4227,6 +4225,145 @@ export default function AdminPortal() {
                 🚀 Dispatch Push Notification Now
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TRIP COMPLETION & E-RECEIPT FINALIZATION MODAL */}
+      {completeModal.open && completeModal.inquiry && (
+        <div className="modal-backdrop" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '20px' }}>
+          <div className="modal-card" style={{ maxWidth: '480px', width: '100%', borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)', padding: '20px 24px', color: '#FFFFFF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckCircle size={22} color="#FFF" />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', fontFamily: 'League Spartan' }}>Complete Trip & Issue Receipt</h3>
+                    <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Ref: {completeModal.inquiry.id}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setCompleteModal({ open: false, inquiry: null, finalPrice: '', rewardAmount: '0' })}
+                  style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', opacity: 0.8 }}
+                >
+                  <XCircle size={22} />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleFinalizeTripCompletion} style={{ padding: '24px' }}>
+              {/* Customer & Route Card */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', marginBottom: '20px' }}>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', marginBottom: '4px' }}>
+                  👤 {resolveCustomerName(completeModal.inquiry)} ({completeModal.inquiry.customerPhone})
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#059669' }}>
+                  📍 {completeModal.inquiry.pickupCity || completeModal.inquiry.pickup} ➔ {completeModal.inquiry.dropoffCity || completeModal.inquiry.dropoff}
+                </div>
+                {completeModal.inquiry.vehicle && (
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+                    🚘 Vehicle: <strong>{completeModal.inquiry.vehicle}</strong>
+                  </div>
+                )}
+              </div>
+
+              {/* Total Final Price Input */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '6px' }}>
+                  1. ENTER TOTAL TRIP PRICE (₹) <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#059669', fontSize: '16px' }}>₹</span>
+                  <input 
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="e.g. 2500"
+                    value={completeModal.finalPrice}
+                    onChange={(e) => setCompleteModal(prev => ({ ...prev, finalPrice: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px 12px 34px',
+                      borderRadius: '14px',
+                      border: '2px solid #10B981',
+                      fontSize: '16px',
+                      fontWeight: '800',
+                      color: '#0F172A',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <small style={{ color: '#64748B', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                  This total price will be printed on the customer's official E-Receipt.
+                </small>
+              </div>
+
+              {/* Customer Reward Input */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '6px' }}>
+                  2. WALLET REWARD / CASHBACK (₹) <span style={{ color: '#64748B', fontWeight: '600' }}>(Optional)</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#7C3AED', fontSize: '16px' }}>₹</span>
+                  <input 
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={completeModal.rewardAmount}
+                    onChange={(e) => setCompleteModal(prev => ({ ...prev, rewardAmount: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px 12px 34px',
+                      borderRadius: '14px',
+                      border: '1.5px solid #CBD5E1',
+                      fontSize: '15px',
+                      fontWeight: '700',
+                      color: '#0F172A',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <small style={{ color: '#64748B', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                  Entered amount will be instantly credited to the customer's wallet balance.
+                </small>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setCompleteModal({ open: false, inquiry: null, finalPrice: '', rewardAmount: '0' })}
+                  style={{ borderRadius: '14px', padding: '10px 18px', fontWeight: '700' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  style={{
+                    background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '14px',
+                    padding: '10px 22px',
+                    fontFamily: 'League Spartan',
+                    fontSize: '15px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <CheckCircle size={16} /> Complete & Generate Receipt
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
