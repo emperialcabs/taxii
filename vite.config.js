@@ -44,12 +44,28 @@ function mysqlDevPlugin() {
   };
 }
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), mysqlDevPlugin()],
   server: {
     port: 3000,
     host: '0.0.0.0',
     open: true
+  },
+  build: {
+    chunkSizeWarningLimit: 3000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('leaflet')) {
+              return 'vendor-maps';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+          }
+        }
+      }
+    }
   }
 });
