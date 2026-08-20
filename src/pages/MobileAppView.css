@@ -2,20 +2,20 @@
 @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --emperial-yellow: #34D399;
-  --emperial-orange: #10B981;
+  --emperial-yellow: #6EE7B7;
+  --emperial-orange: #34D399;
   --emperial-dark: #1E293B;
   --emperial-navy: #0F172A;
   --emperial-gray: #64748B;
   --emperial-light-bg: #F8FAFC;
   --emperial-card-bg: #FFFFFF;
   --emperial-red: #EF4444;
-  --emperial-green: #22C55E;
+  --emperial-green: #4ADE80;
   --emperial-border: #E2E8F0;
   --emperial-shadow-sm: 0 2px 8px rgba(0,0,0,0.03);
   --emperial-shadow-md: 0 6px 20px rgba(0,0,0,0.06);
   --emperial-shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
-  --emperial-glow-yellow: 0 6px 20px rgba(52, 211, 153, 0.35);
+  --emperial-glow-yellow: 0 6px 20px rgba(110, 231, 183, 0.4);
 }
 
 
@@ -283,12 +283,12 @@
 .onboarding-desc { font-size: 15px; color: #64748B; line-height: 1.5; margin: 0; }
 .onboarding-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
 .dot-item { width: 8px; height: 8px; border-radius: 50%; background: #E2E8F0; transition: all 0.3s ease; }
-.dot-item.active { width: 24px; border-radius: 12px; background: #34D399; }
+.dot-item.active { width: 24px; border-radius: 12px; background: #6EE7B7; }
 
 .onboarding-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; margin-top: 20px; }
 .btn-skip { background: none; border: none; font-size: 16px; font-weight: 700; color: #64748B; cursor: pointer; }
 .btn-next-finish {
-  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 100%);
   color: #FFFFFF;
   border: none;
   font-family: 'League Spartan', sans-serif;
@@ -297,7 +297,7 @@
   padding: 14px 32px;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
+  box-shadow: 0 4px 14px rgba(110, 231, 183, 0.4);
   transition: transform 0.15s ease;
 }
 .btn-next-finish:active { transform: scale(0.96); }

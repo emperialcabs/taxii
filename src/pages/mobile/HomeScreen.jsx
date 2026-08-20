@@ -610,7 +610,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
             <button 
               onClick={() => setIsNotifOpen(false)}
-              style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '4px', boxShadow: '0 6px 20px rgba(52, 211, 153, 0.35)' }}
+              style={{ background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '4px', boxShadow: '0 6px 20px rgba(110, 231, 183, 0.4)' }}
             >
               Close Updates
             </button>
@@ -646,14 +646,14 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
                   style={{ padding: '14px 16px', borderRadius: '14px', background: '#F8FAFC', cursor: 'pointer', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                 >
                   <span style={{ fontFamily: 'Space Grotesk', fontWeight: '700', color: '#0F172A', fontSize: '14px' }}>{loc.name}</span>
-                  <span style={{ fontSize: '12px', color: '#22C55E', fontWeight: '800' }}>Select →</span>
+                  <span style={{ fontSize: '12px', color: '#4ADE80', fontWeight: '800' }}>Select →</span>
                 </div>
               ))}
             </div>
 
             <button 
               onClick={() => { setIsSearchOpen(false); onStartBooking(); }}
-              style={{ background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(52, 211, 153, 0.4)' }}
+              style={{ background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)', color: '#FFFFFF', border: 'none', padding: '16px', borderRadius: '16px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', marginTop: '6px', boxShadow: '0 8px 24px rgba(110, 231, 183, 0.4)' }}
             >
               Confirm Location & Continue →
             </button>

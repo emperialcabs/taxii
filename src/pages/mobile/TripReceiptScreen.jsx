@@ -58,7 +58,7 @@ export default function TripReceiptScreen({ tripData, onDone }) {
     <div className="real-mobile-app">
       <div className="white-header-nav" style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', background: '#FFFFFF' }}>
         <h2 className="white-header-title" style={{ fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Receipt size={22} color="#10B981" />
+          <Receipt size={22} color="#34D399" />
           <span>Official Trip E-Receipt</span>
         </h2>
       </div>
@@ -78,9 +78,9 @@ export default function TripReceiptScreen({ tripData, onDone }) {
             
             <div style={{
               width: '58px', height: '58px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)',
               color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 10px auto', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.35)'
+              margin: '0 auto 10px auto', boxShadow: '0 10px 25px rgba(110, 231, 183, 0.4)'
             }}>
               <CheckCircle2 size={32} strokeWidth={2.5} />
             </div>
@@ -90,7 +90,7 @@ export default function TripReceiptScreen({ tripData, onDone }) {
             </h3>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px' }}>
-              <ShieldCheck size={14} color="#10B981" />
+              <ShieldCheck size={14} color="#34D399" />
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0, fontFamily: 'Space Grotesk, sans-serif', fontWeight: '700' }}>
                 Ref ID: <strong>{receipt.id || 'INQ-REF'}</strong> • {receipt.date || 'Today'}
               </p>
@@ -197,30 +197,58 @@ export default function TripReceiptScreen({ tripData, onDone }) {
           </div>
         </div>
 
-        {/* Done Button */}
-        <button 
-          onClick={handleFinish}
-          style={{
-            width: '100%',
-            padding: '16px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-            color: '#FFFFFF',
-            border: 'none',
-            fontFamily: 'League Spartan, sans-serif',
-            fontSize: '17px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          <Home size={18} />
-          <span>RETURN TO HOME</span>
-        </button>
+        {/* Action Buttons: Download Receipt & Done */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button 
+            type="button"
+            onClick={() => {
+              window.print();
+            }}
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: '16px',
+              background: '#F1F5F9',
+              border: '1.5px solid #CBD5E1',
+              color: '#0F172A',
+              fontFamily: 'League Spartan, sans-serif',
+              fontSize: '16px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <Receipt size={18} />
+            <span>DOWNLOAD E-RECEIPT (PDF)</span>
+          </button>
+
+          <button 
+            onClick={handleFinish}
+            style={{
+              width: '100%',
+              padding: '16px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)',
+              color: '#FFFFFF',
+              border: 'none',
+              fontFamily: 'League Spartan, sans-serif',
+              fontSize: '17px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              boxShadow: '0 10px 25px rgba(110, 231, 183, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <Home size={18} />
+            <span>RETURN TO HOME</span>
+          </button>
+        </div>
       </div>
     </div>
   );

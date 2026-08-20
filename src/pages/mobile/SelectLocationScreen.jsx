@@ -764,7 +764,7 @@ export default function SelectLocationScreen({
             style={{
               width: '100%',
               background: isStandardReady 
-                ? 'linear-gradient(135deg, #34D399 0%, #10B981 100%)' 
+                ? 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)' 
                 : '#E2E8F0',
               color: isStandardReady ? '#FFFFFF' : '#94A3B8',
               border: 'none',
@@ -774,7 +774,7 @@ export default function SelectLocationScreen({
               fontSize: '18px',
               fontWeight: '800',
               cursor: isStandardReady ? 'pointer' : 'not-allowed',
-              boxShadow: isStandardReady ? '0 8px 24px rgba(52, 211, 153, 0.4)' : 'none',
+              boxShadow: isStandardReady ? '0 8px 24px rgba(110, 231, 183, 0.4)' : 'none',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
@@ -791,7 +791,7 @@ export default function SelectLocationScreen({
             style={{
               width: '100%',
               background: isCustomReady 
-                ? 'linear-gradient(135deg, #34D399 0%, #10B981 100%)' 
+                ? 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)' 
                 : '#E2E8F0',
               color: isCustomReady ? '#FFFFFF' : '#94A3B8',
               border: 'none',

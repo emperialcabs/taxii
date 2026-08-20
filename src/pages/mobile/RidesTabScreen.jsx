@@ -110,6 +110,15 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
 
   // Cancel Inquiry Action
   const handleCancelInquiry = (inqId) => {
+    const targetInq = inquiries.find(item => item.id === inqId || item.createdAt === inqId);
+    if (targetInq) {
+      const st = (targetInq.status || '').toLowerCase();
+      if (st.includes('progress') || st.includes('ride') || st.includes('start') || st.includes('complete')) {
+        alert("Trip has already started! Active rides cannot be cancelled by the customer.");
+        return;
+      }
+    }
+
     if (!window.confirm("Are you sure you want to cancel this booking inquiry?")) return;
 
     try {
@@ -182,14 +191,15 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
   const getStatusBadge = (statusStr) => {
     const st = (statusStr || 'Pending').toLowerCase();
 
-    if (st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed')) {
+    if (st.includes('approve') || st.includes('confirm') || st.includes('success') || st.includes('completed') || st.includes('progress') || st.includes('ride')) {
       return {
-        label: 'Confirmed',
+        label: st.includes('completed') ? 'Completed' : (st.includes('progress') || st.includes('ride')) ? 'In Progress' : 'Confirmed',
         Icon: CheckCircle2,
         bg: '#DCFCE7',
         border: '#86EFAC',
         color: '#15803D',
-        canCancel: false
+        canCancel: false,
+        canEdit: false
       };
     }
     if (st.includes('reject') || st.includes('decline') || st.includes('cancel')) {
@@ -199,7 +209,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
         bg: '#FEE2E2',
         border: '#FCA5A5',
         color: '#B91C1C',
-        canCancel: false
+        canCancel: false,
+        canEdit: false
       };
     }
     return {
@@ -208,7 +219,8 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
       bg: '#F1F5F9',
       border: '#CBD5E1',
       color: '#475569',
-      canCancel: true
+      canCancel: true,
+      canEdit: true
     };
   };
 
@@ -289,7 +301,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
             <button
               onClick={onBookNewRide}
               style={{
-                background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+                background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '12px 24px',
@@ -298,7 +310,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                 fontWeight: '800',
                 fontSize: '15px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)',
+                boxShadow: '0 4px 14px rgba(110, 231, 183, 0.4)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px'
@@ -510,35 +522,37 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', display: 'block' }}>TOTAL FARE</span>
-                    <span style={{ fontSize: '22px', fontWeight: '800', color: '#10B981', fontFamily: 'League Spartan' }}>{typeof selectedInquiry.price === 'string' ? selectedInquiry.price : (selectedInquiry.fare ? `₹${selectedInquiry.fare.toLocaleString('en-IN')}` : '₹0')}</span>
+                    <span style={{ fontSize: '22px', fontWeight: '800', color: '#34D399', fontFamily: 'League Spartan' }}>{typeof selectedInquiry.price === 'string' ? selectedInquiry.price : (selectedInquiry.fare ? `₹${selectedInquiry.fare.toLocaleString('en-IN')}` : '₹0')}</span>
                   </div>
                 </div>
 
                 {/* MODAL ACTION BUTTONS */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    style={{
-                      width: '100%',
-                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      padding: '14px',
-                      borderRadius: '16px',
-                      fontFamily: 'League Spartan, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '800',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <Edit3 size={16} />
-                    <span>Edit Inquiry Details</span>
-                  </button>
+                  {getStatusBadge(selectedInquiry.status).canEdit && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        padding: '14px',
+                        borderRadius: '16px',
+                        fontFamily: 'League Spartan, sans-serif',
+                        fontSize: '16px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 14px rgba(110, 231, 183, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Edit3 size={16} />
+                      <span>Edit Inquiry Details</span>
+                    </button>
+                  )}
 
                   {getStatusBadge(selectedInquiry.status).canCancel && (
                     <button
@@ -660,7 +674,7 @@ export default function RidesTabScreen({ activeTab, setActiveTab, onBookNewRide 
                   </button>
                   <button
                     type="submit"
-                    style={{ flex: 1, background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontFamily: 'League Spartan', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(52, 211, 153, 0.35)' }}
+                    style={{ flex: 1, background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 100%)', color: '#FFFFFF', border: 'none', padding: '14px', borderRadius: '16px', fontFamily: 'League Spartan', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(110, 231, 183, 0.4)' }}
                   >
                     Save Changes
                   </button>

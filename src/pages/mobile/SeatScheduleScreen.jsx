@@ -591,7 +591,7 @@ export default function SeatScheduleScreen({
                 position: 'relative',
                 width: '100%',
                 height: '62px',
-                background: isConfirmed ? '#10B981' : '#0F172A',
+                background: isConfirmed ? '#34D399' : '#0F172A',
                 borderRadius: '31px',
                 padding: '4px',
                 display: 'flex',
@@ -600,7 +600,7 @@ export default function SeatScheduleScreen({
                 touchAction: 'none',
                 overflow: 'hidden',
                 boxShadow: isConfirmed 
-                  ? '0 10px 28px rgba(16, 185, 129, 0.45)' 
+                  ? '0 10px 28px rgba(52, 211, 153, 0.45)' 
                   : '0 8px 24px rgba(15, 23, 42, 0.25)',
                 transition: isDragging ? 'none' : 'background 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease',
                 cursor: isConfirmed ? 'default' : 'pointer'
@@ -616,7 +616,7 @@ export default function SeatScheduleScreen({
                   top: 0,
                   bottom: 0,
                   width: isConfirmed ? '100%' : `${dragX + handleWidth}px`,
-                  background: 'linear-gradient(90deg, #059669 0%, #10B981 50%, #34D399 100%)',
+                  background: 'linear-gradient(90deg, #10B981 0%, #34D399 50%, #6EE7B7 100%)',
                   borderRadius: '31px',
                   transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
                   pointerEvents: 'none'
@@ -633,7 +633,7 @@ export default function SeatScheduleScreen({
                   borderRadius: '50%',
                   background: '#FFFFFF',
                   boxShadow: isDragging 
-                    ? '0 6px 20px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(52, 211, 153, 0.3)' 
+                    ? '0 6px 20px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(110, 231, 183, 0.4)' 
                     : '0 4px 14px rgba(0, 0, 0, 0.25)',
                   display: 'flex',
                   alignItems: 'center',
@@ -649,9 +649,9 @@ export default function SeatScheduleScreen({
                 }}
               >
                 {isConfirmed ? (
-                  <CheckCircle2 size={28} color="#10B981" />
+                  <CheckCircle2 size={28} color="#34D399" />
                 ) : (
-                  <span style={{ fontSize: '20px', color: '#059669', fontWeight: '900', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '20px', color: '#10B981', fontWeight: '900', display: 'flex', alignItems: 'center' }}>
                     ➔
                   </span>
                 )}
