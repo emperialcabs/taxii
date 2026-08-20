@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
-import { getCoordsForPlace, generateRoutePolyline } from '../../utils/locationCoords';
+import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { db } from '../../services/dbService';
 import { Gift, ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
@@ -32,7 +32,7 @@ export default function SeatScheduleScreen({
   const destPos = getCoordsForPlace(dropoffLoc || "Ahmedabad Airport (AMD)", userCoords);
   const routePolyline = generateRoutePolyline(pickupPos, destPos);
 
-  // Compute distance from Admin destinations
+  // Compute distance & Avg KM/day dynamically
   const getRouteDistanceKm = () => {
     try {
       const savedDest = localStorage.getItem('cabsy_destinations') || localStorage.getItem('cabsy_routes');
@@ -47,11 +47,17 @@ export default function SeatScheduleScreen({
         }
       }
     } catch (e) {}
-    return 154;
+
+    const rawRoadKm = Math.round(calculateDistanceKm(pickupPos.lat, pickupPos.lng, destPos.lat, destPos.lng));
+    return rawRoadKm > 10 ? rawRoadKm : 175;
   };
 
   const baseDistance = getRouteDistanceKm();
   const effectiveDistance = tripType === 'round-trip' ? baseDistance * 2 : baseDistance;
+  const estTotalKm = isCustomMode 
+    ? Math.max(baseDistance, 300 * (noOfDays || 1))
+    : effectiveDistance;
+  const avgKmPerDay = isCustomMode ? Math.round(estTotalKm / (noOfDays || 1)) : estTotalKm;
 
   // Load configured vehicles from Admin Portal
   const getFleetVehicles = () => {
@@ -75,7 +81,7 @@ export default function SeatScheduleScreen({
       .map((v, idx) => {
         const r = Number(v.ratePerKm || v.pricePerKm || v.rate) || 5;
         const fare = isCustomMode 
-          ? Math.round(r * 120 * (noOfDays || 1))
+          ? Math.round(r * estTotalKm)
           : Math.round(r * effectiveDistance);
         return {
           id: v.id || `CAR-${101 + idx}`,
@@ -175,7 +181,7 @@ export default function SeatScheduleScreen({
               </button>
               
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
-                <span>●</span> {isCustomMode ? `Custom Outstation (${noOfDays || 1} Day${(noOfDays || 1) > 1 ? 's' : ''})` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
+                <span>●</span> {isCustomMode ? `${estTotalKm} KM (Avg ${avgKmPerDay} KM/Day)` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
               </div>
             </div>
 
@@ -189,13 +195,23 @@ export default function SeatScheduleScreen({
                 marginBottom: '16px',
                 boxShadow: '0 2px 10px rgba(16,185,129,0.08)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <Sparkles size={18} color="#10B981" />
-                  <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
-                    Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sparkles size={18} color="#10B981" />
+                    <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
+                      Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span style={{ background: '#10B981', color: '#FFFFFF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
+                      Total: {estTotalKm} KM
+                    </span>
+                    <span style={{ background: '#D1FAE5', color: '#047857', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', fontFamily: 'Space Grotesk' }}>
+                      Avg: {avgKmPerDay} KM/Day
+                    </span>
+                  </div>
                 </div>
-                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
+                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk', marginBottom: '2px' }}>
                   <strong>Pickup:</strong> {pickupLoc}
                 </div>
                 <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
@@ -424,6 +440,8 @@ export default function SeatScheduleScreen({
                   pickup: pickupLoc,
                   dropoff: dropoffLoc,
                   noOfDays: isCustomMode ? noOfDays : 1,
+                  totalDistanceKm: estTotalKm,
+                  avgKmPerDay: avgKmPerDay,
                   totalFareNum: netFare,
                   originalFare: baseFare,
                   walletDiscountUsed: discountAmount,
