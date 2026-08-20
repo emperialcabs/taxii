@@ -1,9 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import InteractiveMap from '../../components/InteractiveMap';
 import { getCoordsForPlace, generateRoutePolyline, calculateDistanceKm } from '../../utils/locationCoords';
 import { INITIAL_VEHICLES } from '../AdminPortal';
 import { db } from '../../services/dbService';
-import { Gift, ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Gift, ArrowLeft, Sparkles, CheckCircle2, ChevronRight, Check } from 'lucide-react';
+
+function SwipeToConfirmButton({ onConfirm, buttonText }) {
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const trackRef = useRef(null);
+  const startXRef = useRef(0);
+
+  const handleStart = (clientX) => {
+    if (isConfirmed) return;
+    setIsDragging(true);
+    startXRef.current = clientX - dragX;
+  };
+
+  const handleMove = (clientX) => {
+    if (!isDragging || isConfirmed || !trackRef.current) return;
+    const trackWidth = trackRef.current.clientWidth;
+    const handleWidth = 52;
+    const maxDrag = trackWidth - handleWidth - 8;
+    let newX = clientX - startXRef.current;
+    if (newX < 0) newX = 0;
+    if (newX > maxDrag) newX = maxDrag;
+    setDragX(newX);
+
+    if (newX >= maxDrag * 0.85) {
+      setIsConfirmed(true);
+      setIsDragging(false);
+      setDragX(maxDrag);
+      setTimeout(() => {
+        onConfirm();
+      }, 250);
+    }
+  };
+
+  const handleEnd = () => {
+    if (isConfirmed) return;
+    if (isDragging) {
+      setIsDragging(false);
+      setDragX(0);
+    }
+  };
+
+  useEffect(() => {
+    const onWindowMouseMove = (e) => handleMove(e.clientX);
+    const onWindowMouseUp = () => handleEnd();
+    const onWindowTouchMove = (e) => {
+      if (e.touches && e.touches[0]) handleMove(e.touches[0].clientX);
+    };
+    const onWindowTouchEnd = () => handleEnd();
+
+    if (isDragging) {
+      window.addEventListener('mousemove', onWindowMouseMove);
+      window.addEventListener('mouseup', onWindowMouseUp);
+      window.addEventListener('touchmove', onWindowTouchMove);
+      window.addEventListener('touchend', onWindowTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', onWindowMouseMove);
+      window.removeEventListener('mouseup', onWindowMouseUp);
+      window.removeEventListener('touchmove', onWindowTouchMove);
+      window.removeEventListener('touchend', onWindowTouchEnd);
+    };
+  }, [isDragging]);
+
+  const trackWidth = trackRef.current ? trackRef.current.clientWidth : 300;
+  const maxDrag = Math.max(trackWidth - 52 - 8, 1);
+  const dragRatio = dragX / maxDrag;
+
+  return (
+    <div
+      ref={trackRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '58px',
+        background: isConfirmed ? '#0F172A' : '#F1F5F9',
+        border: '1.5px solid #CBD5E1',
+        borderRadius: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        overflow: 'hidden',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.04)',
+        transition: isDragging ? 'none' : 'background 0.3s ease'
+      }}
+    >
+      {/* Dynamic Drag Fill */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: `${dragX + 52}px`,
+          background: isConfirmed ? '#0F172A' : 'linear-gradient(90deg, #1E293B 0%, #0F172A 100%)',
+          borderRadius: '20px',
+          transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        }}
+      />
+
+      {/* Label Text */}
+      <span
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          fontFamily: 'League Spartan, sans-serif',
+          fontSize: '15px',
+          fontWeight: '800',
+          color: dragRatio > 0.45 ? '#FFFFFF' : '#475569',
+          letterSpacing: '0.5px',
+          pointerEvents: 'none',
+          textTransform: 'uppercase',
+          opacity: isConfirmed ? 0.95 : Math.max(0.2, 1 - dragRatio * 1.5),
+          transition: 'opacity 0.2s ease, color 0.2s ease'
+        }}
+      >
+        {isConfirmed ? 'Booking Confirmed ✓' : (buttonText || 'Swipe Right to Confirm →')}
+      </span>
+
+      {/* Handle */}
+      <div
+        onMouseDown={(e) => handleStart(e.clientX)}
+        onTouchStart={(e) => e.touches && e.touches[0] && handleStart(e.touches[0].clientX)}
+        style={{
+          position: 'absolute',
+          left: '4px',
+          transform: `translateX(${dragX}px)`,
+          width: '50px',
+          height: '50px',
+          borderRadius: '16px',
+          background: '#0F172A',
+          color: '#FFFFFF',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: isConfirmed ? 'default' : 'grab',
+          zIndex: 3,
+          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.3)',
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          touchAction: 'none'
+        }}
+      >
+        {isConfirmed ? (
+          <Check size={22} color="#34D399" />
+        ) : (
+          <ChevronRight size={24} color="#FFFFFF" />
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function SeatScheduleScreen({ 
   userCoords,
@@ -184,31 +337,31 @@ export default function SeatScheduleScreen({
                 <span>Back</span>
               </button>
               
-              <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
-                <span>●</span> {isCustomMode ? `Custom Outstation (${noOfDays || 1} Day${(noOfDays || 1) > 1 ? 's' : ''})` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#0F172A' }}>●</span> {isCustomMode ? `Custom Outstation (${noOfDays || 1} Day${(noOfDays || 1) > 1 ? 's' : ''})` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
               </div>
             </div>
 
             {/* CUSTOM TRIP SUMMARY HEADER (SHOWN ONLY WHEN IS_CUSTOM IS TRUE) */}
             {isCustomMode && (
               <div style={{
-                background: '#ECFDF5',
-                border: '1.5px solid #A7F3D0',
+                background: '#F8FAFC',
+                border: '1.5px solid #E2E8F0',
                 borderRadius: '18px',
                 padding: '14px 16px',
                 marginBottom: '16px',
-                boxShadow: '0 2px 10px rgba(16,185,129,0.08)'
+                boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Sparkles size={18} color="#10B981" />
-                  <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
+                  <Sparkles size={18} color="#0F172A" />
+                  <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>
                     Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
                   </span>
                 </div>
-                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk', marginBottom: '2px' }}>
+                <div style={{ fontSize: '13px', color: '#334155', fontWeight: '600', fontFamily: 'Space Grotesk', marginBottom: '2px' }}>
                   <strong>Pickup:</strong> {pickupLoc}
                 </div>
-                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
+                <div style={{ fontSize: '13px', color: '#334155', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
                   <strong>Dropoff:</strong> {dropoffLoc}
                 </div>
               </div>
@@ -229,14 +382,14 @@ export default function SeatScheduleScreen({
                     style={{
                       padding: '12px 10px',
                       borderRadius: '14px',
-                      border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
-                      background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
+                      border: tripType === 'one-way' ? '2px solid #0F172A' : '1.5px solid #E2E8F0',
+                      background: tripType === 'one-way' ? '#F8FAFC' : '#FFFFFF',
                       color: tripType === 'one-way' ? '#0F172A' : '#64748B',
                       fontFamily: 'League Spartan, sans-serif',
                       fontSize: '14px',
                       fontWeight: '800',
                       cursor: 'pointer',
-                      boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
+                      boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(15,23,42,0.08)' : 'none',
                       transition: 'all 0.2s ease',
                       display: 'flex',
                       flexDirection: 'column',
@@ -245,7 +398,7 @@ export default function SeatScheduleScreen({
                     }}
                   >
                     <span>One-Way</span>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance} KM</span>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: tripType === 'one-way' ? '#334155' : '#94A3B8' }}>{baseDistance} KM</span>
                   </button>
 
                   <button
@@ -254,14 +407,14 @@ export default function SeatScheduleScreen({
                     style={{
                       padding: '12px 10px',
                       borderRadius: '14px',
-                      border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
-                      background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
+                      border: tripType === 'round-trip' ? '2px solid #0F172A' : '1.5px solid #E2E8F0',
+                      background: tripType === 'round-trip' ? '#F8FAFC' : '#FFFFFF',
                       color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
                       fontFamily: 'League Spartan, sans-serif',
                       fontSize: '14px',
                       fontWeight: '800',
                       cursor: 'pointer',
-                      boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
+                      boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(15,23,42,0.08)' : 'none',
                       transition: 'all 0.2s ease',
                       display: 'flex',
                       flexDirection: 'column',
@@ -270,7 +423,7 @@ export default function SeatScheduleScreen({
                     }}
                   >
                     <span>Round Trip</span>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM</span>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: tripType === 'round-trip' ? '#334155' : '#94A3B8' }}>{baseDistance * 2} KM</span>
                   </button>
                 </div>
 
@@ -343,10 +496,10 @@ export default function SeatScheduleScreen({
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
               {/* Pickup Address Input Box */}
-              <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+              <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
-                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0F172A', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
                     Enter Exact Pickup Address ({pickupCity || pickupLoc || 'Pickup City'})
                   </span>
                 </div>
@@ -372,10 +525,10 @@ export default function SeatScheduleScreen({
               </div>
 
               {/* Drop-off Address Input Box */}
-              <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+              <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
-                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#DC2626', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#475569', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#334155', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
                     Enter Exact Drop-Off Address ({dropoffCity || dropoffLoc || 'Destination City'})
                   </span>
                 </div>
@@ -417,12 +570,12 @@ export default function SeatScheduleScreen({
                       if (setSelectedCar) setSelectedCar(car.id);
                     }}
                     style={{
-                      background: isSelected ? '#F0FDF4' : '#FFFFFF',
-                      border: isSelected ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                      background: isSelected ? '#F8FAFC' : '#FFFFFF',
+                      border: isSelected ? '2px solid #0F172A' : '1.5px solid #E2E8F0',
                       borderRadius: '16px',
                       padding: '12px',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
+                      boxShadow: isSelected ? '0 4px 14px rgba(15, 23, 42, 0.08)' : 'none',
                       transition: 'all 0.2s ease',
                       display: 'flex',
                       flexDirection: 'column',
@@ -431,7 +584,7 @@ export default function SeatScheduleScreen({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span style={{ fontFamily: 'League Spartan', fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>{car.name}</span>
-                      <span style={{ fontSize: '12px', fontWeight: '800', background: isSelected ? '#DCFCE7' : '#F1F5F9', color: isSelected ? '#15803D' : '#059669', padding: '4px 10px', borderRadius: '10px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '800', background: isSelected ? '#0F172A' : '#F1F5F9', color: isSelected ? '#FFFFFF' : '#475569', padding: '4px 10px', borderRadius: '10px' }}>
                         ₹{car.ratePerKm}/km
                       </span>
                     </div>
@@ -439,7 +592,7 @@ export default function SeatScheduleScreen({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid #F1F5F9' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748B' }}>{car.type}</span>
                       {!isCustomMode && (
-                        <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#22C55E' }}>{car.price}</span>
+                        <span style={{ fontFamily: 'League Spartan', fontSize: '18px', fontWeight: '800', color: '#0F172A' }}>{car.price}</span>
                       )}
                     </div>
                   </div>
@@ -449,49 +602,35 @@ export default function SeatScheduleScreen({
 
             {/* WALLET REWARD DISCOUNT CARD */}
             {walletBalance > 0 && (
-              <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '16px', padding: '12px 16px', marginBottom: '16px' }}>
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '12px 16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Gift size={18} color="#10B981" />
+                    <Gift size={18} color="#0F172A" />
                     <span>Apply Wallet Reward Balance</span>
                   </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '800', color: '#15803D' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>
                     <input 
                       type="checkbox" 
                       checked={useWalletDiscount} 
                       onChange={(e) => setUseWalletDiscount(e.target.checked)}
-                      style={{ width: '18px', height: '18px', accentColor: '#10B981', cursor: 'pointer' }}
+                      style={{ width: '18px', height: '18px', accentColor: '#0F172A', cursor: 'pointer' }}
                     />
                     Use Reward
                   </label>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#047857', fontWeight: '700' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#475569', fontWeight: '700' }}>
                   <span>Available Wallet: ₹{walletBalance.toLocaleString('en-IN')}</span>
                   {useWalletDiscount && discountAmount > 0 && (
-                    <span style={{ color: '#E11D48', fontWeight: '800' }}>-₹{discountAmount} Discount Applied</span>
+                    <span style={{ color: '#0F172A', fontWeight: '800' }}>-₹{discountAmount} Discount Applied</span>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Direct Booking Submission Button */}
-            <button 
-              className="EMPERIAL CABS-btn-primary" 
-              style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '16px',
-                borderRadius: '16px',
-                fontFamily: 'League Spartan, sans-serif',
-                fontSize: '17px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: '0 6px 20px rgba(52, 211, 153, 0.4)',
-                transition: 'all 0.2s ease'
-              }}
-              onClick={() => {
+            {/* Interactive Swipe to Confirm Booking Slider */}
+            <SwipeToConfirmButton
+              buttonText={isCustomMode ? 'Swipe Right to Confirm Booking →' : `Swipe Right to Confirm (${discountAmount > 0 ? `₹${netFare}` : activeCarObj.price}) →`}
+              onConfirm={() => {
                 const payload = {
                   ...activeCarObj,
                   tripType: isCustomMode ? 'Custom Trip' : (tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way'),
@@ -512,9 +651,7 @@ export default function SeatScheduleScreen({
                 };
                 onNext && onNext(payload);
               }}
-            >
-              {isCustomMode ? 'Confirm Booking Request →' : `Confirm Booking Request (${discountAmount > 0 ? `₹${netFare}` : activeCarObj.price}) →`}
-            </button>
+            />
           </div>
         </div>
       </div>
