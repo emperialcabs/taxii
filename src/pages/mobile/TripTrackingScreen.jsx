@@ -36,21 +36,30 @@ export default function TripTrackingScreen({ userCoords, pickupLoc, dropoffLoc, 
         const uPhone = (userProf?.phone || savedPhone || '').replace(/\D/g, '');
         const uEmail = (userProf?.email || '').toLowerCase().trim();
 
-        const current = list.find(i => {
+        const current = (!uPhone && !uEmail) ? null : list.find(i => {
           if (!i) return false;
           const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
           const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
           const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                           (uEmail && iEmail && uEmail === iEmail);
-          return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-        }) || list.find(i => i.status === 'In Progress' || i.status === 'On Ride');
+          return isMatch && (i.status === 'In Progress' || i.status === 'On Ride');
+        });
 
         if (current) {
           setActiveRide(current);
         } else {
-          const completed = list.find(i => i.status === 'Completed');
+          const completed = list.find(i => {
+            if (!i) return false;
+            const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+            const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                            (uEmail && iEmail && uEmail === iEmail);
+            return isMatch && i.status === 'Completed';
+          });
           if (completed && onCompleteRide) {
             onCompleteRide();
+          } else if (onNavigateTab) {
+            onNavigateTab('home');
           }
         }
       } catch (e) {}

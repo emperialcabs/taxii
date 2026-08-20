@@ -83,10 +83,10 @@ export default function MobileAppView() {
             const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
             const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                             (uEmail && iEmail && uEmail === iEmail);
-            return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
+            return isMatch && (i.status === 'In Progress' || i.status === 'On Ride');
           });
 
-          if (activeRide && (activeRide.status === 'In Progress' || activeRide.status === 'On Ride')) {
+          if (activeRide) {
             setAppStage('TRACKING');
           }
         }
@@ -158,8 +158,34 @@ export default function MobileAppView() {
       const validSession = isSessionValid();
 
       if (validSession) {
-        // Returning Logged-In User -> Navigate directly to APP_HOME (Zomato-style Instant Access)
-        setAppStage('APP_HOME');
+        // Check if user has a ride currently active & in progress
+        const savedInquiries = localStorage.getItem('cabsy_inquiries');
+        let inProgressRide = null;
+        if (savedInquiries) {
+          try {
+            const list = JSON.parse(savedInquiries);
+            const savedProfile = localStorage.getItem('cabsy_user_profile');
+            const savedPhone = localStorage.getItem('cabsy_user_phone');
+            const userProf = savedProfile ? JSON.parse(savedProfile) : null;
+            const uPhone = (userProf?.phone || savedPhone || '').replace(/\D/g, '');
+            const uEmail = (userProf?.email || '').toLowerCase().trim();
+
+            inProgressRide = list.find(i => {
+              if (!i) return false;
+              const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
+              const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
+              const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+                              (uEmail && iEmail && uEmail === iEmail);
+              return isMatch && (i.status === 'In Progress' || i.status === 'On Ride');
+            });
+          } catch(e) {}
+        }
+
+        if (inProgressRide) {
+          setAppStage('TRACKING');
+        } else {
+          setAppStage('APP_HOME');
+        }
       } else if (isOnboarded) {
         // Returning Logged-Out User -> Navigate to Login Screen
         setAppStage('LETS_YOU_IN');

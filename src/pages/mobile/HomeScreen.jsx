@@ -75,7 +75,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           } catch(e) {}
         }
 
-        // 3. Find active ride (Confirmed, In Progress, On Ride)
+        // 3. Find active ride (In Progress, On Ride)
         const matchedRide = (!uPhone && !uEmail) ? null : list.find(i => {
           if (!i) return false;
           const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
@@ -84,7 +84,7 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
           const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                           (uEmail && iEmail && uEmail === iEmail);
 
-          return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
+          return isMatch && (i.status === 'In Progress' || i.status === 'On Ride');
         });
 
         if (matchedRide) {
