@@ -395,20 +395,25 @@ export default function MobileAppView() {
     const originalFare = carObj?.originalFare || totalFareNum;
     const couponUsed = carObj?.couponUsed || (walletDiscountUsed > 0 ? `Wallet Reward (-₹${walletDiscountUsed})` : null);
 
+    const isCustomTrip = carObj?.isCustom || carObj?.tripType === 'Custom Trip';
     const newInquiry = {
       id: newInquiryId,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       customerName: userProf.name,
       customerPhone: userProf.phone,
       customerEmail: userProf.email || '',
-      pickup: pickupLoc || 'Bhavnagar, Gujarat',
-      dropoff: dropoffLoc || 'Ahmedabad Airport (AMD)',
+      pickup: carObj?.pickup || pickupLoc || 'Bhavnagar, Gujarat',
+      dropoff: carObj?.dropoff || dropoffLoc || 'Ahmedabad Airport (AMD)',
+      pickupCity: carObj?.pickupCity || (isCustomTrip ? 'Bhavnagar' : ''),
+      dropoffCity: carObj?.dropoffCity || (isCustomTrip ? 'Ahmedabad' : ''),
+      noOfDays: carObj?.noOfDays || 1,
+      isCustom: isCustomTrip,
       vehicle: selectedVehicleName,
       fare: totalFareNum,
       originalFare,
       walletDiscountUsed,
       couponUsed,
-      tripType: tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way',
+      tripType: carObj?.tripType || (tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way'),
       scheduledDate,
       scheduledTime,
       driver: 'Unassigned',

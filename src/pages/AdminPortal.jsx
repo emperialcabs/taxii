@@ -58,7 +58,8 @@ import {
   CheckCircle,
   Award,
   Navigation,
-  Gift
+  Gift,
+  Sparkles
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -1376,8 +1377,8 @@ export default function AdminPortal() {
           >
             <Inbox size={19} />
             <span>All Inquiries</span>
-            {inquiries.filter(i => i.status === 'Pending').length > 0 && (
-              <span className="badge-pending">{inquiries.filter(i => i.status === 'Pending').length}</span>
+            {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Pending').length > 0 && (
+              <span className="badge-pending">{inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Pending').length}</span>
             )}
           </button>
 
@@ -1387,9 +1388,9 @@ export default function AdminPortal() {
           >
             <Navigation size={19} />
             <span>Final Trips</span>
-            {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride').length > 0 && (
+            {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride')).length > 0 && (
               <span className="badge-pending" style={{ background: '#3b82f6' }}>
-                {inquiries.filter(i => i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride').length}
+                {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride')).length}
               </span>
             )}
           </button>
@@ -1400,9 +1401,22 @@ export default function AdminPortal() {
           >
             <Award size={19} />
             <span>Success Trips</span>
-            {inquiries.filter(i => i.status === 'Completed').length > 0 && (
+            {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Completed').length > 0 && (
               <span className="badge-pending" style={{ background: '#10b981' }}>
-                {inquiries.filter(i => i.status === 'Completed').length}
+                {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Completed').length}
+              </span>
+            )}
+          </button>
+
+          <button 
+            className={`admin-nav-link ${activeTab === 'custom_inquiries' ? 'active' : ''}`}
+            onClick={() => setActiveTab('custom_inquiries')}
+          >
+            <Sparkles size={19} />
+            <span>Custom Inquiries</span>
+            {inquiries.filter(i => (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && i.status === 'Pending').length > 0 && (
+              <span className="badge-pending" style={{ background: '#8b5cf6' }}>
+                {inquiries.filter(i => (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && i.status === 'Pending').length}
               </span>
             )}
           </button>
@@ -1669,7 +1683,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedInquiries.map(inq => (
+                    {sortedInquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip').map(inq => (
                       <tr key={inq.id}>
                         <td>
                           <strong style={{ color: '#0F172A' }}>{inq.id}</strong>
@@ -1834,9 +1848,10 @@ export default function AdminPortal() {
                   </thead>
                   <tbody>
                     {sortedInquiries.filter(i => 
-                      i.status === 'Confirmed' || 
+                      !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' &&
+                      (i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
-                      i.status === 'On Ride'
+                      i.status === 'On Ride')
                     ).map((inq) => {
                       const isConfirmed = inq.status === 'Confirmed';
                       const isInProgress = inq.status === 'In Progress' || inq.status === 'On Ride';
@@ -1948,9 +1963,10 @@ export default function AdminPortal() {
                     })}
 
                     {sortedInquiries.filter(i => 
-                      i.status === 'Confirmed' || 
+                      !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' &&
+                      (i.status === 'Confirmed' || 
                       i.status === 'In Progress' || 
-                      i.status === 'On Ride'
+                      i.status === 'On Ride')
                     ).length === 0 && (
                       <tr>
                         <td colSpan={7} className="text-center text-muted p-4">
@@ -1990,7 +2006,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedInquiries.filter(i => i.status === 'Completed').map((inq) => (
+                    {sortedInquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Completed').map((inq) => (
                       <tr key={inq.id}>
                         <td><strong>{inq.id}</strong></td>
                         <td>
@@ -2030,10 +2046,260 @@ export default function AdminPortal() {
                       </tr>
                     ))}
 
-                    {sortedInquiries.filter(i => i.status === 'Completed').length === 0 && (
+                    {sortedInquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.tripType !== 'custom-trip' && i.status === 'Completed').length === 0 && (
                       <tr>
                         <td colSpan={7} className="text-center text-muted p-4">
                           No completed success trips in database history yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CUSTOM INQUIRIES SECTION */}
+        {activeTab === 'custom_inquiries' && (
+          <div className="tab-pane">
+            <div className="pane-header flex justify-between align-center">
+              <div>
+                <h2>✨ Custom Inquiries Command Center</h2>
+                <p>Dedicated section for multi-city, custom trip inquiries. Pending items are prioritized at the top.</p>
+              </div>
+            </div>
+
+            {/* TOP LIST: PENDING & ACTIVE CUSTOM INQUIRIES */}
+            <div className="admin-table-card mt-3">
+              <div style={{ padding: '14px 18px', background: '#F5F3FF', borderBottom: '1px solid #DDD6FE', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: '#6D28D9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={18} /> PENDING & ACTIVE CUSTOM INQUIRIES ({sortedInquiries.filter(i => (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && (i.status === 'Pending' || i.status === 'Confirmed' || i.status === 'In Progress')).length})
+                </h3>
+                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#7C3AED', background: '#ECE9FE', padding: '4px 10px', borderRadius: '12px' }}>Prioritized Top List</span>
+              </div>
+
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Customer Details</th>
+                      <th>Pickup → Dropoff City</th>
+                      <th>Detailed Pickup Location</th>
+                      <th>Detailed Dropoff Location</th>
+                      <th>Days & Date</th>
+                      <th>Selected Fleet Car</th>
+                      <th>Status</th>
+                      <th className="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedInquiries.filter(i => 
+                      (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && 
+                      (i.status === 'Pending' || i.status === 'Confirmed' || i.status === 'In Progress')
+                    ).map((inq) => {
+                      const isPending = inq.status === 'Pending';
+                      const isConfirmed = inq.status === 'Confirmed' || inq.status === 'In Progress';
+
+                      return (
+                        <tr key={inq.id} style={{ background: isPending ? '#FFFBEB' : '#F0FDF4' }}>
+                          <td><strong style={{ color: '#0F172A' }}>{inq.id}</strong></td>
+                          <td>
+                            <div>
+                              <strong style={{ color: '#0F172A' }}>{resolveCustomerName(inq)}</strong>
+                              <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>📞 {inq.customerPhone}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span style={{ fontWeight: '800', color: '#6D28D9', fontSize: '0.9rem' }}>
+                              {inq.pickupCity || inq.pickup} → {inq.dropoffCity || inq.dropoff}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '0.83rem', color: '#334155', maxWidth: '180px', wordBreak: 'break-word' }}>{inq.pickup}</div>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '0.83rem', color: '#334155', maxWidth: '180px', wordBreak: 'break-word' }}>{inq.dropoff}</div>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0F172A' }}>{inq.noOfDays || 1} Day(s)</div>
+                            <small style={{ color: '#64748B' }}>{inq.scheduledDate || inq.date}</small>
+                          </td>
+                          <td>
+                            <span style={{ padding: '4px 10px', background: '#EDE9FE', color: '#5B21B6', borderRadius: '8px', fontWeight: '800', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                              {inq.vehicle || 'Selected Car'}
+                            </span>
+                          </td>
+                          <td>
+                            {isPending && <span className="status-tag status-pending">Pending Approval</span>}
+                            {isConfirmed && <span className="status-tag status-confirmed">Confirmed Active</span>}
+                          </td>
+                          <td className="text-right" style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                              {/* PENDING ACTIONS: CONFIRM & REJECT */}
+                              {isPending && (
+                                <>
+                                  <button
+                                    className="btn-action-confirm"
+                                    disabled={!!actionLoadingId}
+                                    onClick={() => {
+                                      setActionLoadingId('confirm_' + inq.id);
+                                      updateInquiryStatusInMySQL(inq.id, 'Confirmed').catch(() => {});
+                                      setInquiries(prev => prev.map(item => item.id === inq.id ? { ...item, status: 'Confirmed' } : item));
+                                      notifyCustomer({
+                                        type: 'confirmed',
+                                        title: '✅ Custom Trip Confirmed!',
+                                        body: `Your custom trip inquiry for ${inq.pickupCity || inq.pickup} → ${inq.dropoffCity || inq.dropoff} has been confirmed by EMPERIAL CABS!`,
+                                        customerPhone: inq.customerPhone,
+                                        customerEmail: inq.customerEmail
+                                      });
+                                      window.dispatchEvent(new Event('storage'));
+                                      setTimeout(() => setActionLoadingId(null), 300);
+                                    }}
+                                    style={{ padding: '6px 12px', borderRadius: '12px', background: '#10B981', color: '#FFF', fontWeight: '800', fontSize: '0.8rem', border: 'none', cursor: 'pointer' }}
+                                  >
+                                    Confirm
+                                  </button>
+                                  <button
+                                    className="btn-action-cancel"
+                                    disabled={!!actionLoadingId}
+                                    onClick={() => {
+                                      setActionLoadingId('cancel_' + inq.id);
+                                      updateInquiryStatusInMySQL(inq.id, 'Rejected').catch(() => {});
+                                      setInquiries(prev => prev.map(item => item.id === inq.id ? { ...item, status: 'Rejected' } : item));
+                                      window.dispatchEvent(new Event('storage'));
+                                      setTimeout(() => setActionLoadingId(null), 300);
+                                    }}
+                                    style={{ padding: '6px 12px', borderRadius: '12px', background: '#EF4444', color: '#FFF', fontWeight: '800', fontSize: '0.8rem', border: 'none', cursor: 'pointer' }}
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+
+                              {/* CONFIRMED ACTIONS: MARK COMPLETED */}
+                              {isConfirmed && (
+                                <button
+                                  className="btn-action-complete"
+                                  disabled={!!actionLoadingId}
+                                  onClick={() => {
+                                    setActionLoadingId('complete_' + inq.id);
+                                    updateInquiryStatusInMySQL(inq.id, 'Completed').catch(() => {});
+                                    setInquiries(prev => prev.map(item => item.id === inq.id ? { ...item, status: 'Completed' } : item));
+                                    notifyCustomer({
+                                      type: 'trip_completed',
+                                      title: '🏁 Custom Trip Completed!',
+                                      body: `Your custom trip from ${inq.pickupCity || inq.pickup} to ${inq.dropoffCity || inq.dropoff} has been completed. Thank you for riding with EMPERIAL CABS!`,
+                                      customerPhone: inq.customerPhone,
+                                      customerEmail: inq.customerEmail
+                                    });
+                                    window.dispatchEvent(new Event('storage'));
+                                    setTimeout(() => setActionLoadingId(null), 300);
+                                  }}
+                                  style={{ padding: '6px 12px', borderRadius: '12px', background: '#059669', color: '#FFF', fontWeight: '800', fontSize: '0.8rem', border: 'none', cursor: 'pointer' }}
+                                >
+                                  Complete Trip
+                                </button>
+                              )}
+
+                              <button
+                                className="btn-action-view"
+                                onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                                style={{ padding: '6px 10px', borderRadius: '12px', background: '#F1F5F9', color: '#0F172A', fontWeight: '800', fontSize: '0.8rem', border: 'none', cursor: 'pointer' }}
+                              >
+                                <Eye size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {sortedInquiries.filter(i => 
+                      (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && 
+                      (i.status === 'Pending' || i.status === 'Confirmed' || i.status === 'In Progress')
+                    ).length === 0 && (
+                      <tr>
+                        <td colSpan={9} className="text-center text-muted p-4">
+                          No pending or active custom inquiries. All custom inquiries are up to date!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* BOTTOM LIST: COMPLETED & REJECTED CUSTOM INQUIRIES */}
+            <div className="admin-table-card mt-4">
+              <div style={{ padding: '14px 18px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#475569' }}>
+                  ARCHIVED COMPLETED & REJECTED CUSTOM TRIPS ({sortedInquiries.filter(i => (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && (i.status === 'Completed' || i.status === 'Rejected' || i.status === 'Cancelled')).length})
+                </h3>
+                <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748B' }}>Completed History (At Bottom)</span>
+              </div>
+
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Customer Name</th>
+                      <th>Route (Cities & Detailed Addresses)</th>
+                      <th>Days & Date</th>
+                      <th>Car</th>
+                      <th>Status</th>
+                      <th className="text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedInquiries.filter(i => 
+                      (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && 
+                      (i.status === 'Completed' || i.status === 'Rejected' || i.status === 'Cancelled')
+                    ).map((inq) => (
+                      <tr key={inq.id} style={{ opacity: 0.85 }}>
+                        <td><strong>{inq.id}</strong></td>
+                        <td>
+                          <strong>{resolveCustomerName(inq)}</strong>
+                          <small className="text-muted display-block">📞 {inq.customerPhone}</small>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: '700', color: '#334155' }}>
+                            {inq.pickupCity || inq.pickup} → {inq.dropoffCity || inq.dropoff}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#64748B' }}>
+                            Pickup: {inq.pickup} | Dropoff: {inq.dropoff}
+                          </div>
+                        </td>
+                        <td>
+                          <div>{inq.noOfDays || 1} Day(s)</div>
+                          <small className="text-muted">{inq.scheduledDate || inq.date}</small>
+                        </td>
+                        <td><span className="plate-badge">{inq.vehicle || 'Selected Car'}</span></td>
+                        <td>
+                          {inq.status === 'Completed' && <span className="status-tag status-confirmed">Completed</span>}
+                          {(inq.status === 'Rejected' || inq.status === 'Cancelled') && <span className="status-tag status-pending" style={{ background: '#FEE2E2', color: '#DC2626' }}>{inq.status}</span>}
+                        </td>
+                        <td className="text-right">
+                          <button
+                            className="btn-action-view"
+                            onClick={() => setReceiptModal({ open: true, inquiry: inq })}
+                            style={{ padding: '5px 10px', borderRadius: '10px', background: '#F1F5F9', color: '#0F172A', fontWeight: '700', fontSize: '0.78rem', border: 'none', cursor: 'pointer' }}
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {sortedInquiries.filter(i => 
+                      (i.isCustom || i.tripType === 'Custom Trip' || i.tripType === 'custom-trip') && 
+                      (i.status === 'Completed' || i.status === 'Rejected' || i.status === 'Cancelled')
+                    ).length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="text-center text-muted p-4">
+                          No completed or rejected custom inquiries yet.
                         </td>
                       </tr>
                     )}
