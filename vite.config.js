@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { handleMySQLRequest } from './api/db.js';
 
 // Custom Vite plugin to handle /api/db requests during dev mode
 function mysqlDevPlugin() {
@@ -21,6 +20,7 @@ function mysqlDevPlugin() {
         req.on('data', chunk => { bodyRaw += chunk; });
         req.on('end', async () => {
           try {
+            const { handleMySQLRequest } = await import('./api/db.js');
             let body = {};
             if (bodyRaw) {
               try { body = JSON.parse(bodyRaw); } catch(e) {}
