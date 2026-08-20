@@ -148,16 +148,16 @@ export default function SelectLocationScreen({
 
       <div className="mobile-screen-body" style={{ padding: '16px 20px 110px 20px', flex: 1 }}>
         
-        {/* BIG COMPANY SEGMENTED TOGGLE */}
+        {/* PREMIUM CLEAN LIGHT SEGMENTED TOGGLE */}
         <div style={{ 
-          background: '#E2E8F0', 
+          background: '#F1F5F9', 
           borderRadius: '16px', 
           padding: '4px', 
           display: 'grid', 
           gridTemplateColumns: '1fr 1fr', 
           gap: '4px', 
           marginBottom: '20px',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.04)'
+          border: '1px solid #E2E8F0'
         }}>
           <button
             type="button"
@@ -168,14 +168,14 @@ export default function SelectLocationScreen({
             style={{
               padding: '10px 12px',
               borderRadius: '12px',
-              border: 'none',
+              border: mode === 'standard' ? '1px solid #CBD5E1' : 'none',
               background: mode === 'standard' ? '#FFFFFF' : 'transparent',
               color: mode === 'standard' ? '#0F172A' : '#64748B',
               fontFamily: 'League Spartan, sans-serif',
               fontSize: '14px',
               fontWeight: '800',
               cursor: 'pointer',
-              boxShadow: mode === 'standard' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              boxShadow: mode === 'standard' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
@@ -196,14 +196,14 @@ export default function SelectLocationScreen({
             style={{
               padding: '10px 12px',
               borderRadius: '12px',
-              border: 'none',
-              background: mode === 'custom' ? 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' : 'transparent',
-              color: mode === 'custom' ? '#FFFFFF' : '#64748B',
+              border: mode === 'custom' ? '1.5px solid #10B981' : 'none',
+              background: mode === 'custom' ? '#FFFFFF' : 'transparent',
+              color: mode === 'custom' ? '#0F172A' : '#64748B',
               fontFamily: 'League Spartan, sans-serif',
               fontSize: '14px',
               fontWeight: '800',
               cursor: 'pointer',
-              boxShadow: mode === 'custom' ? '0 4px 14px rgba(109,40,217,0.3)' : 'none',
+              boxShadow: mode === 'custom' ? '0 2px 8px rgba(16,185,129,0.15)' : 'none',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
@@ -211,7 +211,7 @@ export default function SelectLocationScreen({
               gap: '6px'
             }}
           >
-            <Sparkles size={16} color={mode === 'custom' ? '#FDE047' : '#64748B'} />
+            <Sparkles size={16} color={mode === 'custom' ? '#10B981' : '#64748B'} />
             <span>Custom Trip</span>
           </button>
         </div>
@@ -395,31 +395,30 @@ export default function SelectLocationScreen({
           </div>
         )}
 
-        {/* MODE 2: CUSTOM OUTSTATION & MULTI-CITY TRIP */}
+        {/* MODE 2: CUSTOM OUTSTATION & MULTI-CITY TRIP (CLEAN LIGHT CORPORATE UI) */}
         {mode === 'custom' && (
           <div>
-            {/* HERO BANNER CARD */}
+            {/* HERO CARD - CLEAN WHITE WITH EMERALD ACCENT */}
             <div style={{
-              background: 'linear-gradient(135deg, #4C1D95 0%, #6D28D9 50%, #7C3AED 100%)',
+              background: '#FFFFFF',
               borderRadius: '24px',
               padding: '20px',
-              color: '#FFFFFF',
+              border: '1.5px solid #E2E8F0',
               marginBottom: '20px',
-              boxShadow: '0 10px 30px rgba(109, 40, 217, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
+              boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+              position: 'relative'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase', backdropFilter: 'blur(4px)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ background: '#ECFDF5', color: '#047857', border: '1px solid #A7F3D0', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   ✨ Multi-City Custom Trip
                 </span>
-                <Sparkles size={22} color="#FDE047" />
+                <Sparkles size={20} color="#10B981" />
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontFamily: 'League Spartan', fontSize: '22px', fontWeight: '800', lineHeight: 1.2 }}>
+              <h3 style={{ margin: '0 0 6px 0', fontFamily: 'League Spartan', fontSize: '20px', fontWeight: '800', color: '#0F172A', lineHeight: 1.2 }}>
                 Custom Outstation & Multi-Day Rental
               </h3>
-              <p style={{ margin: 0, fontSize: '13px', opacity: 0.9, lineHeight: 1.4 }}>
-                Enter your exact pickup & dropoff cities, detailed door-to-door addresses, and trip duration to pick your fleet car.
+              <p style={{ margin: 0, fontSize: '13px', color: '#64748B', lineHeight: 1.4 }}>
+                Specify your exact pickup & dropoff cities, door-to-door locations, and number of days.
               </p>
             </div>
 
@@ -428,15 +427,15 @@ export default function SelectLocationScreen({
               background: '#FFFFFF', 
               borderRadius: '24px', 
               padding: '20px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
-              border: '1.5px solid #DDD6FE',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.04)', 
+              border: '1.5px solid #E2E8F0',
               marginBottom: '20px'
             }}>
               {/* PICKUP & DROPOFF CITY GRID */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                 {/* Pickup City */}
                 <div style={{ position: 'relative' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#6D28D9', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
                     PICKUP CITY
                   </label>
                   <input
@@ -479,7 +478,7 @@ export default function SelectLocationScreen({
 
                 {/* Dropoff City */}
                 <div style={{ position: 'relative' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#6D28D9', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
                     DROPOFF CITY
                   </label>
                   <input
@@ -573,10 +572,10 @@ export default function SelectLocationScreen({
                 />
               </div>
 
-              {/* NUMBER OF DAYS STEPPER CONTROL */}
+              {/* NUMBER OF DAYS STEPPER CONTROL (LIGHT CLEAN STYLE) */}
               <div style={{
-                background: '#F5F3FF',
-                border: '1.5px solid #DDD6FE',
+                background: '#F8FAFC',
+                border: '1.5px solid #E2E8F0',
                 borderRadius: '18px',
                 padding: '14px 16px',
                 display: 'flex',
@@ -584,7 +583,7 @@ export default function SelectLocationScreen({
                 justifyContent: 'space-between'
               }}>
                 <div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#6D28D9', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     TRIP DURATION
                   </span>
                   <span style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', fontFamily: 'League Spartan, sans-serif' }}>
@@ -600,7 +599,7 @@ export default function SelectLocationScreen({
                       width: '38px',
                       height: '38px',
                       borderRadius: '12px',
-                      border: '1px solid #CBD5E1',
+                      border: '1.5px solid #CBD5E1',
                       background: '#FFFFFF',
                       color: '#0F172A',
                       display: 'flex',
@@ -613,7 +612,7 @@ export default function SelectLocationScreen({
                     <Minus size={18} />
                   </button>
 
-                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#6D28D9', minWidth: '24px', textAlign: 'center', fontFamily: 'League Spartan, sans-serif' }}>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#0F172A', minWidth: '24px', textAlign: 'center', fontFamily: 'League Spartan, sans-serif' }}>
                     {cDays}
                   </span>
 
@@ -625,13 +624,13 @@ export default function SelectLocationScreen({
                       height: '38px',
                       borderRadius: '12px',
                       border: 'none',
-                      background: '#7C3AED',
+                      background: '#10B981',
                       color: '#FFFFFF',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(124,58,237,0.3)'
+                      boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
                     }}
                   >
                     <Plus size={18} />
@@ -711,9 +710,9 @@ export default function SelectLocationScreen({
             style={{
               width: '100%',
               background: isCustomReady 
-                ? 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)' 
-                : '#CBD5E1',
-              color: isCustomReady ? '#FFFFFF' : '#64748B',
+                ? 'linear-gradient(135deg, #34D399 0%, #10B981 100%)' 
+                : '#E2E8F0',
+              color: isCustomReady ? '#FFFFFF' : '#94A3B8',
               border: 'none',
               padding: '16px',
               borderRadius: '18px',
@@ -721,7 +720,7 @@ export default function SelectLocationScreen({
               fontSize: '18px',
               fontWeight: '800',
               cursor: isCustomReady ? 'pointer' : 'not-allowed',
-              boxShadow: isCustomReady ? '0 8px 24px rgba(109,40,217,0.35)' : 'none',
+              boxShadow: isCustomReady ? '0 8px 24px rgba(52, 211, 153, 0.4)' : 'none',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
