@@ -59,6 +59,31 @@ export default function MobileAppView() {
   const [activeTab, setActiveTab] = useState('home');
   const [lastCreatedInquiry, setLastCreatedInquiry] = useState(null);
 
+  // Initialize theme mode on startup (Defaults to Auto: Light in day, Dark at night)
+  useEffect(() => {
+    try {
+      const themeMode = localStorage.getItem('cabsy_theme_mode') || 'auto';
+      let isDark = false;
+      if (themeMode === 'dark') {
+        isDark = true;
+      } else if (themeMode === 'light') {
+        isDark = false;
+      } else {
+        // Auto mode: Light in day (6 AM - 7 PM), Dark at night (7 PM - 6 AM)
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const hour = new Date().getHours();
+        const isNight = hour >= 19 || hour < 6;
+        isDark = prefersDark || isNight;
+      }
+
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    } catch (e) {}
+  }, []);
+
   // Request notification permission and ensure active ride stage on mount
   useEffect(() => {
     requestNotificationPermission().catch(() => {});
