@@ -76,17 +76,16 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
         }
 
         // 3. Find active ride (Confirmed, In Progress, On Ride)
-        const matchedRide = list.find(i => {
+        const matchedRide = (!uPhone && !uEmail) ? null : list.find(i => {
           if (!i) return false;
           const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
           const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
 
-          const isMatch = !uPhone && !uEmail ? true :
-                          (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+          const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                           (uEmail && iEmail && uEmail === iEmail);
 
           return isMatch && (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride');
-        }) || (list.length > 0 ? list.find(i => i.status === 'In Progress' || i.status === 'On Ride') : null);
+        });
 
         if (matchedRide) {
           setActiveRide(matchedRide);
@@ -111,8 +110,8 @@ export default function HomeScreen({ activeTab, setActiveTab, onStartBooking, on
 
     checkActiveRide();
 
-    // 1-second sub-second fast polling interval for instant cross-device updates
-    const pollInterval = setInterval(checkActiveRide, 1000);
+    // 5-second polling interval for cross-device updates without database flooding
+    const pollInterval = setInterval(checkActiveRide, 5000);
 
     // Cross-tab real-time BroadcastChannel
     let bc = null;

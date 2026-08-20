@@ -61,20 +61,23 @@ export default function MobileAppView() {
 
     const syncActiveRideStage = () => {
       try {
-        const savedInquiries = localStorage.getItem('cabsy_inquiries');
         const savedProfile = localStorage.getItem('cabsy_user_profile');
+        const savedPhone = localStorage.getItem('cabsy_user_phone');
         const userProf = savedProfile ? JSON.parse(savedProfile) : null;
-        const uPhone = (userProf?.phone || localStorage.getItem('cabsy_user_phone') || '').replace(/\D/g, '');
+        const uPhone = (userProf?.phone || savedPhone || '').replace(/\D/g, '');
         const uEmail = (userProf?.email || '').toLowerCase().trim();
 
+        // If user is not logged in or has no phone/email, do not auto-route to protected screens
+        if (!uPhone && !uEmail) return;
+
+        const savedInquiries = localStorage.getItem('cabsy_inquiries');
         if (savedInquiries) {
           const list = JSON.parse(savedInquiries);
           const activeRide = list.find(i => {
             if (!i) return false;
             const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
             const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-            const isMatch = !uPhone && !uEmail ? true :
-                            (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+            const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                             (uEmail && iEmail && uEmail === iEmail);
             return isMatch && (i.status === 'In Progress' || i.status === 'On Ride' || i.status === 'Confirmed');
           });
@@ -86,8 +89,7 @@ export default function MobileAppView() {
               if (!i) return false;
               const iPhone = i.customerPhone ? String(i.customerPhone).replace(/\D/g, '') : '';
               const iEmail = i.customerEmail ? String(i.customerEmail).toLowerCase().trim() : '';
-              const isMatch = !uPhone && !uEmail ? true :
-                              (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
+              const isMatch = (uPhone && iPhone && uPhone.slice(-10) === iPhone.slice(-10)) ||
                               (uEmail && iEmail && uEmail === iEmail);
               return isMatch && i.status === 'Completed' && !i.dismissed;
             });
@@ -107,9 +109,11 @@ export default function MobileAppView() {
         bc = new BroadcastChannel('EMPERIAL CABS_realtime_sync');
         bc.onmessage = (msg) => {
           if (msg.data?.type === 'TRIP_STARTED') {
-            setAppStage('TRACKING');
+            const savedProf = localStorage.getItem('cabsy_user_profile');
+            if (savedProf) setAppStage('TRACKING');
           } else if (msg.data?.type === 'TRIP_COMPLETED') {
-            setAppStage('RECEIPT');
+            const savedProf = localStorage.getItem('cabsy_user_profile');
+            if (savedProf) setAppStage('RECEIPT');
           } else {
             syncActiveRideStage();
           }
@@ -117,8 +121,14 @@ export default function MobileAppView() {
       }
     } catch (e) {}
 
-    const handleTripStarted = () => setAppStage('TRACKING');
-    const handleTripCompleted = () => setAppStage('RECEIPT');
+    const handleTripStarted = () => {
+      const savedProf = localStorage.getItem('cabsy_user_profile');
+      if (savedProf) setAppStage('TRACKING');
+    };
+    const handleTripCompleted = () => {
+      const savedProf = localStorage.getItem('cabsy_user_profile');
+      if (savedProf) setAppStage('RECEIPT');
+    };
 
     window.addEventListener('storage', syncActiveRideStage);
     window.addEventListener('EMPERIAL CABS_trip_started', handleTripStarted);
@@ -132,7 +142,7 @@ export default function MobileAppView() {
       window.removeEventListener('EMPERIAL CABS_trip_completed', handleTripCompleted);
       window.removeEventListener('EMPERIAL CABS_db_sync', syncActiveRideStage);
     };
-  }, [appStage]);
+  }, []);
 
   // Utility: Validate authenticated session state
   const isSessionValid = () => {

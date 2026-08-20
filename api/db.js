@@ -8,14 +8,17 @@ const poolConfig = {
   database: process.env.MYSQL_DATABASE || 'u889282535_taxi',
   port: Number(process.env.MYSQL_PORT) || 3306,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 4,
   queueLimit: 0,
   connectTimeout: 10000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000
 };
 
-let pool = mysql.createPool(poolConfig);
+if (!global._mysqlPool) {
+  global._mysqlPool = mysql.createPool(poolConfig);
+}
+let pool = global._mysqlPool;
 
 async function executeQuery(sql, params = []) {
   try {
@@ -23,7 +26,8 @@ async function executeQuery(sql, params = []) {
   } catch (err) {
     if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
       console.warn('MySQL connection lost. Re-creating pool...', err.code);
-      pool = mysql.createPool(poolConfig);
+      global._mysqlPool = mysql.createPool(poolConfig);
+      pool = global._mysqlPool;
       return await pool.query(sql, params);
     }
     throw err;
@@ -45,68 +49,75 @@ function getStandardCustomerId(email, phone) {
   return `CUST-guest_${Date.now()}`;
 }
 
-// Table Schema Initializer
+// Table Schema Initializer - Cached per lambda warm instance
+let tablesEnsured = false;
 async function ensureTablesExist() {
-  await executeQuery(`
-    CREATE TABLE IF NOT EXISTS inquiries (
-      id VARCHAR(64) PRIMARY KEY,
-      customerName VARCHAR(255),
-      customerPhone VARCHAR(64),
-      customerEmail VARCHAR(255),
-      pickup TEXT,
-      dropoff TEXT,
-      vehicle VARCHAR(100),
-      fare DECIMAL(10,2) DEFAULT 0.00,
-      originalFare DECIMAL(10,2) DEFAULT 0.00,
-      walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00,
-      tripType VARCHAR(100),
-      scheduledDate VARCHAR(100),
-      scheduledTime VARCHAR(100),
-      driver VARCHAR(255) DEFAULT 'Unassigned',
-      status VARCHAR(64) DEFAULT 'Pending',
-      rewardIssued INT DEFAULT 0,
-      rewardAmount DECIMAL(10,2) DEFAULT 0.00,
-      paymentMethod VARCHAR(100) DEFAULT 'Cash',
-      notes TEXT,
-      timestamp VARCHAR(100),
-      date VARCHAR(100),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-  `);
+  if (tablesEnsured) return;
+  try {
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS inquiries (
+        id VARCHAR(64) PRIMARY KEY,
+        customerName VARCHAR(255),
+        customerPhone VARCHAR(64),
+        customerEmail VARCHAR(255),
+        pickup TEXT,
+        dropoff TEXT,
+        vehicle VARCHAR(100),
+        fare DECIMAL(10,2) DEFAULT 0.00,
+        originalFare DECIMAL(10,2) DEFAULT 0.00,
+        walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00,
+        tripType VARCHAR(100),
+        scheduledDate VARCHAR(100),
+        scheduledTime VARCHAR(100),
+        driver VARCHAR(255) DEFAULT 'Unassigned',
+        status VARCHAR(64) DEFAULT 'Pending',
+        rewardIssued INT DEFAULT 0,
+        rewardAmount DECIMAL(10,2) DEFAULT 0.00,
+        paymentMethod VARCHAR(100) DEFAULT 'Cash',
+        notes TEXT,
+        timestamp VARCHAR(100),
+        date VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
 
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardIssued INT DEFAULT 0;`).catch(() => {});
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardAmount DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS originalFare DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS paymentMethod VARCHAR(100) DEFAULT 'Cash';`).catch(() => {});
-  await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS notes TEXT;`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardIssued INT DEFAULT 0;`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS rewardAmount DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS originalFare DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS walletDiscountUsed DECIMAL(10,2) DEFAULT 0.00;`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS paymentMethod VARCHAR(100) DEFAULT 'Cash';`).catch(() => {});
+    await executeQuery(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS notes TEXT;`).catch(() => {});
 
-  await executeQuery(`
-    CREATE TABLE IF NOT EXISTS customers (
-      id VARCHAR(64) PRIMARY KEY,
-      name VARCHAR(255),
-      phone VARCHAR(64),
-      email VARCHAR(255),
-      photoURL TEXT,
-      profession VARCHAR(100),
-      area VARCHAR(255),
-      totalRides INT DEFAULT 0,
-      totalSpent DECIMAL(10,2) DEFAULT 0.00,
-      registeredAt VARCHAR(64),
-      lastLogin VARCHAR(100),
-      status VARCHAR(64) DEFAULT 'Active',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-  `);
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255),
+        phone VARCHAR(64),
+        email VARCHAR(255),
+        photoURL TEXT,
+        profession VARCHAR(100),
+        area VARCHAR(255),
+        totalRides INT DEFAULT 0,
+        totalSpent DECIMAL(10,2) DEFAULT 0.00,
+        registeredAt VARCHAR(64),
+        lastLogin VARCHAR(100),
+        status VARCHAR(64) DEFAULT 'Active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
 
-  await executeQuery(`
-    CREATE TABLE IF NOT EXISTS customer_wallets (
-      phone VARCHAR(64) PRIMARY KEY,
-      balance DECIMAL(10,2) DEFAULT 0.00,
-      transactions LONGTEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-  `);
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS customer_wallets (
+        phone VARCHAR(64) PRIMARY KEY,
+        balance DECIMAL(10,2) DEFAULT 0.00,
+        transactions LONGTEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
+    tablesEnsured = true;
+  } catch (err) {
+    console.warn('ensureTablesExist warning:', err);
+  }
 }
 
 export async function handleMySQLRequest(action, data = {}) {

@@ -26,26 +26,39 @@ const sendRequest = async (action, data = {}) => {
         body: JSON.stringify({ action, data })
       });
 
-      if (!res.ok) {
-        continue; // Try next endpoint if HTTP fails or gets rewritten
-      }
-
       const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        continue; // Not JSON (e.g. index.html rewrite), try next endpoint
-      }
-
-      const json = await res.json();
-      if (json && json.success !== undefined) {
-        return json;
+      if (contentType.includes('application/json')) {
+        const json = await res.json();
+        if (json && json.success) {
+          return json;
+        }
+        if (json && json.error) {
+          lastError = json.error;
+        }
       }
     } catch (err) {
       lastError = err;
     }
   }
 
-  console.warn(`Hostinger MySQL [${action}] failed across endpoints:`, lastError);
-  return { success: false, error: lastError ? (lastError.message || String(lastError)) : 'All endpoints failed' };
+  // Seamless Local Storage Fallback if Hostinger Database is rate-limited or unreachable
+  if (action === 'getInquiries') {
+    try {
+      const saved = localStorage.getItem('cabsy_inquiries');
+      if (saved) {
+        return { success: true, inquiries: JSON.parse(saved), fallback: true };
+      }
+    } catch (e) {}
+  } else if (action === 'getCustomers') {
+    try {
+      const saved = localStorage.getItem('cabsy_user_profile');
+      if (saved) {
+        return { success: true, customers: [JSON.parse(saved)], fallback: true };
+      }
+    } catch (e) {}
+  }
+
+  return { success: false, error: lastError ? (lastError.message || String(lastError)) : 'Database offline' };
 };
 
 /**
