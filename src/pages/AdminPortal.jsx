@@ -59,7 +59,9 @@ import {
   Award,
   Navigation,
   Gift,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -244,6 +246,7 @@ export default function AdminPortal() {
   };
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // State — initialize with localStorage or fallback demo records
   const [inquiries, setInquiries] = useState(() => {
@@ -1393,16 +1396,50 @@ export default function AdminPortal() {
   // AUTHENTICATED: RENDER MAIN ADMIN DASHBOARD
   return (
     <div className="admin-portal-wrapper">
-      {/* LEFT SIDEBAR NAVIGATION */}
-      <aside className="admin-sidebar">
-        <div className="admin-brand">
-          <img src="/EMPERAL_CABS_Website_Logo_Sharp.svg" alt="EMPERIAL CABS" style={{ height: '42px', width: 'auto', display: 'block' }} />
+      {/* MOBILE BACKDROP OVERLAY */}
+      <div 
+        className={`mobile-sidebar-backdrop ${isMobileMenuOpen ? 'show' : ''}`} 
+        onClick={() => setIsMobileMenuOpen(false)} 
+      />
+
+      {/* MOBILE TOP HEADER BAR WITH 3-LINE HAMBURGER MENU */}
+      <header className="admin-mobile-header">
+        <div className="mobile-header-left flex align-center gap-2">
+          <button 
+            className="mobile-hamburger-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            aria-label="Open Section Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <img src="/EMPERAL_CABS_Website_Logo_Sharp.svg" alt="EMPERIAL CABS" className="mobile-brand-logo" />
+        </div>
+        <div className="mobile-header-right flex align-center gap-2">
+          <button 
+            className="mobile-notif-pill-btn" 
+            onClick={() => { setActiveTab('inquiries'); setIsMobileMenuOpen(false); }}
+          >
+            <Bell size={18} />
+            {inquiries.filter(i => i.status === 'Pending').length > 0 && (
+              <span className="mobile-notif-badge">{inquiries.filter(i => i.status === 'Pending').length}</span>
+            )}
+          </button>
+        </div>
+      </header>
+
+      {/* LEFT SIDEBAR NAVIGATION DRAWER */}
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="admin-brand flex align-center justify-between">
+          <img src="/EMPERAL_CABS_Website_Logo_Sharp.svg" alt="EMPERIAL CABS" style={{ height: '38px', width: 'auto', display: 'block' }} />
+          <button className="mobile-drawer-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="admin-nav-menu">
           <button 
             className={`admin-nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
           >
             <LayoutDashboard size={19} />
             <span>Dashboard</span>
@@ -1410,7 +1447,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'inquiries' ? 'active' : ''}`}
-            onClick={() => setActiveTab('inquiries')}
+            onClick={() => { setActiveTab('inquiries'); setIsMobileMenuOpen(false); }}
           >
             <Inbox size={19} />
             <span>All Inquiries</span>
@@ -1421,7 +1458,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'final_trips' ? 'active' : ''}`}
-            onClick={() => setActiveTab('final_trips')}
+            onClick={() => { setActiveTab('final_trips'); setIsMobileMenuOpen(false); }}
           >
             <Navigation size={19} />
             <span>Final Trips</span>
@@ -1434,7 +1471,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'success_trips' ? 'active' : ''}`}
-            onClick={() => setActiveTab('success_trips')}
+            onClick={() => { setActiveTab('success_trips'); setIsMobileMenuOpen(false); }}
           >
             <Award size={19} />
             <span>Success Trips</span>
@@ -1447,7 +1484,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'custom_inquiries' ? 'active' : ''}`}
-            onClick={() => setActiveTab('custom_inquiries')}
+            onClick={() => { setActiveTab('custom_inquiries'); setIsMobileMenuOpen(false); }}
           >
             <Sparkles size={19} />
             <span>Custom Inquiries</span>
@@ -1460,7 +1497,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'vehicles' ? 'active' : ''}`}
-            onClick={() => setActiveTab('vehicles')}
+            onClick={() => { setActiveTab('vehicles'); setIsMobileMenuOpen(false); }}
           >
             <Car size={19} />
             <span>Fleet Vehicles</span>
@@ -1468,7 +1505,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'destinations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('destinations')}
+            onClick={() => { setActiveTab('destinations'); setIsMobileMenuOpen(false); }}
           >
             <MapPin size={19} />
             <span>Destinations & KM</span>
@@ -1476,7 +1513,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'drivers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('drivers')}
+            onClick={() => { setActiveTab('drivers'); setIsMobileMenuOpen(false); }}
           >
             <UserCheck size={19} />
             <span>Drivers</span>
@@ -1484,7 +1521,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'customers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('customers')}
+            onClick={() => { setActiveTab('customers'); setIsMobileMenuOpen(false); }}
           >
             <Users size={19} />
             <span>Customers</span>
@@ -1492,7 +1529,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'messages' ? 'active' : ''}`}
-            onClick={() => setActiveTab('messages')}
+            onClick={() => { setActiveTab('messages'); setIsMobileMenuOpen(false); }}
           >
             <Mail size={19} />
             <span>Contact Messages</span>
@@ -1505,7 +1542,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'reports' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reports')}
+            onClick={() => { setActiveTab('reports'); setIsMobileMenuOpen(false); }}
           >
             <BarChart3 size={19} />
             <span>Trips & Reports</span>
@@ -1513,7 +1550,7 @@ export default function AdminPortal() {
 
           <button 
             className={`admin-nav-link ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
+            onClick={() => { setActiveTab('settings'); setIsMobileMenuOpen(false); }}
           >
             <Settings size={19} />
             <span>Website Settings</span>
@@ -4431,6 +4468,62 @@ export default function AdminPortal() {
           </div>
         </div>
       )}
+      {/* MOBILE BOTTOM APP DOCK FOR ONE-TOUCH NAVIGATION */}
+      <nav className="admin-mobile-bottom-dock">
+        <button 
+          className={`dock-item ${activeTab === 'dashboard' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
+        >
+          <LayoutDashboard size={20} />
+          <span>Overview</span>
+        </button>
+
+        <button 
+          className={`dock-item ${activeTab === 'inquiries' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('inquiries'); setIsMobileMenuOpen(false); }}
+        >
+          <div className="dock-icon-wrapper">
+            <Inbox size={20} />
+            {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.status === 'Pending').length > 0 && (
+              <span className="dock-badge">
+                {inquiries.filter(i => !i.isCustom && i.tripType !== 'Custom Trip' && i.status === 'Pending').length}
+              </span>
+            )}
+          </div>
+          <span>Inquiries</span>
+        </button>
+
+        <button 
+          className={`dock-item ${activeTab === 'final_trips' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('final_trips'); setIsMobileMenuOpen(false); }}
+        >
+          <div className="dock-icon-wrapper">
+            <Navigation size={20} />
+            {inquiries.filter(i => (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride')).length > 0 && (
+              <span className="dock-badge blue">
+                {inquiries.filter(i => (i.status === 'Confirmed' || i.status === 'In Progress' || i.status === 'On Ride')).length}
+              </span>
+            )}
+          </div>
+          <span>Trips</span>
+        </button>
+
+        <button 
+          className={`dock-item ${activeTab === 'drivers' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('drivers'); setIsMobileMenuOpen(false); }}
+        >
+          <UserCheck size={20} />
+          <span>Drivers</span>
+        </button>
+
+        <button 
+          className={`dock-item ${isMobileMenuOpen ? 'active' : ''}`} 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          <Menu size={20} />
+          <span>Sections</span>
+        </button>
+      </nav>
     </div>
   );
 }
