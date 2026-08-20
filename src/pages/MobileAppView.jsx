@@ -45,7 +45,11 @@ export default function MobileAppView() {
   const [userCoords, setUserCoords] = useState({ lat: 21.7645, lng: 72.1519 });
   const [pickupLoc, setPickupLoc] = useState('Bhavnagar, Gujarat');
   const [dropoffLoc, setDropoffLoc] = useState('Ahmedabad Airport (AMD)');
-  const [tripType, setTripType] = useState('one-way'); // 'one-way' | 'round-trip'
+  const [pickupCity, setPickupCity] = useState('Bhavnagar');
+  const [dropoffCity, setDropoffCity] = useState('Ahmedabad');
+  const [noOfDays, setNoOfDays] = useState(1);
+  const [isCustom, setIsCustom] = useState(false);
+  const [tripType, setTripType] = useState('one-way'); // 'one-way' | 'round-trip' | 'custom-trip'
   const [scheduledDate, setScheduledDate] = useState('Today, 10 Aug 2026');
   const [scheduledTime, setScheduledTime] = useState('03:30 PM');
   const [returnDate, setReturnDate] = useState('Tomorrow, 11 Aug 2026');
@@ -395,7 +399,7 @@ export default function MobileAppView() {
     const originalFare = carObj?.originalFare || totalFareNum;
     const couponUsed = carObj?.couponUsed || (walletDiscountUsed > 0 ? `Wallet Reward (-₹${walletDiscountUsed})` : null);
 
-    const isCustomTrip = carObj?.isCustom || carObj?.tripType === 'Custom Trip';
+    const isCustomTrip = isCustom || carObj?.isCustom || tripType === 'custom-trip' || carObj?.tripType === 'Custom Trip';
     const newInquiry = {
       id: newInquiryId,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -404,16 +408,16 @@ export default function MobileAppView() {
       customerEmail: userProf.email || '',
       pickup: carObj?.pickup || pickupLoc || 'Bhavnagar, Gujarat',
       dropoff: carObj?.dropoff || dropoffLoc || 'Ahmedabad Airport (AMD)',
-      pickupCity: carObj?.pickupCity || (isCustomTrip ? 'Bhavnagar' : ''),
-      dropoffCity: carObj?.dropoffCity || (isCustomTrip ? 'Ahmedabad' : ''),
-      noOfDays: carObj?.noOfDays || 1,
+      pickupCity: carObj?.pickupCity || pickupCity || 'Bhavnagar',
+      dropoffCity: carObj?.dropoffCity || dropoffCity || 'Ahmedabad',
+      noOfDays: carObj?.noOfDays || noOfDays || 1,
       isCustom: isCustomTrip,
       vehicle: selectedVehicleName,
       fare: totalFareNum,
       originalFare,
       walletDiscountUsed,
       couponUsed,
-      tripType: carObj?.tripType || (tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way'),
+      tripType: isCustomTrip ? 'Custom Trip' : (carObj?.tripType || (tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way')),
       scheduledDate,
       scheduledTime,
       driver: 'Unassigned',
@@ -649,6 +653,16 @@ export default function MobileAppView() {
           setPickupLoc={setPickupLoc}
           dropoffLoc={dropoffLoc}
           setDropoffLoc={setDropoffLoc}
+          pickupCity={pickupCity}
+          setPickupCity={setPickupCity}
+          dropoffCity={dropoffCity}
+          setDropoffCity={setDropoffCity}
+          noOfDays={noOfDays}
+          setNoOfDays={setNoOfDays}
+          isCustom={isCustom}
+          setIsCustom={setIsCustom}
+          tripType={tripType}
+          setTripType={setTripType}
           onSelectLocation={() => setAppStage('GOING_SEAT_SCHEDULE')}
           onBack={() => setAppStage('APP_HOME')}
         />

@@ -178,23 +178,23 @@ export default function SeatScheduleScreen({
               </div>
             </div>
 
-            {/* 1. TRIP TYPE SELECTOR (ONE-WAY VS ROUND TRIP VS CUSTOM TRIP) */}
+            {/* 1. TRIP TYPE SELECTOR */}
             <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               1. SELECT TRIP TYPE
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
               <button
                 type="button"
                 onClick={() => setTripType('one-way')}
                 style={{
-                  padding: '10px 6px',
+                  padding: '12px 10px',
                   borderRadius: '14px',
                   border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'one-way' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
@@ -213,13 +213,13 @@ export default function SeatScheduleScreen({
                 type="button"
                 onClick={() => setTripType('round-trip')}
                 style={{
-                  padding: '10px 6px',
+                  padding: '12px 10px',
                   borderRadius: '14px',
                   border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
                   background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
                   color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
                   fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: '800',
                   cursor: 'pointer',
                   boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
@@ -233,98 +233,7 @@ export default function SeatScheduleScreen({
                 <span>Round Trip</span>
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM</span>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setTripType('custom-trip')}
-                style={{
-                  padding: '10px 6px',
-                  borderRadius: '14px',
-                  border: tripType === 'custom-trip' ? '2px solid #8B5CF6' : '1.5px solid #E2E8F0',
-                  background: tripType === 'custom-trip' ? '#F5F3FF' : '#FFFFFF',
-                  color: tripType === 'custom-trip' ? '#6D28D9' : '#64748B',
-                  fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '13px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  boxShadow: tripType === 'custom-trip' ? '0 4px 14px rgba(139,92,246,0.25)' : 'none',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px'
-                }}
-              >
-                <span>Custom Trip</span>
-                <span style={{ fontSize: '11px', fontWeight: '700', color: '#7C3AED' }}>Multi-City</span>
-              </button>
             </div>
-
-            {/* CUSTOM TRIP SPECIFIC FIELDS */}
-            {tripType === 'custom-trip' && (
-              <div style={{ background: '#F8FAFC', border: '1.5px solid #DDD6FE', borderRadius: '16px', padding: '14px', marginBottom: '16px' }}>
-                <p style={{ fontFamily: 'League Spartan', fontSize: '13px', fontWeight: '800', color: '#6D28D9', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                  ✨ CUSTOM TRIP DETAILS
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>PICKUP CITY</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Bhavnagar"
-                      value={customPickupCity}
-                      onChange={(e) => setCustomPickupCity(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', outline: 'none' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>DROPOFF CITY</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Ahmedabad"
-                      value={customDropoffCity}
-                      onChange={(e) => setCustomDropoffCity(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', outline: 'none' }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '10px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>ACTUAL PICKUP DETAILED LOCATION</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. House 14, Waghawadi Road, near Circle"
-                    value={customPickupAddress}
-                    onChange={(e) => setCustomPickupAddress(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', outline: 'none' }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '10px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>ACTUAL DROPOFF DETAILED LOCATION</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Terminal 2, Ahmedabad Airport"
-                    value={customDropoffAddress}
-                    onChange={(e) => setCustomDropoffAddress(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', outline: 'none' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>NUMBER OF DAYS</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="30"
-                    value={customNoOfDays}
-                    onChange={(e) => setCustomNoOfDays(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontFamily: 'Space Grotesk', fontSize: '13px', fontWeight: '700', color: '#0F172A', outline: 'none' }}
-                  />
-                </div>
-              </div>
-            )}
 
             {/* 2. SCHEDULE DATE & TIME */}
             <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
