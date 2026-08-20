@@ -9,10 +9,11 @@ export function EmperialCabsOfficialLogo() {
         src={logoImg} 
         alt="EMPERIAL CABS" 
         style={{ 
-          width: '100%', 
-          maxWidth: '320px', 
-          maxHeight: '180px',
-          objectFit: 'contain',
+          width: '130px', 
+          height: '130px', 
+          objectFit: 'cover',
+          borderRadius: '32px',
+          boxShadow: '0 12px 32px rgba(252, 185, 0, 0.35)',
           display: 'block'
         }} 
       />
