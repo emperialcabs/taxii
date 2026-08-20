@@ -103,6 +103,18 @@ export default function SeatScheduleScreen({
   const [useWalletDiscount, setUseWalletDiscount] = useState(true);
   const [walletBalance, setWalletBalance] = useState(0);
 
+  // Exact Pickup & Drop-off Address Details
+  const [pickupAddressDetail, setPickupAddressDetail] = useState(pickupLoc || '');
+  const [dropoffAddressDetail, setDropoffAddressDetail] = useState(dropoffLoc || '');
+
+  useEffect(() => {
+    if (pickupLoc) setPickupAddressDetail(pickupLoc);
+  }, [pickupLoc]);
+
+  useEffect(() => {
+    if (dropoffLoc) setDropoffAddressDetail(dropoffLoc);
+  }, [dropoffLoc]);
+
   const userProfile = React.useMemo(() => {
     try {
       const saved = localStorage.getItem('cabsy_user_profile');
@@ -332,9 +344,50 @@ export default function SeatScheduleScreen({
               </>
             )}
 
+            {/* EXACT PICKUP & DROP-OFF ADDRESS DETAILS */}
+            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+              {isCustomMode ? 'EXACT PICKUP & DROP-OFF ADDRESS' : '3. EXACT PICKUP & DROP-OFF ADDRESS'}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+              {/* Pickup Address Input */}
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#059669', textTransform: 'uppercase', marginBottom: '2px' }}>
+                    Exact Pickup Address / Landmark
+                  </label>
+                  <input 
+                    type="text"
+                    value={pickupAddressDetail}
+                    onChange={(e) => setPickupAddressDetail(e.target.value)}
+                    placeholder="e.g. House No, Street, Society, Landmark"
+                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Drop-off Address Input */}
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#DC2626', textTransform: 'uppercase', marginBottom: '2px' }}>
+                    Exact Drop-off Address / Destination Landmark
+                  </label>
+                  <input 
+                    type="text"
+                    value={dropoffAddressDetail}
+                    onChange={(e) => setDropoffAddressDetail(e.target.value)}
+                    placeholder="e.g. Hotel Name, Terminal No, Office, Landmark"
+                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* SELECT FLEET CAR ON THIS SCREEN */}
             <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              {isCustomMode ? 'SELECT FLEET CAR (PRICE PER KM)' : '3. SELECT FLEET CAR (PRICE PER KM)'}
+              {isCustomMode ? 'SELECT FLEET CAR (PRICE PER KM)' : '4. SELECT FLEET CAR (PRICE PER KM)'}
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
@@ -429,8 +482,10 @@ export default function SeatScheduleScreen({
                   isCustom: isCustomMode,
                   pickupCity: isCustomMode ? (pickupCity || pickupLoc) : null,
                   dropoffCity: isCustomMode ? (dropoffCity || dropoffLoc) : null,
-                  pickup: pickupLoc,
-                  dropoff: dropoffLoc,
+                  pickup: pickupAddressDetail || pickupLoc,
+                  dropoff: dropoffAddressDetail || dropoffLoc,
+                  exactPickupAddress: pickupAddressDetail || pickupLoc,
+                  exactDropoffAddress: dropoffAddressDetail || dropoffLoc,
                   noOfDays: isCustomMode ? noOfDays : 1,
                   totalDistanceKm: estTotalKm,
                   avgKmPerDay: avgKmPerDay,
