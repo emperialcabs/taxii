@@ -674,6 +674,10 @@ export default function MobileAppView() {
           userCoords={userCoords}
           pickupLoc={pickupLoc}
           dropoffLoc={dropoffLoc}
+          pickupCity={pickupCity}
+          dropoffCity={dropoffCity}
+          noOfDays={noOfDays}
+          isCustom={isCustom}
           tripType={tripType}
           setTripType={setTripType}
           scheduledDate={scheduledDate}

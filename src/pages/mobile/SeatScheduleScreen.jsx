@@ -9,6 +9,10 @@ export default function SeatScheduleScreen({
   userCoords,
   pickupLoc,
   dropoffLoc,
+  pickupCity,
+  dropoffCity,
+  noOfDays = 1,
+  isCustom = false,
   tripType = 'one-way',
   setTripType,
   scheduledDate, 
@@ -22,6 +26,8 @@ export default function SeatScheduleScreen({
   onNext, 
   onBack 
 }) {
+  const isCustomMode = isCustom || tripType === 'custom-trip';
+
   const pickupPos = getCoordsForPlace(pickupLoc || "Bhavnagar, Gujarat", userCoords);
   const destPos = getCoordsForPlace(dropoffLoc || "Ahmedabad Airport (AMD)", userCoords);
   const routePolyline = generateRoutePolyline(pickupPos, destPos);
@@ -68,7 +74,9 @@ export default function SeatScheduleScreen({
       .filter(v => (v.status || 'Active').toLowerCase() === 'active')
       .map((v, idx) => {
         const r = Number(v.ratePerKm || v.pricePerKm || v.rate) || 5;
-        const fare = Math.round(r * effectiveDistance);
+        const fare = isCustomMode 
+          ? Math.round(r * 120 * (noOfDays || 1))
+          : Math.round(r * effectiveDistance);
         return {
           id: v.id || `CAR-${101 + idx}`,
           name: v.name,
@@ -80,13 +88,6 @@ export default function SeatScheduleScreen({
         };
       });
   };
-
-  // Custom Trip Fields State
-  const [customPickupCity, setCustomPickupCity] = useState(pickupLoc ? pickupLoc.split(',')[0] : 'Bhavnagar');
-  const [customDropoffCity, setCustomDropoffCity] = useState(dropoffLoc ? dropoffLoc.split(',')[0] : 'Ahmedabad');
-  const [customPickupAddress, setCustomPickupAddress] = useState(pickupLoc || 'Bhavnagar, Gujarat');
-  const [customDropoffAddress, setCustomDropoffAddress] = useState(dropoffLoc || 'Ahmedabad Airport (AMD)');
-  const [customNoOfDays, setCustomNoOfDays] = useState(1);
 
   const fleet = getFleetVehicles();
   const [currentCarId, setCurrentCarId] = useState(selectedCar || fleet[0]?.id);
@@ -111,10 +112,7 @@ export default function SeatScheduleScreen({
   }, [userPhone]);
 
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
-  const calculatedCustomFare = tripType === 'custom-trip' 
-    ? Math.round((Number(activeCarObj?.ratePerKm) || 10) * 120 * customNoOfDays)
-    : (activeCarObj ? activeCarObj.totalFareNum : 770);
-  const baseFare = calculatedCustomFare;
+  const baseFare = activeCarObj ? activeCarObj.totalFareNum : 770;
   const discountAmount = (useWalletDiscount && walletBalance > 0) ? Math.min(walletBalance, baseFare) : 0;
   const netFare = Math.max(0, baseFare - discountAmount);
 
@@ -132,7 +130,7 @@ export default function SeatScheduleScreen({
 
           {/* Bottom Card for Trip Type, Schedule & Vehicle Selection */}
           <div className={`homescreen-bottom-card ${isSheetCollapsed ? 'collapsed' : ''}`} style={{ maxHeight: '82vh', overflowY: 'auto' }}>
-            {/* Top Center Line Handle Bar (Click Trigger for Up/Down - Morphing Shape) */}
+            {/* Top Center Line Handle Bar */}
             <div 
               className="drag-handle-toggle-area"
               onClick={() => setIsSheetCollapsed(prev => !prev)}
@@ -151,6 +149,8 @@ export default function SeatScheduleScreen({
                 />
               </svg>
             </div>
+
+            {/* Back Button & Header Tag */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <button 
                 type="button"
@@ -173,131 +173,162 @@ export default function SeatScheduleScreen({
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
+              
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', padding: '6px 14px', borderRadius: '16px', fontSize: '13px', fontWeight: '800', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(16,185,129,0.1)' }}>
-                <span>●</span> {tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`}
+                <span>●</span> {isCustomMode ? `Custom Outstation (${noOfDays || 1} Day${(noOfDays || 1) > 1 ? 's' : ''})` : (tripType === 'round-trip' ? `${effectiveDistance} KM (${baseDistance} KM × 2)` : `${baseDistance} KM`)}
               </div>
             </div>
 
-            {/* 1. TRIP TYPE SELECTOR */}
-            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              1. SELECT TRIP TYPE
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-              <button
-                type="button"
-                onClick={() => setTripType('one-way')}
-                style={{
-                  padding: '12px 10px',
-                  borderRadius: '14px',
-                  border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
-                  background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
-                  color: tripType === 'one-way' ? '#0F172A' : '#64748B',
-                  fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '14px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px'
-                }}
-              >
-                <span>One-Way</span>
-                <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance} KM</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTripType('round-trip')}
-                style={{
-                  padding: '12px 10px',
-                  borderRadius: '14px',
-                  border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
-                  background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
-                  color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
-                  fontFamily: 'League Spartan, sans-serif',
-                  fontSize: '14px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px'
-                }}
-              >
-                <span>Round Trip</span>
-                <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM</span>
-              </button>
-            </div>
-
-            {/* 2. SCHEDULE DATE & TIME */}
-            <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              2. SCHEDULE PICKUP DATE & TIME
-            </p>
-
-            <div className="schedule-inputs-row" style={{ marginBottom: tripType === 'round-trip' ? '10px' : '16px' }}>
-              <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <select 
-                  value={scheduledDate} 
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
-                >
-                  <option value="Today, 10 Aug 2026">Today, 10 Aug 2026</option>
-                  <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
-                  <option value="Wed, 12 Aug 2026">Wed, 12 Aug 2026</option>
-                  <option value="Thu, 13 Aug 2026">Thu, 13 Aug 2026</option>
-                  <option value="Fri, 14 Aug 2026">Fri, 14 Aug 2026</option>
-                  <option value="Sat, 15 Aug 2026">Sat, 15 Aug 2026</option>
-                </select>
-              </div>
-
-              <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <select 
-                  value={scheduledTime} 
-                  onChange={(e) => setScheduledTime(e.target.value)} 
-                  style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
-                >
-                  {[
-                    "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-                    "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
-                    "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM"
-                  ].map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Optional Return Date if Round Trip */}
-            {tripType === 'round-trip' && (
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>
-                  RETURN DATE (OPTIONAL)
-                </label>
-                <div className="schedule-input-box">
-                  <select 
-                    value={returnDate || 'Tomorrow, 11 Aug 2026'} 
-                    onChange={(e) => setReturnDate && setReturnDate(e.target.value)}
-                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
-                  >
-                    <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
-                    <option value="Wed, 12 Aug 2026">Wed, 12 Aug 2026</option>
-                    <option value="Thu, 13 Aug 2026">Thu, 13 Aug 2026</option>
-                    <option value="Fri, 14 Aug 2026">Fri, 14 Aug 2026</option>
-                    <option value="Sat, 15 Aug 2026">Sat, 15 Aug 2026</option>
-                  </select>
+            {/* CUSTOM TRIP SUMMARY HEADER (SHOWN ONLY WHEN IS_CUSTOM IS TRUE) */}
+            {isCustomMode && (
+              <div style={{
+                background: '#ECFDF5',
+                border: '1.5px solid #A7F3D0',
+                borderRadius: '18px',
+                padding: '14px 16px',
+                marginBottom: '16px',
+                boxShadow: '0 2px 10px rgba(16,185,129,0.08)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <Sparkles size={18} color="#10B981" />
+                  <span style={{ fontFamily: 'League Spartan', fontSize: '16px', fontWeight: '800', color: '#047857' }}>
+                    Custom Rental: {pickupCity || 'Bhavnagar'} ➔ {dropoffCity || 'Ahmedabad'} ({noOfDays || 1} Day{(noOfDays || 1) > 1 ? 's' : ''})
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
+                  <strong>Pickup:</strong> {pickupLoc}
+                </div>
+                <div style={{ fontSize: '13px', color: '#065F46', fontWeight: '600', fontFamily: 'Space Grotesk' }}>
+                  <strong>Dropoff:</strong> {dropoffLoc}
                 </div>
               </div>
             )}
 
-            {/* 3. CHOOSE FLEET CAR ON THIS SCREEN */}
+            {/* STANDARD MODE OPTIONS: 1. SELECT TRIP TYPE & 2. SCHEDULE PICKUP DATE & TIME (HIDDEN IF IS_CUSTOM IS TRUE) */}
+            {!isCustomMode && (
+              <>
+                {/* 1. TRIP TYPE SELECTOR */}
+                <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  1. SELECT TRIP TYPE
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setTripType('one-way')}
+                    style={{
+                      padding: '12px 10px',
+                      borderRadius: '14px',
+                      border: tripType === 'one-way' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                      background: tripType === 'one-way' ? '#F0FDF4' : '#FFFFFF',
+                      color: tripType === 'one-way' ? '#0F172A' : '#64748B',
+                      fontFamily: 'League Spartan, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      boxShadow: tripType === 'one-way' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px'
+                    }}
+                  >
+                    <span>One-Way</span>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance} KM</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTripType('round-trip')}
+                    style={{
+                      padding: '12px 10px',
+                      borderRadius: '14px',
+                      border: tripType === 'round-trip' ? '2px solid #10B981' : '1.5px solid #E2E8F0',
+                      background: tripType === 'round-trip' ? '#F0FDF4' : '#FFFFFF',
+                      color: tripType === 'round-trip' ? '#0F172A' : '#64748B',
+                      fontFamily: 'League Spartan, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      boxShadow: tripType === 'round-trip' ? '0 4px 14px rgba(16,185,129,0.2)' : 'none',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px'
+                    }}
+                  >
+                    <span>Round Trip</span>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>{baseDistance * 2} KM</span>
+                  </button>
+                </div>
+
+                {/* 2. SCHEDULE DATE & TIME */}
+                <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  2. SCHEDULE PICKUP DATE & TIME
+                </p>
+
+                <div className="schedule-inputs-row" style={{ marginBottom: tripType === 'round-trip' ? '10px' : '16px' }}>
+                  <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <select 
+                      value={scheduledDate} 
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
+                    >
+                      <option value="Today, 10 Aug 2026">Today, 10 Aug 2026</option>
+                      <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
+                      <option value="Wed, 12 Aug 2026">Wed, 12 Aug 2026</option>
+                      <option value="Thu, 13 Aug 2026">Thu, 13 Aug 2026</option>
+                      <option value="Fri, 14 Aug 2026">Fri, 14 Aug 2026</option>
+                      <option value="Sat, 15 Aug 2026">Sat, 15 Aug 2026</option>
+                    </select>
+                  </div>
+
+                  <div className="schedule-input-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <select 
+                      value={scheduledTime} 
+                      onChange={(e) => setScheduledTime(e.target.value)} 
+                      style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
+                    >
+                      {[
+                        "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+                        "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+                        "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM"
+                      ].map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Optional Return Date if Round Trip */}
+                {tripType === 'round-trip' && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>
+                      RETURN DATE (OPTIONAL)
+                    </label>
+                    <div className="schedule-input-box">
+                      <select 
+                        value={returnDate || 'Tomorrow, 11 Aug 2026'} 
+                        onChange={(e) => setReturnDate && setReturnDate(e.target.value)}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', cursor: 'pointer' }}
+                      >
+                        <option value="Tomorrow, 11 Aug 2026">Tomorrow, 11 Aug 2026</option>
+                        <option value="Wed, 12 Aug 2026">Wed, 12 Aug 2026</option>
+                        <option value="Thu, 13 Aug 2026">Thu, 13 Aug 2026</option>
+                        <option value="Fri, 14 Aug 2026">Fri, 14 Aug 2026</option>
+                        <option value="Sat, 15 Aug 2026">Sat, 15 Aug 2026</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* SELECT FLEET CAR ON THIS SCREEN */}
             <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              3. SELECT FLEET CAR (PRICE PER KM)
+              {isCustomMode ? 'SELECT FLEET CAR (PRICE PER KM)' : '3. SELECT FLEET CAR (PRICE PER KM)'}
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
@@ -339,7 +370,7 @@ export default function SeatScheduleScreen({
               })}
             </div>
 
-            {/* 4. WALLET REWARD DISCOUNT CARD */}
+            {/* WALLET REWARD DISCOUNT CARD */}
             {walletBalance > 0 && (
               <div style={{ background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '16px', padding: '12px 16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -384,16 +415,15 @@ export default function SeatScheduleScreen({
                 transition: 'all 0.2s ease'
               }}
               onClick={() => {
-                const isCustomMode = tripType === 'custom-trip';
                 const payload = {
                   ...activeCarObj,
                   tripType: isCustomMode ? 'Custom Trip' : (tripType === 'round-trip' ? 'Round Trip (Return)' : 'One-Way'),
                   isCustom: isCustomMode,
-                  pickupCity: isCustomMode ? (customPickupCity || pickupLoc) : null,
-                  dropoffCity: isCustomMode ? (customDropoffCity || dropoffLoc) : null,
-                  pickup: isCustomMode ? (customPickupAddress || pickupLoc) : pickupLoc,
-                  dropoff: isCustomMode ? (customDropoffAddress || dropoffLoc) : dropoffLoc,
-                  noOfDays: isCustomMode ? customNoOfDays : 1,
+                  pickupCity: isCustomMode ? (pickupCity || pickupLoc) : null,
+                  dropoffCity: isCustomMode ? (dropoffCity || dropoffLoc) : null,
+                  pickup: pickupLoc,
+                  dropoff: dropoffLoc,
+                  noOfDays: isCustomMode ? noOfDays : 1,
                   totalFareNum: netFare,
                   originalFare: baseFare,
                   walletDiscountUsed: discountAmount,
