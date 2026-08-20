@@ -103,17 +103,9 @@ export default function SeatScheduleScreen({
   const [useWalletDiscount, setUseWalletDiscount] = useState(true);
   const [walletBalance, setWalletBalance] = useState(0);
 
-  // Exact Pickup & Drop-off Address Details
-  const [pickupAddressDetail, setPickupAddressDetail] = useState(pickupLoc || '');
-  const [dropoffAddressDetail, setDropoffAddressDetail] = useState(dropoffLoc || '');
-
-  useEffect(() => {
-    if (pickupLoc) setPickupAddressDetail(pickupLoc);
-  }, [pickupLoc]);
-
-  useEffect(() => {
-    if (dropoffLoc) setDropoffAddressDetail(dropoffLoc);
-  }, [dropoffLoc]);
+  // Exact Pickup & Drop-off Address Details (Entered manually by customer)
+  const [pickupAddressDetail, setPickupAddressDetail] = useState('');
+  const [dropoffAddressDetail, setDropoffAddressDetail] = useState('');
 
   const userProfile = React.useMemo(() => {
     try {
@@ -344,44 +336,68 @@ export default function SeatScheduleScreen({
               </>
             )}
 
-            {/* EXACT PICKUP & DROP-OFF ADDRESS DETAILS */}
+            {/* EXACT PICKUP & DROP-OFF ADDRESS DETAILS (CUSTOMER MANUAL ENTRY) */}
             <p style={{ fontFamily: 'League Spartan', fontSize: '14px', fontWeight: '800', color: '#0F172A', letterSpacing: '0.3px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               {isCustomMode ? 'EXACT PICKUP & DROP-OFF ADDRESS' : '3. EXACT PICKUP & DROP-OFF ADDRESS'}
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-              {/* Pickup Address Input */}
-              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#059669', textTransform: 'uppercase', marginBottom: '2px' }}>
-                    Exact Pickup Address / Landmark
-                  </label>
-                  <input 
-                    type="text"
-                    value={pickupAddressDetail}
-                    onChange={(e) => setPickupAddressDetail(e.target.value)}
-                    placeholder="e.g. House No, Street, Society, Landmark"
-                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', boxSizing: 'border-box' }}
-                  />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+              {/* Pickup Address Input Box */}
+              <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
+                    Enter Exact Pickup Address ({pickupCity || pickupLoc || 'Pickup City'})
+                  </span>
                 </div>
+                <input 
+                  type="text"
+                  value={pickupAddressDetail}
+                  onChange={(e) => setPickupAddressDetail(e.target.value)}
+                  placeholder="Type exact house no, street, landmark..."
+                  style={{
+                    width: '100%',
+                    border: '1px solid #E2E8F0',
+                    background: '#F8FAFC',
+                    borderRadius: '10px',
+                    padding: '10px 12px',
+                    outline: 'none',
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#0F172A',
+                    boxSizing: 'border-box'
+                  }}
+                />
               </div>
 
-              {/* Drop-off Address Input */}
-              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#DC2626', textTransform: 'uppercase', marginBottom: '2px' }}>
-                    Exact Drop-off Address / Destination Landmark
-                  </label>
-                  <input 
-                    type="text"
-                    value={dropoffAddressDetail}
-                    onChange={(e) => setDropoffAddressDetail(e.target.value)}
-                    placeholder="e.g. Hotel Name, Terminal No, Office, Landmark"
-                    style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'Space Grotesk', fontSize: '14px', fontWeight: '700', color: '#0F172A', boxSizing: 'border-box' }}
-                  />
+              {/* Drop-off Address Input Box */}
+              <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '12px 14px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#DC2626', textTransform: 'uppercase', fontFamily: 'League Spartan', letterSpacing: '0.5px' }}>
+                    Enter Exact Drop-Off Address ({dropoffCity || dropoffLoc || 'Destination City'})
+                  </span>
                 </div>
+                <input 
+                  type="text"
+                  value={dropoffAddressDetail}
+                  onChange={(e) => setDropoffAddressDetail(e.target.value)}
+                  placeholder="Type exact hotel name, terminal no, office..."
+                  style={{
+                    width: '100%',
+                    border: '1px solid #E2E8F0',
+                    background: '#F8FAFC',
+                    borderRadius: '10px',
+                    padding: '10px 12px',
+                    outline: 'none',
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#0F172A',
+                    boxSizing: 'border-box'
+                  }}
+                />
               </div>
             </div>
 
