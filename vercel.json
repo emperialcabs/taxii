@@ -56,18 +56,9 @@
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/taxigo.apk",
-      "destination": "/Taxigo.apk"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/.*", "dest": "/index.html" }
   ]
 }
